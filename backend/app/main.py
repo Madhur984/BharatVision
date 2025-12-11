@@ -40,7 +40,8 @@ async def process_image_full(file: UploadFile = File(...)):
     import requests
     try:
         contents = await file.read()
-        API_URL = f"https://router.huggingface.co/models/{settings.OCR_MODEL}"
+        # Use simple_api.py compliant legacy endpoint logic
+        API_URL = f"https://api-inference.huggingface.co/models/{settings.OCR_MODEL}"
         headers = {"Authorization": f"Bearer {settings.HF_TOKEN}"}
         resp = requests.post(API_URL, headers=headers, data=contents)
         text = ""
