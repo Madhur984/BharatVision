@@ -17,11 +17,17 @@ os.environ['MPLBACKEND'] = 'Agg'
 # This allows backend/ocr_integration.py to use cloud API
 try:
     import streamlit as st
-    if hasattr(st, 'secrets') and 'ML_API_URL' in st.secrets:
-        os.environ['ML_API_URL'] = st.secrets['ML_API_URL']
-        print(f"✅ ML_API_URL set from Streamlit secrets: {st.secrets['ML_API_URL']}")
+    if hasattr(st, 'secrets'):
+        if 'api' in st.secrets and 'ML_API_URL' in st.secrets['api']:
+             os.environ['ML_API_URL'] = st.secrets['api']['ML_API_URL']
+             print(f"✅ ML_API_URL set from Streamlit secrets [api]: {st.secrets['api']['ML_API_URL']}")
+        elif 'ML_API_URL' in st.secrets:
+             os.environ['ML_API_URL'] = st.secrets['ML_API_URL']
+             print(f"✅ ML_API_URL set from Streamlit secrets [root]: {st.secrets['ML_API_URL']}")
+        else: 
+             print("⚠️ ML_API_URL not found in Streamlit secrets, will use local OCR")
     else:
-        print("⚠️ ML_API_URL not found in Streamlit secrets, will use local OCR")
+        print("⚠️ Streamlit secrets not available")
 except Exception as e:
     print(f"⚠️ Could not read ML_API_URL from secrets: {e}")
 

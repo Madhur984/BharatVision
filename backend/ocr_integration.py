@@ -20,8 +20,25 @@ class OCRIntegrator:
             api_url: Optional ML API URL. If provided, will use cloud API.
                     If None, checks environment variable, then falls back to local OCR.
         """
-        # Priority: 1. Parameter, 2. Environment variable, 3. Local fallback
+        # Priority: 1. Parameter, 2. Environment variable, 3. Streamlit secrets, 4. Local fallback
         self.api_url = api_url or os.getenv("ML_API_URL")
+        
+        # Check Streamlit secrets if not found yet (Streamlit Cloud secrets support)
+        if not self.api_url:
+            try:
+                import streamlit as st
+                if hasattr(st, "secrets"):
+                    # Check for nested [api] section first
+                    if "api" in st.secrets and "ML_API_URL" in st.secrets["api"]:
+                        self.api_url = st.secrets["api"]["ML_API_URL"]
+                    # Check for root level key (legacy/standard)
+                    elif "ML_API_URL" in st.secrets:
+                        self.api_url = st.secrets["ML_API_URL"]
+                    
+                    if self.api_url:
+                         logger.info(f"✅ Found ML_API_URL in Streamlit secrets: {self.api_url}")
+            except Exception:
+                pass # Streamlit not checking or secrets not available
         self.use_cloud_api = self.api_url is not None
         self.api_client = None
         
@@ -30,8 +47,8 @@ class OCRIntegrator:
                 from web.api_client import get_api_client
                 self.api_client = get_api_client()
                 # Override the API client's URL if we have a specific one
-                if api_url:
-                    self.api_client.api_url = api_url
+                if self.api_url:
+                    self.api_client.api_url = self.api_url
                 logger.info(f"✅ OCR Integrator using CLOUD API: {self.api_url}")
             except Exception as e:
                 logger.warning(f"Failed to initialize cloud API client: {e}")

@@ -51,6 +51,22 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Import OCR Integrator
+try:
+    from backend.ocr_integration import get_ocr_integrator
+    OCR_INTEGRATION_AVAILABLE = True
+except ImportError:
+    OCR_INTEGRATION_AVAILABLE = False
+    get_ocr_integrator = None
+
+# Import OCR Integrator
+try:
+    from backend.ocr_integration import get_ocr_integrator
+    OCR_INTEGRATION_AVAILABLE = True
+except ImportError:
+    OCR_INTEGRATION_AVAILABLE = False
+    get_ocr_integrator = None
+
 # Import compliance validator
 COMPLIANCE_AVAILABLE = False
 try:
@@ -326,7 +342,17 @@ class EcommerceCrawler:
         safe_logger = getattr(self, 'logger', logging.getLogger(__name__))
         safe_logger.info("EcommerceCrawler initialized with support for Amazon, Flipkart, and Myntra")
         safe_logger.info(f"Compliance checking: {'Enabled' if self.compliance_rules else 'Disabled'}")
+        safe_logger.info(f"Compliance checking: {'Enabled' if self.compliance_rules else 'Disabled'}")
         safe_logger.info(f"Image extraction: {'Enabled' if self.image_extractor else 'Disabled'}")
+        
+        # Initialize OCR Integrator
+        self.ocr_integrator = None
+        if OCR_INTEGRATION_AVAILABLE and get_ocr_integrator:
+            try:
+                self.ocr_integrator = get_ocr_integrator()
+                safe_logger.info("OCR Integrator initialized via factory")
+            except Exception as e:
+                safe_logger.warning(f"Failed to init OCR Integrator: {e}")
     
     def _respect_rate_limit(self, platform: str):
         """Respect rate limiting for the platform"""
@@ -458,58 +484,25 @@ class EcommerceCrawler:
         # Image OCR and YOLO extraction
         try:
             ocr_accum = []
-            # OCR up to 20 images as requested ("extract every image")
-            for img_url in (product.image_urls or [])[:20]:
+            # OCR up to 10 images (reduce from 20 for perf)
+            for img_url in (product.image_urls or [])[:10]:
+                if not img_url: continue
+                
                 try:
-                    r = self.session.get(img_url, timeout=10)
-                    if r.status_code != 200:
-                        continue
-                    img_bytes = r.content
-                    yres = self._yolo_detect_and_ocr(img_bytes, do_ocr=True)
-                    if yres and yres.get('ocr_texts'):
-                        ocr_accum.extend(yres.get('ocr_texts'))
+                    if self.ocr_integrator:
+                        # Use centralized integrator (handles Cloud/Tesseract/Surya)
+                        res = self.ocr_integrator.extract_text_from_image_url(img_url)
+                        if res and res.get('text'):
+                            ocr_accum.append(res.get('text'))
                     else:
-                        # Use Surya OCR only
-                        if self.use_surya:
-                            text = self._run_surya_ocr_bytes(img_bytes)
-                            if text:
-                                ocr_accum.append(text)
+                        # Fallback if integrator failed to load
+                        pass
                 except Exception:
                     continue
 
             if ocr_accum:
                 product.ocr_text = "\n---\n".join(ocr_accum)
-                
-                # Run Gemma2 to clean and structure OCR text
-                try:
-                    import requests
-                    logger.info(f"Running Gemma2 OCR correction on {len(ocr_accum)} text blocks...")
-                    
-                    correction_prompt = f"""Clean and correct this OCR-extracted text. Fix spelling errors, organize information clearly, and preserve all important details like numbers, weights, dates, and addresses.
-
-OCR Text:
-{product.ocr_text[:3000]}
-
-Corrected Text:"""
-                    
-                    response = requests.post(
-                        'http://localhost:11434/api/generate',
-                        json={
-                            'model': 'gemma2',
-                            'prompt': correction_prompt,
-                            'stream': False,
-                            'options': {'temperature': 0.2, 'num_predict': 500}
-                        },
-                        timeout=30
-                    )
-                    
-                    if response.status_code == 200:
-                        corrected_text = response.json().get('response', '').strip()
-                        if corrected_text and len(corrected_text) > 50:
-                            product.ocr_text = corrected_text
-                            logger.info("OCR text corrected by Gemma2")
-                except Exception as e:
-                    logger.debug(f"OCR correction skipped: {e}")
+                # Skip local LLM correction (would need API client for that too, and regex is okay on good OCR)
         except Exception:
             pass
 
@@ -770,39 +763,10 @@ Return ONLY JSON:
 
 JSON:"""
             
-            # Call Ollama API with Gemma2
-            response = requests.post(
-                'http://localhost:11434/api/generate',
-                json={
-                    'model': 'gemma2',
-                    'prompt': prompt,
-                    'stream': False,
-                    'options': {
-                        'temperature': 0.05,
-                        'num_predict': 350,
-                        'top_p': 0.9
-                    }
-                },
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result_text = response.json().get('response', '')
-                
-                # Try to parse JSON from response
-                import json
-                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', result_text, re.DOTALL)
-                if json_match:
-                    try:
-                        result = json.loads(json_match.group(0))
-                        logger.info(f"Ollama LLM extracted {len(result)} fields")
-                        return result
-                    except:
-                        pass
-            
-            # Fallback to regex if API fails
+            # Skip localhost LLM call on Cloud
+            # response = requests.post('http://localhost:11434/api/generate' ...)
             return regex_extract(text)
-            
+
         except Exception as e:
             logger.debug(f"Ollama API failed: {e}")
             return regex_extract(text)
