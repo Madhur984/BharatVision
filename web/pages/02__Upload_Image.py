@@ -688,140 +688,101 @@ def display_single_result_detailed(result: Dict[str, Any], show_expander: bool =
 
     if "error" in result:
         st.error(f"❌ {filename} - Processing Error: {result['error']}")
-        if "ocr_debug" in result:
-            st.info(f"OCR debug: {result['ocr_debug']}")
         return
 
     violations = result.get("violations", [])
     compliance_status = result.get("compliance_status", "UNKNOWN")
+    refined_data = result.get("refined_data", {}) or {}
 
     violation_count = len(violations)
     compliance_score = max(0, 100 - violation_count * 20)
-    compliance_score = min(100, compliance_score)
-
-    # Use native Streamlit components instead of HTML
+    
+    # ---------------------------------------------------------
+    # 1. Header & Status
+    # ---------------------------------------------------------
+    st.markdown(f"### 📄 Analysis for: {filename}")
+    
     if compliance_status == "COMPLIANT":
-        st.success(f"📄 **{filename}** — 🟢 **COMPLIANT** — Score: {compliance_score:.1f}% ({violation_count} violations)")
-    elif compliance_status == "ERROR":
-        st.error(f"📄 **{filename}** — 🔴 **ERROR** — Score: {compliance_score:.1f}% ({violation_count} violations)")
+        st.success(f"🟢 **COMPLIANT** (Score: {compliance_score:.0f}/100)")
     else:
-        st.warning(f"📄 **{filename}** — 🟠 **NON-COMPLIANT** — Score: {compliance_score:.1f}% ({violation_count} violations)")
+        st.error(f"🔴 **NON-COMPLIANT** ({violation_count} Violations Detected)")
 
-    block = st.expander(" View Detailed Analysis", expanded=False) if show_expander else st.container()
-    with block:
-        tab1, tab2, tab3, tab4 = st.tabs([" All Parameters", " Compliance Details", "📝 Raw OCR Text", " Technical"])
+    # ---------------------------------------------------------
+    # 2. Key Mandatory Fields (The "Important 6")
+    # ---------------------------------------------------------
+    st.markdown("#### 🏛️ Mandatory Declarations")
+    
+    # Define mandatory fields mapping
+    field_map = [
+        {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
+        {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
+        {"label": "Net Quantity", "key": "net_quantity", "icon": "⚖️"},
+        {"label": "Mfg / Import Date", "key": "date_of_manufacture", "alt_key": "date_of_import", "icon": "📅"},
+        {"label": "MRP (Max Retail Price)", "key": "mrp", "icon": "💰"},
+        {"label": "Customer Care Details", "key": "customer_care_details", "icon": "📞"},
+    ]
 
-        with tab1:
-            refined_data = result.get("refined_data", {}) or {}
-            st.markdown("###  Parameter Status Report")
+    # Grid Layout
+    cols = st.columns(2)
+    for i, item in enumerate(field_map):
+        key = item["key"]
+        val = refined_data.get(key)
+        
+        # Check alternate key if main missing (e.g. Mfg vs Import date)
+        if (not val or val == "Not Found") and "alt_key" in item:
+            val = refined_data.get(item["alt_key"])
 
-            present_count = 0
-            missing_count = 0
-            table_data = []
+        display_val = val if (val and val.lower() != "none") else "❌ Not Found"
+        is_missing = "❌" in display_val
+        
+        # Styling
+        border_color = "#ff4b4b" if is_missing else "#09ab3b"
+        bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
+        
+        with cols[i % 2]:
+            st.markdown(f"""
+            <div style="
+                border: 1px solid {border_color};
+                background-color: {bg_color};
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+            ">
+                <div style="font-weight:bold; font-size:0.9em; color:#555;">{item['icon']} {item['label']}</div>
+                <div style="font-size:1.1em; color: black;">{display_val}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            for field in EXPECTED_FIELDS:
-                value = refined_data.get(field, "")
-                if value:
-                    present_count += 1
-                    status = "✅ Found"
-                else:
-                    missing_count += 1
-                    status = "❌ Missing"
+    # ---------------------------------------------------------
+    # 3. Violations Summary (if any)
+    # ---------------------------------------------------------
+    if violations:
+        st.markdown("#### ⚠️ Violations Found")
+        for v in violations:
+            msg = v.get("description", str(v)) if isinstance(v, dict) else str(v)
+            st.warning(f"• {msg}")
 
-                field_display = field.replace("_", " ").title()
-                value_display = str(value)[:100] if value else "Not Found"
-                table_data.append(
-                    {
-                        "Parameter": field_display,
-                        "Status": status,
-                        "Value": value_display,
-                    }
-                )
-
-            # Use native Streamlit dataframe instead of HTML table
-            df = pd.DataFrame(table_data)
-            st.dataframe(
-                df,
-                column_config={
-                    "Parameter": st.column_config.TextColumn("Parameter", width="medium"),
-                    "Status": st.column_config.TextColumn("Status", width="small"),
-                    "Value": st.column_config.TextColumn("Value", width="large"),
-                },
-                hide_index=True,
-                use_container_width=True
+    # ---------------------------------------------------------
+    # 4. Raw Data Expander
+    # ---------------------------------------------------------
+    with st.expander("📂 View Raw Data & Technical Details"):
+        t1, t2 = st.tabs(["📝 Raw Text", "📊 Full Data"])
+        
+        with t1:
+            ocr_text = result.get("ocr_result", "No text found")
+            st.text_area("OCR Output", ocr_text, height=200, key=f"ocr_area_{context}_{idx}")
+            
+            # Download Button
+            st.download_button(
+                label="⬇️ Download Raw Text",
+                data=ocr_text,
+                file_name=f"raw_{filename}.txt",
+                mime="text/plain",
+                key=f"dl_raw_{context}_{idx}"
             )
-
-            st.markdown("---")
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("✅ Present", present_count)
-            with c2:
-                st.metric("❌ Missing", missing_count)
-            with c3:
-                completeness = (present_count / len(EXPECTED_FIELDS) * 100) if EXPECTED_FIELDS else 0
-                st.metric("Completeness", f"{completeness:.1f}%")
-
-        with tab2:
-            st.markdown("### Compliance Details")
-            if compliance_status == "COMPLIANT":
-                st.success(" **FULLY COMPLIANT**")
-            elif compliance_status == "ERROR":
-                st.error("⚠️ Processing error – compliance not computed.")
-            else:
-                st.error(f"❌ NON-COMPLIANT – {len(violations)} violations")
-
-            for i, v in enumerate(violations, start=1):
-                if isinstance(v, dict):
-                    severity = v.get("severity", "MEDIUM").upper()
-                    rule_id = v.get("rule_id", f"VIOLATION_{i}")
-                    desc = v.get("description", "No description")
-                else:
-                    # Non-dict violation entries: coerce to a readable form
-                    severity = "MEDIUM"
-                    rule_id = f"VIOLATION_{i}"
-                    desc = str(v)
-
-                if severity == "CRITICAL":
-                    st.error(f"**{i}. {rule_id}** (Critical)")
-                elif severity == "HIGH":
-                    st.warning(f"**{i}. {rule_id}** (High)")
-                else:
-                    st.info(f"**{i}. {rule_id}** (Medium)")
-                st.write("   " + desc)
-
-        with tab3:
-            st.markdown("### 📝 Raw Extracted Text (OCR Output)")
-            ocr_text = result.get("ocr_result", "")
-            if ocr_text:
-                st.text_area(
-                    "Extracted Text from Image",
-                    value=ocr_text,
-                    height=300,
-                    disabled=True,
-                    help="This is the raw text extracted from the image using OCR",
-                    key=f"ocr_text_{context}_{idx}_{filename}"
-                )
-                st.info(f"📊 Word count: {len(ocr_text.split())} words | Character count: {len(ocr_text)} chars")
-            else:
-                st.warning("No text was extracted from the image.")
-
-        with tab4:
-            c1, c2 = st.columns(2)
-            with c1:
-                st.write("**Processing Information:**")
-                st.write(f"- Processing Time: {result.get('processing_time', 0):.2f}s")
-                fs = result.get("file_size", 0)
-                if fs:
-                    st.write(f"- File Size: {fs / 1024:.1f} KB")
-                st.write(f"- Timestamp: {result.get('timestamp', 'Unknown')}")
-                if "ocr_debug" in result:
-                    st.write(f"- OCR Info: {result['ocr_debug']}")
-
-            with c2:
-                st.write("**Image Information:**")
-                dims = result.get("image_dimensions", (0, 0))
-                st.write(f"- Dimensions: {dims[0]} × {dims[1]} px")
-                st.write(f"- Method: {result.get('method', 'Unknown')}")
+            
+        with t2:
+            st.json(result)
 
 # -----------------------------------------------------------------------------
 # EXPORT

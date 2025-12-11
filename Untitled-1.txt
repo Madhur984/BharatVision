@@ -1,0 +1,2 @@
+https://madhur984-bharatvision-ml-api.hf.space/api/ocr/surya
+https://madhur984-bharatvision-ml-api.hf.space/api/ai/ask
