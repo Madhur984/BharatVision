@@ -19,7 +19,8 @@ async def extract_ocr(file: UploadFile = File(...)):
         contents = await file.read()
         
         # TrOCR Endpoint
-        API_URL = f"https://router.huggingface.co/models/{settings.OCR_MODEL}"
+        # Switch to standard api-inference URL as router.huggingface.co can be unstable/deprecated
+        API_URL = f"https://api-inference.huggingface.co/models/{settings.OCR_MODEL}"
         headers = {"Authorization": f"Bearer {settings.HF_TOKEN}"}
         
         response = requests.post(API_URL, headers=headers, data=contents)
