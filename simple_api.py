@@ -204,10 +204,10 @@ async def extract_ocr(file: UploadFile = File(...)):
                 
                 # Direct call to the new router endpoint to avoid 410 Gone errors
                 # The old api-inference.huggingface.co is deprecated for this model
-                API_URL = "https://router.huggingface.co/hf-inference/models/microsoft/trocr-base-printed"
+                API_URL = "https://router.huggingface.co/models/microsoft/trocr-base-printed"
                 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
                 
-                logger.info(f"Sending request to HF Router: {API_URL}")
+                logger.info(f"Sending request to HF Router (v2.2 - fixed URL): {API_URL}")
                 
                 response = requests.post(API_URL, headers=headers, data=contents)
                 
