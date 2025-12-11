@@ -1514,138 +1514,88 @@ with tab1:
                                     for i, product in enumerate(recent_products):
                                         st.markdown(f"#### Product {i+1}: {product.title[:60]}")
                                         
-                                        col_img, col_info, col_rules = st.columns([1.2, 1.8, 2])
+                                        # ---------------------------------------------------------
+                                        # New Simplified UI (Matches Upload Page)
+                                        # ---------------------------------------------------------
                                         
-                                        # Product Image with fallback
-                                        with col_img:
-                                            st.markdown("**Product Image:**")
+                                        # 1. Header & Status
+                                        comp_score = getattr(product, 'compliance_score', 0) or 0
+                                        comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                                        
+                                        if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 99):
+                                            st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
+                                        elif comp_status == "ERROR":
+                                            st.error(f"🔴 **ERROR** (Score: {comp_score})")
+                                        else:
+                                            st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
+
+                                        # 2. Mandatory Fields Grid
+                                        st.markdown("#### 🏛️ Mandatory Declarations")
+                                        
+                                        # Prepare data
+                                        p_data = {
+                                            "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
+                                            "country_of_origin": getattr(product, 'country_of_origin', ''),
+                                            "net_quantity": getattr(product, 'net_quantity', ''),
+                                            "mrp": getattr(product, 'mrp', ''),
+                                            "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
+                                            "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
+                                        }
+                                        # Fill missing date/care from flat attributes if available & not in declarations
+                                        if not p_data['date_of_manufacture']:
+                                            p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '') # Fallback
+                                        
+                                        field_map = [
+                                            {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
+                                            {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
+                                            {"label": "Net Quantity", "key": "net_quantity", "icon": "⚖️"},
+                                            {"label": "Mfg / Import Date", "key": "date_of_manufacture", "icon": "📅"},
+                                            {"label": "MRP (Max Retail Price)", "key": "mrp", "icon": "💰"},
+                                            {"label": "Customer Care Details", "key": "customer_care_details", "icon": "📞"},
+                                        ]
+
+                                        grid_cols = st.columns(2)
+                                        for idx, item in enumerate(field_map):
+                                            val = p_data.get(item["key"])
+                                            # format value
+                                            display_val = str(val) if (val and str(val).lower() != "none" and str(val).strip()) else "❌ Not Found"
+                                            is_missing = "❌" in display_val
+                                            
+                                            border_color = "#ff4b4b" if is_missing else "#09ab3b"
+                                            bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
+
+                                            with grid_cols[idx % 2]:
+                                                st.markdown(f"""
+                                                <div style="border: 1px solid {border_color}; background-color: {bg_color}; padding: 8px; border-radius: 5px; margin-bottom: 8px;">
+                                                    <div style="font-weight:bold; font-size:0.85em; color:#555;">{item['icon']} {item['label']}</div>
+                                                    <div style="font-size:1em; color: black; word-wrap: break-word;">{display_val}</div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                        
+                                        # 3. Violations
+                                        issues = getattr(product, 'issues_found', []) or []
+                                        if issues:
+                                            st.markdown("#### ⚠️ Violations")
+                                            for issue in issues:
+                                                st.warning(f"• {issue}")
+
+                                        # 4. Raw Data Expander
+                                        with st.expander("📂 View Raw Data & Technical Details"):
+                                            st.write(f"**Title:** {product.title}")
+                                            st.write(f"**Brand:** {product.brand}")
+                                            st.write(f"**Price:** {product.price}")
+                                            st.markdown("---")
+                                            st.markdown("**OCR Text:**")
+                                            ocr_txt = getattr(product, 'ocr_text', '') or "No OCR Text"
+                                            st.text_area("OCR Result", ocr_txt, height=150)
+                                            st.download_button("Download OCR Text", ocr_txt, file_name=f"ocr_{i}.txt")
+                                            
+                                            st.markdown("**Full Product Object:**")
+                                            # Convert SimpleNamespace or object to dict for display
                                             try:
-                                                if product.image_urls and len(product.image_urls) > 0:
-                                                    # Try to display the first image
-                                                    img_url = product.image_urls[0]
-                                                    if img_url and isinstance(img_url, str) and len(img_url) > 5:
-                                                        try:
-                                                            # Fix common image URL issues
-                                                            if img_url.startswith('//'):
-                                                                img_url = 'https:' + img_url
-                                                            elif not img_url.startswith('http'):
-                                                                img_url = 'https://' + img_url
-                                                            
-                                                            st.image(img_url, width='stretch', caption=f"Product #{i+1}")
-                                                        except Exception as img_err:
-                                                            # Fallback: show colored placeholder with product info
-                                                            st.markdown(f"""
-                                                            <div style="
-                                                                width: 100%;
-                                                                height: 180px;
-                                                                background: #3866D5;
-                                                                border-radius: 10px;
-                                                                display: flex;
-                                                                align-items: center;
-                                                                justify-content: center;
-                                                                color: #FFFFFF;
-                                                                font-size: 48px;
-                                                                text-align: center;
-                                                                padding: 10px;
-                                                                word-wrap: break-word;
-                                                            ">
-                                                            📦
-                                                            </div>
-                                                            """, unsafe_allow_html=True)
-                                                            st.caption(f"Image URL: {img_url[:40]}...")
-                                                    else:
-                                                        st.info("📷 Invalid image URL")
-                                                else:
-                                                    st.markdown(f"""
-                                                    <div style="
-                                                        width: 100%;
-                                                        height: 180px;
-                                                        background: #f0f0f0;
-                                                        border-radius: 10px;
-                                                        border: 2px dashed #ccc;
-                                                        display: flex;
-                                                        align-items: center;
-                                                        justify-content: center;
-                                                        color: #999;
-                                                        font-size: 14px;
-                                                    ">
-                                                    No Image Available
-                                                    </div>
-                                                    """, unsafe_allow_html=True)
-                                            except Exception as e:
-                                                st.error(f"📷 Image error: {str(e)[:40]}")
-                                        
-                                        # Product Info
-                                        with col_info:
-                                            st.markdown("**📋 Product Details:**")
-                                            st.write(f"**Title:** {product.title[:70]}")
-                                            st.write(f"🏪 **Platform:** `{product.platform.upper()}`")
-                                            st.write(f"💰 **Price:** ₹{product.price if product.price else 'N/A'}")
-                                            st.write(f"🏢 **Brand:** {product.brand or 'N/A'}")
-                                            st.write(f"📁 **Category:** {product.category or 'N/A'}")
-                                            st.write(f"⭐ **Rating:** {product.rating or 'N/A'}")
-                                            
-                                            # Show Legal Metrology fields if extracted
-                                            if hasattr(product, 'net_quantity') and product.net_quantity:
-                                                st.write(f"📦 **Net Qty:** {product.net_quantity}")
-                                            if hasattr(product, 'country_of_origin') and product.country_of_origin:
-                                                st.write(f"🌍 **Origin:** {product.country_of_origin}")
-                                            if hasattr(product, 'manufacturer_details') and product.manufacturer_details:
-                                                st.write(f"🏭 **Mfg:** {product.manufacturer_details[:50]}...")
-                                            
-                                            if hasattr(product, 'product_url') and product.product_url:
-                                                st.markdown(f"🔗 **[View Full Product]({product.product_url})**", unsafe_allow_html=True)
-                                            
-                                            # Show description in expander
-                                            if product.description:
-                                                with st.expander("📝 Full Description"):
-                                                    st.write(product.description[:500])
-                                            
-                                            # Show OCR text if available
-                                            if hasattr(product, 'ocr_text') and product.ocr_text:
-                                                with st.expander("🔍 OCR Extracted Text"):
-                                                    st.text(product.ocr_text[:300])
-                                        
-                                        # Compliance Rules Check - Use actual validation results
-                                        with col_rules:
-                                            st.markdown("**⚖️ Legal Metrology Compliance:**")
-                                            
-                                            # Use actual validation result if available
-                                            if hasattr(product, 'validation_result') and product.validation_result:
-                                                val_result = product.validation_result
-                                                rule_results = val_result.get('rule_results', [])
-                                                
-                                                # Show each rule result
-                                                for rule in rule_results[:8]:  # Show top 8 rules
-                                                    rule_id = rule.get('rule_id', 'Unknown')
-                                                    violated = rule.get('violated', False)
-                                                    status_icon = "❌" if violated else "✅"
-                                                    field = rule.get('field', '')
-                                                    st.write(f"{status_icon} {field.replace('_', ' ').title()}")
-                                                
-                                                # Use actual scores
-                                                score = product.compliance_score or 0
-                                                status_text_val = product.compliance_status or "UNKNOWN"
-                                                total_checks = val_result.get('total_rules', 12)
-                                                violations = val_result.get('violations_count', 0)
-                                                compliant_count = total_checks - violations
-                                            else:
-                                                # Fallback to basic checks
-                                                checks = {}
-                                                checks["Product Title"] = len(product.title or '') > 5
-                                                checks["Brand/Manufacturer"] = bool(product.brand)
-                                                checks["Price/MRP Display"] = bool(product.price)
-                                                
-                                                description_lower = (product.description or '').lower()
-                                                has_quantity = any(word in description_lower for word in ['kg', 'gm', 'ml', 'litre', 'g', 'l'])
-                                                checks["Net Quantity"] = has_quantity
-                                                checks["Product Image(s)"] = bool(product.image_urls and len(product.image_urls) > 0)
-                                                
-                                                has_mfg_info = any(word in description_lower for word in ['made', 'manufactured', 'country', 'origin'])
-                                                checks["Manufacturing Info"] = has_mfg_info
-                                                
-                                                has_expiry = any(word in description_lower for word in ['expiry', 'best before', 'mfg date'])
-                                                checks["Expiry/Date Info"] = has_expiry
+                                                st.json(product.__dict__)
+                                            except:
+                                                st.write(str(product))
                                                 
                                                 for rule, result in checks.items():
                                                     status = "✅" if result else "❌"
@@ -1677,39 +1627,25 @@ with tab1:
                                                 border-right: 5px solid #3866D5;
                                                 padding: 16px;
                                                 border-radius: 12px;
-                                                margin: 12px 0;
-                                                color: #000000;
-                                            ">
-                                            <strong>{status_color} Score: {score:.1f}% ({compliant_count}/{total_checks})</strong><br/>
-                                            Status: {status_text_val}
-                                            </div>
-                                            """, unsafe_allow_html=True)
-                                            
-                                            # Show issues if any
-                                            if hasattr(product, 'issues_found') and product.issues_found:
-                                                with st.expander("⚠️ Issues Found"):
-                                                    for issue in product.issues_found[:5]:
-                                                        st.warning(issue[:100])
-                                            
-                                            # Save to database
-                                            try:
-                                                user = st.session_state.user
+                                        # Save to database (Silent)
+                                        try:
+                                            user = st.session_state.get('user', {})
+                                            if user:
                                                 db.save_compliance_check(
-                                                    user_id=user.get('user_id'),
-                                                    username=user.get('username'),
-                                                    product_title=product.title,
-                                                    platform=product.platform,
-                                                    score=score,
-                                                    status=status_text_val,
+                                                    user_id=user.get('id', 1),
+                                                    username=user.get('username', 'unknown'),
+                                                    product_title=product.title or "Unknown",
+                                                    platform=product.platform or "Generic",
+                                                    score=comp_score,
+                                                    status=comp_status,
                                                     details=json.dumps({
-                                                        'checks': checks,
-                                                        'price': product.price,
-                                                        'brand': product.brand,
-                                                        'category': product.category
+                                                        'mrp': getattr(product, 'mrp', ''),
+                                                        'brand': getattr(product, 'brand', ''),
+                                                        'issues': getattr(product, 'issues_found', [])
                                                     })
                                                 )
-                                            except Exception as db_err:
-                                                st.warning(f"Could not save to database: {str(db_err)}")
+                                        except Exception:
+                                            pass
                                         
                                         st.markdown("---")
                             
