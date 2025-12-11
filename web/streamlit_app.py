@@ -268,21 +268,31 @@ with st.sidebar:
             # don't break if auth backend has issues
             pass
 
+    # Define all available pages
+    all_pages = [
+        "Dashboard",
+        "Ingest",
+        "Extraction",
+        "Validation",
+        "Analytics",
+        "User Dashboard",
+        "Admin Dashboard",
+        "Help",
+        "ERP",
+        "Web Crawler",
+        "Search",
+    ]
+    
+    # Filter based on role
+    user_role = st.session_state.user.get("role", "Guest") if st.session_state.user else "Guest"
+    
+    if user_role != "Administrator":
+        if "Admin Dashboard" in all_pages:
+            all_pages.remove("Admin Dashboard")
+            
     page = st.radio(
         "Navigation",
-        [
-            "Dashboard",
-            "Ingest",
-            "Extraction",
-            "Validation",
-            "Analytics",
-            "User Dashboard",
-            "Admin Dashboard",
-            "Help",
-            "ERP",
-            "Web Crawler",
-            "Search",
-        ],
+        all_pages,
         index=0,
         label_visibility="collapsed",
     )

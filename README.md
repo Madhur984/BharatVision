@@ -526,4 +526,5 @@ For enterprise deployment, custom features, or consulting services, please conta
 **🎯 Built for automated Legal Metrology compliance validation**  
 **🇮🇳 Made with ❤️ in India for the Indian retail ecosystem**
 
-*Empowering businesses with AI-driven compliance automation*
+*Empowering businesses with AI-driven compliance automation*#   B h a r a t V i s i o n  
+ 

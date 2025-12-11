@@ -22,7 +22,7 @@ class MLProcessor:
         self.detection_predictor = None
         self.nlp_tokenizer = None
         self.nlp_model = None
-        self.device = 'cpu' # Default to CPU for cloud unless GPU is available
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def load_models(self):
         """Load all models. Call this on startup."""

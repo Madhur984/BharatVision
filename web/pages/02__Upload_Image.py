@@ -549,6 +549,17 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
                 confidence=100.0 if result["compliance_status"] == "COMPLIANT" else 0.0,
                 processing_time=result["processing_time"],
             )
+
+            # Save Compliance Check
+            db.save_compliance_check(
+                user_id=user_id,
+                username=username,
+                product_title=result.get("filename", "Unknown"),
+                platform="Upload", # Source
+                score=100.0 if result["compliance_status"] == "COMPLIANT" else 0.0, # Simple score
+                status=result["compliance_status"],
+                details=json.dumps(result.get("violations", []))
+            )
         except Exception:
             pass
         
