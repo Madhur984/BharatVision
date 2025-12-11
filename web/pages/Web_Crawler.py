@@ -1597,36 +1597,7 @@ with tab1:
                                             except:
                                                 st.write(str(product))
                                                 
-                                                for rule, result in checks.items():
-                                                    status = "✅" if result else "❌"
-                                                    st.write(f"{status} {rule}")
-                                                
-                                                compliant_count = sum(1 for v in checks.values() if v)
-                                                total_checks = len(checks)
-                                                score = (compliant_count / total_checks * 100) if total_checks > 0 else 0
-                                                
-                                                if score >= 70:
-                                                    status_text_val = "COMPLIANT"
-                                                elif score >= 50:
-                                                    status_text_val = "PARTIAL"
-                                                else:
-                                                    status_text_val = "NON-COMPLIANT"
-                                            
-                                            # Status with color coding
-                                            if status_text_val == "COMPLIANT":
-                                                status_color = "🟢"
-                                            elif status_text_val == "PARTIAL":
-                                                status_color = "🟡"
-                                            else:
-                                                status_color = "🔴"
-                                            
-                                            st.markdown(f"""
-                                            <div style="
-                                                background: #FFFFFF;
-                                                border-left: 5px solid #3866D5;
-                                                border-right: 5px solid #3866D5;
-                                                padding: 16px;
-                                                border-radius: 12px;
+
                                         # Save to database (Silent)
                                         try:
                                             user = st.session_state.get('user', {})
