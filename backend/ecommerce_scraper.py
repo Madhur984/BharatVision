@@ -218,13 +218,52 @@ class EcommerceScraper:
         return text
 
     def _extract_image_urls(self, soup, base_url) -> List[str]:
+        """
+        Extract only product listing images, filtering out UI elements, logos, and icons.
+        """
         urls = set()
         for img in soup.find_all('img'):
             src = img.get('src') or img.get('data-src') or img.get('data-old-hires')
-            if src and not src.startswith('data:'):
-                full_url = urljoin(base_url, src)
-                if 'sprite' not in full_url and 'icon' not in full_url and 'transparent' not in full_url:
-                    urls.add(full_url)
+            if not src or src.startswith('data:'):
+                continue
+                
+            full_url = urljoin(base_url, src)
+            
+            # Filter out common non-product images
+            skip_patterns = [
+                'sprite', 'icon', 'transparent', 'logo', 'banner', 
+                'header', 'footer', 'nav', 'menu', 'button',
+                'arrow', 'search', 'cart', 'user', 'profile',
+                '1x1', 'pixel', 'blank', 'placeholder'
+            ]
+            
+            # Check if URL contains any skip patterns
+            if any(pattern in full_url.lower() for pattern in skip_patterns):
+                continue
+            
+            # Check image dimensions from HTML attributes (filter tiny images)
+            width = img.get('width')
+            height = img.get('height')
+            if width and height:
+                try:
+                    w, h = int(width), int(height)
+                    # Skip images smaller than 100x100 (likely UI elements)
+                    if w < 100 or h < 100:
+                        continue
+                except:
+                    pass
+            
+            # Only include images from product-related paths
+            product_indicators = ['product', 'item', 'image', 'media', 'img', 'assets']
+            if any(indicator in full_url.lower() for indicator in product_indicators):
+                urls.add(full_url)
+            elif 'amazon' in base_url and 'images-amazon' in full_url:
+                # Amazon-specific: their product images are in images-amazon domain
+                urls.add(full_url)
+            elif 'flipkart' in base_url and ('.jpg' in full_url or '.jpeg' in full_url or '.webp' in full_url):
+                # Flipkart: include all image formats from their CDN
+                urls.add(full_url)
+                
         return list(urls)
 
     def _download_image(self, url: str, prefix: str) -> Optional[str]:
