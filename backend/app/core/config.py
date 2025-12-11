@@ -15,7 +15,7 @@ class Settings:
         HF_TOKEN = st.secrets["huggingface"].get("token")
         
     # Models
-    LLM_MODEL: str = "google/gemma-2-9b-it"
+    LLM_MODEL: str = "meta-llama/Llama-3.2-11B-Vision-Instruct"
     OCR_MODEL: str = "microsoft/trocr-base-printed"
     
     # Environment
