@@ -235,7 +235,7 @@ class BatchProcessor:
             start_time = time.time()
             
             # OCR Processing via API
-            ML_API_URL = os.environ.get("ML_API_URL", "http://localhost:8000")
+            ML_API_URL = os.environ.get("ML_API_URL", "https://madhur984-bharatvision-ml-api.hf.space")
             ocr_result = ""
             
             with open(file_path, "rb") as f:

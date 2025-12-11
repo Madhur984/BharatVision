@@ -89,3 +89,5 @@ bharatvision_flutter/jdk-*
 *.bin
 .ollama/
 manual_debug_surya.py
+*.zip
+bharatvision_flutter/jdk*
