@@ -904,17 +904,98 @@ with tab1:
                 product = crawler.extract_product_from_url(url)
                 if product:
                     st.success("Product extracted!")
-                    st.write(product)
-                    # Extract all images and run OCR
-                    ocr_texts = []
-                    if hasattr(product, 'image_urls') and product.image_urls:
-                        for img_url in product.image_urls:
-                            ocr_text = extract_text_with_ocr(img_url, st.session_state.get('ocr_integrator'))
-                            if ocr_text:
-                                ocr_texts.append(ocr_text)
-                    if ocr_texts:
-                        st.markdown("**OCR Extracted Text from Images:**")
-                        st.text("\n---\n".join(ocr_texts))
+                    
+                    # ---------------------------------------------------------
+                    # New Simplified UI (Matches Upload Page)
+                    # ---------------------------------------------------------
+                    
+                    # 1. Header & Status
+                    comp_score = getattr(product, 'compliance_score', 0) or 0
+                    comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                    
+                    if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 99):
+                        st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
+                    elif comp_status == "ERROR":
+                        st.error(f"🔴 **ERROR** (Score: {comp_score})")
+                    else:
+                        st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
+
+                    # 2. Mandatory Fields Grid
+                    st.markdown("#### 🏛️ Mandatory Declarations")
+                    
+                    # Prepare data
+                    p_data = {
+                        "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
+                        "country_of_origin": getattr(product, 'country_of_origin', ''),
+                        "net_quantity": getattr(product, 'net_quantity', ''),
+                        "mrp": getattr(product, 'mrp', ''),
+                        "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
+                        "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
+                    }
+                    # Fill missing date/care from flat attributes if available & not in declarations
+                    if not p_data['date_of_manufacture']:
+                        p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '') # Fallback
+                    
+                    field_map = [
+                        {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
+                        {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
+                        {"label": "Net Quantity", "key": "net_quantity", "icon": "⚖️"},
+                        {"label": "Mfg / Import Date", "key": "date_of_manufacture", "icon": "📅"},
+                        {"label": "MRP (Max Retail Price)", "key": "mrp", "icon": "💰"},
+                        {"label": "Customer Care Details", "key": "customer_care_details", "icon": "📞"},
+                    ]
+
+                    grid_cols = st.columns(2)
+                    for idx, item in enumerate(field_map):
+                        val = p_data.get(item["key"])
+                        # format value
+                        display_val = str(val) if (val and str(val).lower() != "none" and str(val).strip()) else "❌ Not Found"
+                        is_missing = "❌" in display_val
+                        
+                        border_color = "#ff4b4b" if is_missing else "#09ab3b"
+                        bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
+
+                        with grid_cols[idx % 2]:
+                            st.markdown(f"""
+                            <div style="border: 1px solid {border_color}; background-color: {bg_color}; padding: 8px; border-radius: 5px; margin-bottom: 8px;">
+                                <div style="font-weight:bold; font-size:0.85em; color:#555;">{item['icon']} {item['label']}</div>
+                                <div style="font-size:1em; color: black; word-wrap: break-word;">{display_val}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    # 3. Violations
+                    issues = getattr(product, 'issues_found', []) or []
+                    if issues:
+                        st.markdown("#### ⚠️ Violations")
+                        for issue in issues:
+                            st.warning(f"• {issue}")
+
+                    # 4. Raw Data Expander
+                    with st.expander("📂 View Raw Data & Technical Details"):
+                        st.write(f"**Title:** {product.title}")
+                        st.write(f"**Brand:** {product.brand}")
+                        st.write(f"**Price:** {product.price}")
+                        st.markdown("---")
+                        st.markdown("**OCR Text:**")
+                        
+                        # Gather OCR texts
+                        ocr_texts = []
+                        if hasattr(product, 'image_urls') and product.image_urls:
+                            for img_url in product.image_urls:
+                                # We might re-run OCR or use cached if available. 
+                                # Ideally crawler already populated product.ocr_text or similar.
+                                # But per legacy code it ran it here. We will preserve extraction if needed or check existing.
+                                pass 
+                                
+                        ocr_txt = getattr(product, 'ocr_text', '') or getattr(product, 'full_page_text', '') or "No OCR Text"
+                        st.text_area("OCR Result", ocr_txt, height=200)
+                        
+                        st.markdown("**Full Product Object:**")
+                        try:
+                            st.json(product.__dict__)
+                        except:
+                            st.write(str(product))
+
                 else:
                     st.error("Failed to extract product info from the link.")
 
