@@ -753,11 +753,17 @@ def display_single_result_detailed(result: Dict[str, Any], show_expander: bool =
         key = item["key"]
         val = refined_data.get(key)
         
+        
         # Check alternate key if main missing (e.g. Mfg vs Import date)
         if (not val or val == "Not Found") and "alt_key" in item:
             val = refined_data.get(item["alt_key"])
 
-        display_val = val if (val and val.lower() != "none") else "❌ Not Found"
+        # Handle boolean values from Tesseract validation
+        if isinstance(val, bool):
+            display_val = "✅ Found" if val else "❌ Not Found"
+        else:
+            display_val = val if (val and str(val).lower() != "none") else "❌ Not Found"
+        
         is_missing = "❌" in display_val
         
         # Styling
