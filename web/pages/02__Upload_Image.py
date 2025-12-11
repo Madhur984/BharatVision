@@ -478,59 +478,71 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
         if image.mode != 'RGB':
             image = image.convert('RGB')
             
-        # Refiner and Validator still needed locally for final pass? 
-        # Actually API does structuring, but maybe we want to keep Refiner/Validator logic 
-        # decoupled or move it all to API?
-        # The prompt said "use only apis for all the ml models". 
-        # Refiner uses NLP (ML) and Validator uses Logic.
-        # Ideally Refiner should be in API too.
-        # My core.py has structuring logic.
-        
         start_time = time.time()
-        st.info(f"Processing {uploaded_file.name} via Full Hybrid API...")
+        st.info(f"Processing {uploaded_file.name} with Tesseract OCR...")
         
-        # Convert image to bytes
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='JPEG')
-        img_byte_arr.seek(0)
-        file_bytes = img_byte_arr.getvalue()
-        
-        # Call Full Pipeline API (OCR + Hybrid Validation)
+        # Use Tesseract OCR directly
         try:
-            from web.api_client import get_api_client
-            client = get_api_client()
+            import pytesseract
             
-            # This calls /api/process/image which runs OCR -> Compliance (Validator + LLM)
-            api_result = client.process_image_full(file_bytes, uploaded_file.name)
+            # Extract text using Tesseract
+            ocr_text = pytesseract.image_to_string(image)
+            st.success("✅ OCR extraction successful")
             
-            if not api_result.get("success"):
-                raise Exception(f"API Error: {api_result.get('error', 'Unknown error')}")
-                
-            st.success("✅ Hybrid processing successful")
-            
-        except Exception as api_err:
-             raise Exception(f"Failed to contact ML API: {api_err}")
-             
-        # Parse API Result
-        # Structure expected from /api/process/image:
-        # { success, ocr: {text, ...}, compliance: {compliant, violations, full_report: {rule_results...}}, text }
+        except Exception as ocr_err:
+            raise Exception(f"Tesseract OCR failed: {ocr_err}")
         
-        ocr_result_obj = api_result.get("ocr", {})
-        ocr_text = api_result.get("text", "") or ocr_result_obj.get("text", "")
+        # Validate against Legal Metrology rules
+        validation_results = {
+            "manufacturer_details": False,
+            "net_quantity": False,
+            "mrp": False,
+            "customer_care_details": False,
+            "date_of_manufacture": False,
+            "country_of_origin": False
+        }
         
-        compliance_res = api_result.get("compliance", {})
-        violations = compliance_res.get("violations", [])
-        is_compliant = compliance_res.get("compliant", False)
+        text_lower = ocr_text.lower()
         
-        # Extract structured data from the validation report if available (from LLM correction)
-        # The backend 'check_compliance' returns 'full_report' -> 'rule_results'
-        # But we need the actual data values (MRP found etc).
-        # Currently check_compliance doesn't return the *corrected data* explicitly in the top level.
-        # But wait, in simple_api.py check_compliance returns 'full_report' which is the validator output.
-        # Validator output doesn't contain the data.
+        # 1. Manufacturer
+        if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
+            validation_results["manufacturer_details"] = True
         
-        # Extract structured data from the validation report (which now includes LLM corrections)
-        refined_data = compliance_res.get("data", {})
+        # 2. Net Quantity
+        import re
+        if re.search(r'\d+\s*(kg|g|gm|ml|l|litre|ltr)', text_lower):
+            validation_results["net_quantity"] = True
+        
+        # 3. MRP
+        if any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
+            validation_results["mrp"] = True
+        
+        # 4. Customer Care
+        if any(word in text_lower for word in ['customer care', 'care', 'contact', '@', 'phone']):
+            validation_results["customer_care_details"] = True
+        
+        # 5. Date of Manufacture
+        if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
+            validation_results["date_of_manufacture"] = True
+        
+        # 6. Country of Origin
+        if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
+            validation_results["country_of_origin"] = True
+        
+        # Calculate compliance
+        compliant_count = sum(validation_results.values())
+        score = (compliant_count / 6) * 100
+        is_compliant = score >= 100
+        
+        # Create violations list
+        violations = []
+        for field, is_present in validation_results.items():
+            if not is_present:
+                violations.append({
+                    "field": field,
+                    "description": f"{field.replace('_', ' ').title()} is missing",
+                    "violated": True
+                })
         
         processing_time = time.time() - start_time
         
@@ -539,14 +551,14 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
             'filename': uploaded_file.name,
             'file_size': uploaded_file.size,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'method': 'Hybrid API',
+            'method': 'Tesseract OCR',
             'processing_time': processing_time,
             'ocr_result': ocr_text,
-            'refined_data': refined_data, 
+            'refined_data': validation_results, 
             'violations': violations,
             'compliance_status': 'COMPLIANT' if is_compliant else 'NON_COMPLIANT',
-            'image_dimensions': image.size,
-            'api_full_response': api_result # Store full response for debugging
+            'compliance_score': score,
+            'image_dimensions': image.size
         }
         
         # Save to DB
@@ -560,7 +572,7 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
                 filename=result["filename"],
                 file_size=result["file_size"],
                 extracted_text=result.get("ocr_result", "")[:1000],
-                confidence=100.0 if result["compliance_status"] == "COMPLIANT" else 0.0,
+                confidence=score,
                 processing_time=result["processing_time"],
             )
 
@@ -569,8 +581,8 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
                 user_id=user_id,
                 username=username,
                 product_title=result.get("filename", "Unknown"),
-                platform="Upload", # Source
-                score=compliance_res.get("score", 0),
+                platform="Upload",
+                score=score,
                 status=result["compliance_status"],
                 details=json.dumps(result.get("violations", []))
             )
@@ -583,7 +595,7 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
         return {
             'filename': uploaded_file.name,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'method': 'File Upload',
+            'method': 'Tesseract OCR',
             'error': str(e),
             'compliance_status': 'ERROR'
         }
