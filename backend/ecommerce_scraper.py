@@ -11,7 +11,8 @@ import time
 from typing import Dict, List, Any, Optional
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from huggingface_hub import InferenceClient
+from backend.app.services.compliance import compliance_service
+from backend.app.schemas.compliance import ComplianceRequest
 from datetime import datetime
 from pathlib import Path
 
@@ -167,8 +168,13 @@ class EcommerceScraper:
         # Combine all text for validation (Title + Desc + OCR)
         combined_text = f"Title: {title}\nPrice: {price}\nDescription: {description}\n\nOCR Text From Images:\n{full_ocr_text}"
 
-        # 5. Validate Compliance (Gemma 2 via API)
-        validation_res = self._validate_with_gemma(combined_text)
+        # 5. Validate Compliance (Hybrid Service)
+        # Pre-populate some data from scraping to help the validator
+        initial_data = {
+            "mrp": price, # We already extracted price!
+            "product_name": title
+        }
+        validation_res = self._validate_with_gemma(combined_text, product_data=initial_data)
         
         # 6. Save to DB
         product_id = self._save_results(
@@ -279,85 +285,51 @@ class EcommerceScraper:
             logger.error(f"Failed to run Surya OCR via API: {e}")
             return ""
 
-    def _validate_with_gemma(self, text: str) -> Dict[str, Any]:
+    def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Validates text using the Cloud API (/api/ai/ask) instead of local client.
-        This ensures we use 'both APIs' (OCR and LLM) from the cloud.
+        Validates text using the new Hybrid Compliance Service.
         """
-        prompt = f"""
-You are a Legal Metrology Compliance Officer. Analyze the following product text (extracted from an e-commerce page and images) and verify if it contains the following 6 MANDATORY declarations.
-
-MANDATORY DECLARATIONS:
-1. Manufacturer Name & Address (Must include name and full address)
-2. Net Quantity (Must be standard units like kg, g, ml, L, pc)
-3. MRP (Maximum Retail Price)
-4. Consumer Care Details (Phone or Email)
-5. Date of Manufacture (or Packing/Import date)
-6. Country of Origin
-
-TEXT TO ANALYZE:
-{text[:4000]} 
-
-Evaluate each point strictly. valid=true if present and clear, valid=false if missing or ambiguous.
-Return ONLY a valid JSON object in the following format:
-{{
-  "manufacturer": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "net_quantity": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "mrp": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "consumer_care": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "date_of_manufacture": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "country_of_origin": {{ "valid": boolean, "value": "extracted text or MISSING" }},
-  "compliance_score": number (0-100 based on how many valid)
-}}
-"""
         try:
-            # Use the same API Base URL for validation
-            api_url = f"{self.api_base_url.rstrip('/')}/api/ai/ask"
+            # Construct Request
+            req = ComplianceRequest(
+                text=text,
+                product_data=product_data or {}
+            )
             
-            # Construct payload
-            payload = {
-                "question": prompt,
-                "context": "Legal Metrology Compliance Check"
+            # Call Service
+            res_obj = compliance_service.check_compliance(req)
+            
+            # Map Response to Legacy Format for DB Compatibility
+            mapped_res = {
+                "compliance_score": res_obj.score,
+                "full_analysis": json.dumps(res_obj.full_report),
+                "manufacturer": {"valid": True, "value": res_obj.data.get("manufacturer_details", "Found")},
+                "net_quantity": {"valid": True, "value": res_obj.data.get("net_quantity", "Found")},
+                "mrp": {"valid": True, "value": res_obj.data.get("mrp", "Found")},
+                "consumer_care": {"valid": True, "value": res_obj.data.get("customer_care_details", "Found")},
+                "date_of_manufacture": {"valid": True, "value": res_obj.data.get("date_of_manufacture", "Found")},
+                "country_of_origin": {"valid": True, "value": res_obj.data.get("country_of_origin", "Found")},
             }
             
-            response = requests.post(api_url, json=payload, timeout=120)
+            # Mark fields as invalid if they appear in violations
+            for v in res_obj.violations:
+                field = v.field
+                if field in mapped_res:
+                     mapped_res[field]["valid"] = False
+                     mapped_res[field]["value"] = "MISSING"
+                
+                # Handle mapped names
+                if field == "manufacturer_details": mapped_res["manufacturer"]["valid"] = False
+                if field == "customer_care_details": mapped_res["consumer_care"]["valid"] = False
             
-            if response.status_code == 200:
-                result = response.json()
-                if result.get("success"):
-                     # The API returns 'answer', which should be the JSON string
-                    content = result.get("answer", "")
-                    
-                    # Extract JSON from content
-                    json_str = content
-                    if "```json" in content:
-                        json_str = content.split("```json")[1].split("```")[0]
-                    elif "```" in content:
-                        json_str = content.split("```")[1].split("```")[0]
-                        
-                    try:
-                        data = json.loads(json_str.strip())
-                        data['full_analysis'] = content 
-                        return data
-                    except json.JSONDecodeError:
-                         # Fallback if AI didn't return proper JSON
-                         return {
-                             "compliance_score": 0,
-                             "full_analysis": content,
-                             "error": "Failed to parse JSON from AI response"
-                         }
-                else:
-                    return {"error": result.get("error"), "compliance_score": 0}
-            else:
-                 logger.error(f"Gemma API Error {response.status_code}: {response.text}")
-                 return {"error": f"API Status {response.status_code}", "compliance_score": 0}
+            return mapped_res
             
         except Exception as e:
-            logger.error(f"Gemma validation failed: {e}")
+            logger.error(f"Hybrid validation failed: {e}")
             return {
                 "error": str(e),
                 "compliance_score": 0,
-                "full_analysis": "Validation failed due to API connection error."
+                "full_analysis": "Validation failed due to internal error."
             }
 
     def _save_results(self, url, title, price, description, downloaded_images, ocr_results, validation_res) -> int:
