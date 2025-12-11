@@ -220,8 +220,20 @@ class EcommerceScraper:
     def _extract_image_urls(self, soup, base_url) -> List[str]:
         """
         Extract only product listing images, filtering out UI elements, logos, and icons.
+        Enhanced with Amazon-specific selectors from SwatiModi/e-commerce-web-scraper.
         """
         urls = set()
+        
+        # Amazon-specific: Use s-image class for product images (from external scraper)
+        if 'amazon' in base_url.lower():
+            amazon_imgs = soup.find_all('img', {'class': 's-image'})
+            for img in amazon_imgs:
+                src = img.get('src')
+                if src and not src.startswith('data:'):
+                    urls.add(src)
+                    logger.info(f"Found Amazon product image: {src[:50]}...")
+        
+        # Generic extraction for all platforms (existing logic)
         for img in soup.find_all('img'):
             src = img.get('src') or img.get('data-src') or img.get('data-old-hires')
             if not src or src.startswith('data:'):
@@ -264,6 +276,7 @@ class EcommerceScraper:
                 # Flipkart: include all image formats from their CDN
                 urls.add(full_url)
                 
+        logger.info(f"Total product images found: {len(urls)}")
         return list(urls)
 
     def _download_image(self, url: str, prefix: str) -> Optional[str]:
