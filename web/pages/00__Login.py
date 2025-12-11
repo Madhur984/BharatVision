@@ -451,10 +451,6 @@ def display_login_form():
                     else:
                         st.error("Guest account not configured.")
 
-
-                     else:
-                        st.error("Guest account not configured.")
-
         else:
             # --- REGISTER FORM ---
             with st.form('register_form'):
