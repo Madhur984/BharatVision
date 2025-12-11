@@ -1,0 +1,16 @@
+# Synthetic packaging dataset for YOLO
+
+path: .
+train: data/yolo_pack/images/train
+val: data/yolo_pack/images/val
+
+nc: 8
+names:
+  0: brand_product_panel
+  1: mrp_panel
+  2: net_quantity_panel
+  3: mfg_or_packed_date_panel
+  4: best_before_or_expiry_panel
+  5: manufacturer_importer_panel
+  6: country_of_origin_panel
+  7: customer_care_panel

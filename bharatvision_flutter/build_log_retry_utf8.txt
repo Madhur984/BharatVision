@@ -1,0 +1,1124 @@
+[ +164 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +3 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +47 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[  +14 ms] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[   +3 ms] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[ +114 ms] Skipping pub get: version match.
+[  +48 ms] Found plugin permission_handler at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-11.3.1\
+[   +5 ms] Found plugin permission_handler_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-12.0.13\
+[   +2 ms] Found plugin permission_handler_apple at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +3 ms] Found plugin permission_handler_html at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.1\
+[   +3 ms] Found plugin permission_handler_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[  +16 ms] Found plugin url_launcher at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.0\
+[   +2 ms] Found plugin url_launcher_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.2\
+[   +2 ms] Found plugin url_launcher_ios at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.1\
+[   +5 ms] Found plugin url_launcher_linux at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.1.1\
+[   +4 ms] Found plugin url_launcher_macos at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.0\
+[   +6 ms] Found plugin url_launcher_web at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.2.3\
+[   +2 ms] Found plugin url_launcher_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.2\
+[   +7 ms] Found plugin webview_flutter at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.8.0\
+[   +7 ms] Found plugin webview_flutter_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-3.16.3\
+[   +8 ms] Found plugin webview_flutter_wkwebview at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.14.0\
+[  +63 ms] Found plugin permission_handler at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-11.3.1\
+[   +2 ms] Found plugin permission_handler_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-12.0.13\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_html at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.1\
+[   +4 ms] Found plugin permission_handler_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[  +14 ms] Found plugin url_launcher at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.0\
+[   +2 ms] Found plugin url_launcher_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.2\
+[   +2 ms] Found plugin url_launcher_ios at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.1\
+[   +1 ms] Found plugin url_launcher_linux at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.1.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.0\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.2.3\
+[   +2 ms] Found plugin url_launcher_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.2\
+[   +4 ms] Found plugin webview_flutter at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.8.0\
+[   +1 ms] Found plugin webview_flutter_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-3.16.3\
+[   +2 ms] Found plugin webview_flutter_wkwebview at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.14.0\
+[  +41 ms] Found plugin permission_handler at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-11.3.1\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-12.0.13\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_html at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +8 ms] Found plugin url_launcher at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.0\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.1\
+[   +1 ms] Found plugin url_launcher_linux at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.1.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.0\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.2.3\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.2\
+[   +2 ms] Found plugin webview_flutter at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.8.0\
+[   +1 ms] Found plugin webview_flutter_android at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-3.16.3\
+[   +2 ms] Found plugin webview_flutter_wkwebview at C:\Users\gmadh\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.14.0\
+[  +10 ms] Generating D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[  +81 ms] Android Studio version could not be detected, skipping Gradle-Java version compatibility check.
+[  +13 ms] Using gradle from D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android\gradlew.bat.
+[        ] Running Gradle task 'assembleRelease'...
+[   +4 ms] executing: [D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android/] D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android\gradlew.bat --full-stacktrace --info -Pverbose=true -Ptarget-platform=android-arm,android-arm64,android-x64 -Ptarget=lib\main.dart -Pbase-application-name=android.app.Application -Pdart-obfuscation=false -Ptrack-widget-creation=true -Ptree-shake-icons=true assembleRelease
+C:\src\flutter\bin\fl
+utter.bat : [ +524 
+ms] WARNING: A 
+restricted method in 
+java.lang.System has 
+been called
+At line:1 char:1
++ C:\src\flutter\bin\
+flutter.bat build 
+apk --release 
+--verbose > build_ 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecifi    ed: ([ 
++524 ms] WA    
+RN...has been call   
+ ed:String) [], Rem  
+  oteException
+    + 
+FullyQualifiedEr    
+rorId : NativeComm   
+ andError
+ 
+[   +2 ms] WARNING: j
+ava.lang.System::load
+ has been called by n
+et.rubygrapefruit.pla
+tform.internal.Native
+LibraryLoader in an 
+unnamed module (file:
+/C:/Users/gmadh/.grad
+le/wrapper/dists/grad
+le-7.5-all/6qsw290k5l
+z422uaf8jf6m7co/gradl
+e-7.5/lib/native-plat
+form-0.22-milestone-2
+3.jar)
+[        ] WARNING: 
+Use --enable-native-a
+ccess=ALL-UNNAMED to 
+avoid a warning for 
+callers in this 
+module
+[        ] WARNING: 
+Restricted methods 
+will be blocked in a 
+future release 
+unless native access 
+is enabled
+[   +1 ms] Initialized native services in: C:\Users\gmadh\.gradle\native
+[        ] Initialized jansi services in: C:\Users\gmadh\.gradle\native
+[ +307 ms] Found daemon DaemonInfo{pid=33360, address=[bbf4a4f4-512d-4cc5-bb3c-9ea0529dd2aa port:50775, addresses:[/127.0.0.1]], state=Idle, lastBusy=1765433534808, context=DefaultDaemonContext[uid=e7ff863d-2980-41bf-90f3-6c4d557b2192,javaHome=C:\Program Files\Java\jre1.8.0_451,daemonRegistryDir=C:\Users\gmadh\.gradle\daemon,pid=33360,idleTimeout=10800000,priority=NORMAL,daemonOpts=-Xmx4G,-Dfile.encoding=utf8,-Duser.country=IN,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+[        ] Java home is different.
+[        ] Wanted: DefaultDaemonContext[uid=null,javaHome=C:\Program Files\Java\jdk-24,daemonRegistryDir=C:\Users\gmadh\.gradle\daemon,pid=33148,idleTimeout=null,priority=NORMAL,daemonOpts=--add-opens,java.base/java.util=ALL-UNNAMED,--add-opens,java.base/java.lang=ALL-UNNAMED,--add-opens,java.base/java.lang.invoke=ALL-UNNAMED,--add-opens,java.base/java.util=ALL-UNNAMED,--add-opens,java.prefs/java.util.prefs=ALL-UNNAMED,--add-opens,java.prefs/java.util.prefs=ALL-UNNAMED,--add-opens,java.base/java.nio.charset=ALL-UNNAMED,--add-opens,java.base/java.net=ALL-UNNAMED,--add-opens,java.base/java.util.concurrent.atomic=ALL-UNNAMED,-Xmx4G,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]
+[        ] Actual: DefaultDaemonContext[uid=e7ff863d-2980-41bf-90f3-6c4d557b2192,javaHome=C:\Program Files\Java\jre1.8.0_451,daemonRegistryDir=C:\Users\gmadh\.gradle\daemon,pid=33360,idleTimeout=10800000,priority=NORMAL,daemonOpts=-Xmx4G,-Dfile.encoding=utf8,-Duser.country=IN,-Duser.language=en,-Duser.variant]
+[        ]   Looking for a different daemon...
+[        ] The client will now receive all logging from the daemon (pid: 6232). The daemon log file: C:\Users\gmadh\.gradle\daemon\7.5\daemon-6232.out.log
+[        ] Starting 6th build in daemon [uptime: 8 mins 44.972 secs, performance: 100%]
+[        ] Using 16 worker leases.
+[        ] Now considering [D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android, C:\src\flutter\packages\flutter_tools\gradle] as hierarchies to watch
+[        ] Watching the file system is configured to be enabled if available
+[        ] File system watching is active
+[        ] Starting Build
+[        ] Now considering [C:\src\flutter\packages\flutter_tools\gradle, D:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\bharatvision_flutter\android] as hierarchies to watch
+[  +99 ms] > Configure project :gradle
+[        ] Evaluating project ':gradle' using build file 'C:\src\flutter\packages\flutter_tools\gradle\build.gradle.kts'.
+[        ] Caching disabled for Kotlin DSL accessors for project ':gradle' because:
+[        ]   Build cache is disabled
+[        ] Skipping Kotlin DSL accessors for project ':gradle' as it is up-to-date.
+[        ] Resolve mutations for :gradle:compileJava (Thread[#214,Execution worker,5,main]) started.
+[        ] Resolve mutations for :gradle:compileJava (Thread[#214,Execution worker,5,main]) completed. Took 0.0 secs.
+[        ] :gradle:compileJava (Thread[#213,included builds,5,main]) started.
+[  +96 ms] > Task :gradle:compileJava NO-SOURCE
+[        ] Skipping task ':gradle:compileJava' as it has no source files and no previous output files.
+[        ] :gradle:compileJava (Thread[#213,included builds,5,main]) completed. Took 0.015 secs.
+[        ] Resolve mutations for :gradle:compileGroovy (Thread[#214,Execution worker,5,main]) started.
+[        ] Resolve mutations for :gradle:compileGroovy (Thread[#214,Execution worker,5,main]) completed. Took 0.0 secs.
+[        ] :gradle:compileGroovy (Thread[#213,included builds,5,main]) started.
+[ +798 ms] This JVM does not support getting OS memory, so no OS memory status updates will be broadcast
+[+1100 ms] > Task :gradle:compileGroovy
+[        ] Caching disabled for task ':gradle:compileGroovy' because:
+[        ]   Build cache is disabled
+[        ] Task ':gradle:compileGroovy' is not up-to-date because:
+[        ]   Task has failed previously.
+[        ] The input changes require a full rebuild for incremental task ':gradle:compileGroovy'.
+[        ] Starting process 'Gradle Worker Daemon 3'. Working directory: C:\Users\gmadh\.gradle\workers Command: C:\Program Files\Java\jdk-24\bin\java.exe --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.prefs/java.util.prefs=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED @C:\Users\gmadh\.gradle\.tmp\gradle-worker-classpath1221509365482790585txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=IN -Duser.language=en -Duser.variant worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Worker Daemon 3'
+[        ] Successfully started process 'Gradle Worker Daemon 3'
+[        ] Started Gradle worker daemon (0.501 secs) with fork options DaemonForkOptions{executable=C:\Program Files\Java\jdk-24\bin\java.exe, minHeapSize=null, maxHeapSize=null, jvmArgs=[--add-opens, java.base/java.lang=ALL-UNNAMED, --add-opens, java.base/java.lang.invoke=ALL-UNNAMED, --add-opens, java.base/java.util=ALL-UNNAMED, --add-opens, java.prefs/java.util.prefs=ALL-UNNAMED], keepAliveMode=SESSION}.
+[        ] WARNING: 
+A restricted method 
+in java.lang.System 
+has been called
+[        ] WARNING: j
+ava.lang.System::load
+ has been called by n
+et.rubygrapefruit.pla
+tform.internal.Native
+LibraryLoader in an 
+unnamed module (file:
+/C:/Users/gmadh/.grad
+le/wrapper/dists/grad
+le-7.5-all/6qsw290k5l
+z422uaf8jf6m7co/gradl
+e-7.5/lib/native-plat
+form-0.22-milestone-2
+3.jar)
+[        ] WARNING: 
+Use --enable-native-a
+ccess=ALL-UNNAMED to 
+avoid a warning for 
+callers in this 
+module
+[        ] WARNING: 
+Restricted methods 
+will be blocked in a 
+future release 
+unless native access 
+is enabled
+[+1896 ms] > Task :gradle:compileGroovy FAILED
+[        ] :gradle:compileGroovy (Thread[#213,included builds,5,main]) completed. Took 3.809 secs.
+[        ] FAILURE: 
+Build failed with an 
+exception.
+[        ] * What 
+went wrong:
+[        ] Execution 
+failed for task ':gra
+dle:compileGroovy'.
+[        ] > BUG! 
+exception in phase 
+'semantic analysis' 
+in source unit 'C:\sr
+c\flutter\packages\fl
+utter_tools\gradle\sr
+c\main\groovy\app_plu
+gin_loader.groovy' 
+Unsupported class 
+file major version 68
+[        ] * Try:
+[        ] > Run 
+with --debug option 
+to get more log 
+output.
+[        ] > Run 
+with --scan to get 
+full insights.
+[        ] * 
+Exception is:
+[        ] org.gradle
+.api.tasks.TaskExecut
+ionException: 
+Execution failed for 
+task ':gradle:compile
+Groovy'.
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.ExecuteA
+ctionsTaskExecuter.la
+mbda$executeIfValid$1
+(ExecuteActionsTaskEx
+ecuter.java:142)
+[        ] 	at org.gr
+adle.internal.Try$Fai
+lure.ifSuccessfulOrEl
+se(Try.java:282)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.ExecuteA
+ctionsTaskExecuter.ex
+ecuteIfValid(ExecuteA
+ctionsTaskExecuter.ja
+va:140)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.ExecuteA
+ctionsTaskExecuter.ex
+ecute(ExecuteActionsT
+askExecuter.java:128)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.CleanupS
+taleOutputsExecuter.e
+xecute(CleanupStaleOu
+tputsExecuter.java:77
+)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.Finalize
+PropertiesTaskExecute
+r.execute(FinalizePro
+pertiesTaskExecuter.j
+ava:46)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.ResolveT
+askExecutionModeExecu
+ter.execute(ResolveTa
+skExecutionModeExecut
+er.java:51)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.SkipTask
+WithNoActionsExecuter
+.execute(SkipTaskWith
+NoActionsExecuter.jav
+a:57)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.SkipOnly
+IfTaskExecuter.execut
+e(SkipOnlyIfTaskExecu
+ter.java:56)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.CatchExc
+eptionTaskExecuter.ex
+ecute(CatchExceptionT
+askExecuter.java:36)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.EventFir
+ingTaskExecuter$1.exe
+cuteTask(EventFiringT
+askExecuter.java:77)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.EventFir
+ingTaskExecuter$1.cal
+l(EventFiringTaskExec
+uter.java:55)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.EventFir
+ingTaskExecuter$1.cal
+l(EventFiringTaskExec
+uter.java:52)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$CallableBu
+ildOperationWorker.ex
+ecute(DefaultBuildOpe
+rationRunner.java:204
+)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$CallableBu
+ildOperationWorker.ex
+ecute(DefaultBuildOpe
+rationRunner.java:199
+)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$2.execute(
+DefaultBuildOperation
+Runner.java:66)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$2.execute(
+DefaultBuildOperation
+Runner.java:59)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.execute(De
+faultBuildOperationRu
+nner.java:157)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.execute(De
+faultBuildOperationRu
+nner.java:59)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.call(Defau
+ltBuildOperationRunne
+r.java:53)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionExecutor.call(Def
+aultBuildOperationExe
+cutor.java:73)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.execution.EventFir
+ingTaskExecuter.execu
+te(EventFiringTaskExe
+cuter.java:52)
+[        ] 	at org.gr
+adle.execution.plan.L
+ocalTaskNodeExecutor.
+execute(LocalTaskNode
+Executor.java:69)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph$InvokeNodeEx
+ecutorsAction.execute
+(DefaultTaskExecution
+Graph.java:327)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph$InvokeNodeEx
+ecutorsAction.execute
+(DefaultTaskExecution
+Graph.java:314)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph$BuildOperati
+onAwareExecutionActio
+n.execute(DefaultTask
+ExecutionGraph.java:3
+07)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph$BuildOperati
+onAwareExecutionActio
+n.execute(DefaultTask
+ExecutionGraph.java:2
+93)
+[        ] 	at org.gr
+adle.execution.plan.D
+efaultPlanExecutor$Ex
+ecutorWorker.execute(
+DefaultPlanExecutor.j
+ava:417)
+[        ] 	at org.gr
+adle.execution.plan.D
+efaultPlanExecutor$Ex
+ecutorWorker.run(Defa
+ultPlanExecutor.java:
+339)
+[        ] 	at org.gr
+adle.execution.plan.D
+efaultPlanExecutor.pr
+ocess(DefaultPlanExec
+utor.java:96)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph.executeWithS
+ervices(DefaultTaskEx
+ecutionGraph.java:140
+)
+[        ] 	at org.gr
+adle.execution.taskgr
+aph.DefaultTaskExecut
+ionGraph.execute(Defa
+ultTaskExecutionGraph
+.java:125)
+[        ] 	at org.gr
+adle.execution.Select
+edTaskExecutionAction
+.execute(SelectedTask
+ExecutionAction.java:
+39)
+[        ] 	at org.gr
+adle.execution.DryRun
+BuildExecutionAction.
+execute(DryRunBuildEx
+ecutionAction.java:51
+)
+[        ] 	at org.gr
+adle.execution.BuildO
+perationFiringBuildWo
+rkerExecutor$ExecuteT
+asks.call(BuildOperat
+ionFiringBuildWorkerE
+xecutor.java:54)
+[        ] 	at org.gr
+adle.execution.BuildO
+perationFiringBuildWo
+rkerExecutor$ExecuteT
+asks.call(BuildOperat
+ionFiringBuildWorkerE
+xecutor.java:43)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$CallableBu
+ildOperationWorker.ex
+ecute(DefaultBuildOpe
+rationRunner.java:204
+)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$CallableBu
+ildOperationWorker.ex
+ecute(DefaultBuildOpe
+rationRunner.java:199
+)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$2.execute(
+DefaultBuildOperation
+Runner.java:66)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner$2.execute(
+DefaultBuildOperation
+Runner.java:59)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.execute(De
+faultBuildOperationRu
+nner.java:157)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.execute(De
+faultBuildOperationRu
+nner.java:59)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionRunner.call(Defau
+ltBuildOperationRunne
+r.java:53)
+[        ] 	at org.gr
+adle.internal.operati
+ons.DefaultBuildOpera
+tionExecutor.call(Def
+aultBuildOperationExe
+cutor.java:73)
+[        ] 	at org.gr
+adle.execution.BuildO
+perationFiringBuildWo
+rkerExecutor.execute(
+BuildOperationFiringB
+uildWorkerExecutor.ja
+va:40)
+[        ] 	at org.gr
+adle.internal.build.D
+efaultBuildLifecycleC
+ontroller.lambda$exec
+uteTasks$7(DefaultBui
+ldLifecycleController
+.java:161)
+[        ] 	at org.gr
+adle.internal.model.S
+tateTransitionControl
+ler.doTransition(Stat
+eTransitionController
+.java:247)
+[        ] 	at org.gr
+adle.internal.model.S
+tateTransitionControl
+ler.lambda$tryTransit
+ion$7(StateTransition
+Controller.java:174)
+[        ] 	at org.gr
+adle.internal.work.De
+faultSynchronizer.wit
+hLock(DefaultSynchron
+izer.java:44)
+[        ] 	at org.gr
+adle.internal.model.S
+tateTransitionControl
+ler.tryTransition(Sta
+teTransitionControlle
+r.java:174)
+[        ] 	at org.gr
+adle.internal.build.D
+efaultBuildLifecycleC
+ontroller.executeTask
+s(DefaultBuildLifecyc
+leController.java:161
+)
+[        ] 	at org.gr
+adle.internal.build.D
+efaultBuildWorkGraphC
+ontroller$DefaultBuil
+dWorkGraph.runWork(De
+faultBuildWorkGraphCo
+ntroller.java:156)
+[        ] 	at org.gr
+adle.internal.work.De
+faultWorkerLeaseServi
+ce.withLocks(DefaultW
+orkerLeaseService.jav
+a:249)
+[        ] 	at org.gr
+adle.internal.work.De
+faultWorkerLeaseServi
+ce.runAsWorkerThread(
+DefaultWorkerLeaseSer
+vice.java:109)
+[        ] 	at org.gr
+adle.composite.intern
+al.DefaultBuildContro
+ller.doRun(DefaultBui
+ldController.java:164
+)
+[        ] 	at org.gr
+adle.composite.intern
+al.DefaultBuildContro
+ller.access$000(Defau
+ltBuildController.jav
+a:45)
+[        ] 	at org.gr
+adle.composite.intern
+al.DefaultBuildContro
+ller$BuildOpRunnable.
+run(DefaultBuildContr
+oller.java:183)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.Executors$Runnabl
+eAdapter.call(Executo
+rs.java:545)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.FutureTask.run(Fu
+tureTask.java:328)
+[        ] 	at org.gr
+adle.internal.concurr
+ent.ExecutorPolicy$Ca
+tchAndRecordFailures.
+onExecute(ExecutorPol
+icy.java:64)
+[        ] 	at org.gr
+adle.internal.concurr
+ent.ManagedExecutorIm
+pl$1.run(ManagedExecu
+torImpl.java:48)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.ThreadPoolExecuto
+r.runWorker(ThreadPoo
+lExecutor.java:1095)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.ThreadPoolExecuto
+r$Worker.run(ThreadPo
+olExecutor.java:619)
+[        ] 	at java.b
+ase/java.lang.Thread.
+run(Thread.java:1447)
+[        ] Caused 
+by: BUG! exception 
+in phase 'semantic 
+analysis' in source 
+unit 'C:\src\flutter\
+packages\flutter_tool
+s\gradle\src\main\gro
+ovy\app_plugin_loader
+.groovy' Unsupported 
+class file major 
+version 68
+[        ] 	at org.co
+dehaus.groovy.control
+.CompilationUnit$ISou
+rceUnitOperation.doPh
+aseOperation(Compilat
+ionUnit.java:905)
+[        ] 	at org.co
+dehaus.groovy.control
+.CompilationUnit.comp
+ile(CompilationUnit.j
+ava:627)
+[        ] 	at org.co
+dehaus.groovy.control
+.CompilationUnit.comp
+ile(CompilationUnit.j
+ava:610)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.compile.ApiGroovyC
+ompiler.execute(ApiGr
+oovyCompiler.java:270
+)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.compile.ApiGroovyC
+ompiler.execute(ApiGr
+oovyCompiler.java:64)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.compile.GroovyComp
+ilerFactory$DaemonSid
+eCompiler.execute(Gro
+ovyCompilerFactory.ja
+va:97)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.compile.GroovyComp
+ilerFactory$DaemonSid
+eCompiler.execute(Gro
+ovyCompilerFactory.ja
+va:76)
+[        ] 	at org.gr
+adle.api.internal.tas
+ks.compile.daemon.Abs
+tractDaemonCompiler$C
+ompilerWorkAction.exe
+cute(AbstractDaemonCo
+mpiler.java:135)
+[        ] 	at org.gr
+adle.workers.internal
+.DefaultWorkerServer.
+execute(DefaultWorker
+Server.java:63)
+[        ] 	at org.gr
+adle.workers.internal
+.AbstractClassLoaderW
+orker$1.create(Abstra
+ctClassLoaderWorker.j
+ava:49)
+[        ] 	at org.gr
+adle.workers.internal
+.AbstractClassLoaderW
+orker$1.create(Abstra
+ctClassLoaderWorker.j
+ava:43)
+[        ] 	at org.gr
+adle.internal.classlo
+ader.ClassLoaderUtils
+.executeInClassloader
+(ClassLoaderUtils.jav
+a:100)
+[        ] 	at org.gr
+adle.workers.internal
+.AbstractClassLoaderW
+orker.executeInClassL
+oader(AbstractClassLo
+aderWorker.java:43)
+[        ] 	at org.gr
+adle.workers.internal
+.IsolatedClassloaderW
+orker.run(IsolatedCla
+ssloaderWorker.java:4
+9)
+[        ] 	at org.gr
+adle.workers.internal
+.IsolatedClassloaderW
+orker.run(IsolatedCla
+ssloaderWorker.java:3
+0)
+[        ] 	at org.gr
+adle.workers.internal
+.WorkerDaemonServer.r
+un(WorkerDaemonServer
+.java:87)
+[        ] 	at org.gr
+adle.workers.internal
+.WorkerDaemonServer.r
+un(WorkerDaemonServer
+.java:56)
+[        ] 	at org.gr
+adle.process.internal
+.worker.request.Worke
+rAction$1.call(Worker
+Action.java:138)
+[        ] 	at org.gr
+adle.process.internal
+.worker.child.WorkerL
+ogEventListener.withW
+orkerLoggingProtocol(
+WorkerLogEventListene
+r.java:41)
+[        ] 	at org.gr
+adle.process.internal
+.worker.request.Worke
+rAction.run(WorkerAct
+ion.java:135)
+[        ] 	at java.b
+ase/jdk.internal.refl
+ect.DirectMethodHandl
+eAccessor.invoke(Dire
+ctMethodHandleAccesso
+r.java:104)
+[        ] 	at java.b
+ase/java.lang.reflect
+.Method.invoke(Method
+.java:565)
+[        ] 	at org.gr
+adle.internal.dispatc
+h.ReflectionDispatch.
+dispatch(ReflectionDi
+spatch.java:36)
+[        ] 	at org.gr
+adle.internal.dispatc
+h.ReflectionDispatch.
+dispatch(ReflectionDi
+spatch.java:24)
+[        ] 	at org.gr
+adle.internal.remote.
+internal.hub.MessageH
+ubBackedObjectConnect
+ion$DispatchWrapper.d
+ispatch(MessageHubBac
+kedObjectConnection.j
+ava:182)
+[        ] 	at org.gr
+adle.internal.remote.
+internal.hub.MessageH
+ubBackedObjectConnect
+ion$DispatchWrapper.d
+ispatch(MessageHubBac
+kedObjectConnection.j
+ava:164)
+[        ] 	at org.gr
+adle.internal.remote.
+internal.hub.MessageH
+ub$Handler.run(Messag
+eHub.java:414)
+[        ] 	at org.gr
+adle.internal.concurr
+ent.ExecutorPolicy$Ca
+tchAndRecordFailures.
+onExecute(ExecutorPol
+icy.java:64)
+[        ] 	at org.gr
+adle.internal.concurr
+ent.ManagedExecutorIm
+pl$1.run(ManagedExecu
+torImpl.java:48)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.ThreadPoolExecuto
+r.runWorker(ThreadPoo
+lExecutor.java:1095)
+[        ] 	at java.b
+ase/java.util.concurr
+ent.ThreadPoolExecuto
+r$Worker.run(ThreadPo
+olExecutor.java:619)
+[        ] 	at java.b
+ase/java.lang.Thread.
+run(Thread.java:1447)
+[        ] Caused 
+by: java.lang.Illegal
+ArgumentException: 
+Unsupported class 
+file major version 68
+[        ] 	at groovy
+jarjarasm.asm.ClassRe
+ader.<init>(ClassRead
+er.java:199)
+[        ] 	at groovy
+jarjarasm.asm.ClassRe
+ader.<init>(ClassRead
+er.java:180)
+[        ] 	at groovy
+jarjarasm.asm.ClassRe
+ader.<init>(ClassRead
+er.java:166)
+[        ] 	at groovy
+jarjarasm.asm.ClassRe
+ader.<init>(ClassRead
+er.java:287)
+[        ] 	at org.co
+dehaus.groovy.ast.dec
+ompiled.AsmDecompiler
+.parseClass(AsmDecomp
+iler.java:81)
+[        ] 	at org.co
+dehaus.groovy.control
+.ClassNodeResolver.fi
+ndDecompiled(ClassNod
+eResolver.java:251)
+[        ] 	at org.co
+dehaus.groovy.control
+.ClassNodeResolver.tr
+yAsLoaderClassOrScrip
+t(ClassNodeResolver.j
+ava:189)
+[        ] 	at org.co
+dehaus.groovy.control
+.ClassNodeResolver.fi
+ndClassNode(ClassNode
+Resolver.java:169)
+[        ] 	at org.co
+dehaus.groovy.control
+.ClassNodeResolver.re
+solveName(ClassNodeRe
+solver.java:125)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+veToOuter(ResolveVisi
+tor.java:869)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+ve(ResolveVisitor.jav
+a:506)
+[        ] 1 actionable task: 1 executed
+[        ] Watched directory hierarchies: [C:\src\flutter\packages\flutter_tools\gradle]
+[        ] Stopped 1 worker daemon(s).
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+veFromDefaultImports(
+ResolveVisitor.java:6
+61)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+veFromDefaultImports(
+ResolveVisitor.java:6
+25)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+ve(ResolveVisitor.jav
+a:505)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+ve(ResolveVisitor.jav
+a:468)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+veOrFail(ResolveVisit
+or.java:338)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.resol
+veOrFail(ResolveVisit
+or.java:330)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.visit
+Annotations(ResolveVi
+sitor.java:1337)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssCodeVisitorSupport.
+visitConstructorOrMet
+hod(ClassCodeVisitorS
+upport.java:110)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssCodeExpressionTrans
+former.visitConstruct
+orOrMethod(ClassCodeE
+xpressionTransformer.
+java:66)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.visit
+ConstructorOrMethod(R
+esolveVisitor.java:29
+4)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssCodeVisitorSupport.
+visitMethod(ClassCode
+VisitorSupport.java:1
+06)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssNode.visitMethods(C
+lassNode.java:1100)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssNode.visitContents(
+ClassNode.java:1093)
+[        ] 	at org.co
+dehaus.groovy.ast.Cla
+ssCodeVisitorSupport.
+visitClass(ClassCodeV
+isitorSupport.java:52
+)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.visit
+Class(ResolveVisitor.
+java:1483)
+[        ] 	at org.co
+dehaus.groovy.control
+.ResolveVisitor.start
+Resolving(ResolveVisi
+tor.java:262)
+[        ] 	at org.co
+dehaus.groovy.control
+.CompilationUnit.lamb
+da$new$16(Compilation
+Unit.java:738)
+[        ] 	at org.co
+dehaus.groovy.control
+.CompilationUnit$ISou
+rceUnitOperation.doPh
+aseOperation(Compilat
+ionUnit.java:901)
+[        ] 	... 31 
+more
+[        ] * Get 
+more help at https://
+help.gradle.org
+[        ] BUILD 
+FAILED in 4s
+[ +347 ms] Running Gradle task 'assembleRelease'... (completed in 5.2s)
+[   +4 ms] 
+           ΓöîΓöÇ Flutter Fix ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+           Γöé [!] Your project's Gradle version is incompatible with the Java version that Flutter is using    Γöé
+           Γöé for Gradle.                                                                                      Γöé
+           Γöé                                                                                                  Γöé
+           Γöé To fix this issue, consult the migration guide at docs.flutter.dev/go/android-java-gradle-error. Γöé
+           ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+
+[   +3 ms] "flutter apk" took 5,839ms.
+[   +2 ms] Gradle 
+task assembleRelease 
+failed with exit 
+code 1
+[        ] 
+           #0      
+throwToolExit (packag
+e:flutter_tools/src/b
+ase/common.dart:10:3)
+           #1      An
+droidGradleBuilder.bu
+ildGradleApp (package
+:flutter_tools/src/an
+droid/gradle.dart:530
+:7)
+           
+<asynchronous 
+suspension>
+           #2      An
+droidGradleBuilder.bu
+ildApk (package:flutt
+er_tools/src/android/
+gradle.dart:220:5)
+           
+<asynchronous 
+suspension>
+           #3      Bu
+ildApkCommand.runComm
+and (package:flutter_
+tools/src/commands/bu
+ild_apk.dart:142:5)
+           
+<asynchronous 
+suspension>
+           #4      Fl
+utterCommand.run.<ano
+nymous closure> (pack
+age:flutter_tools/src
+/runner/flutter_comma
+nd.dart:1367:27)
+           
+<asynchronous 
+suspension>
+           #5      Ap
+pContext.run.<anonymo
+us closure> (package:
+flutter_tools/src/bas
+e/context.dart:150:19
+)
+           
+<asynchronous 
+suspension>
+           #6      Co
+mmandRunner.runComman
+d (package:args/comma
+nd_runner.dart:212:13
+)
+           
+<asynchronous 
+suspension>
+           #7      Fl
+utterCommandRunner.ru
+nCommand.<anonymous 
+closure> (package:flu
+tter_tools/src/runner
+/flutter_command_runn
+er.dart:348:9)
+           
+<asynchronous 
+suspension>
+           #8      Ap
+pContext.run.<anonymo
+us closure> (package:
+flutter_tools/src/bas
+e/context.dart:150:19
+)
+           
+<asynchronous 
+suspension>
+           #9      Fl
+utterCommandRunner.ru
+nCommand (package:flu
+tter_tools/src/runner
+/flutter_command_runn
+er.dart:294:5)
+           
+<asynchronous 
+suspension>
+           #10     
+run.<anonymous 
+closure>.<anonymous 
+closure> (package:flu
+tter_tools/runner.dar
+t:112:9)
+           
+<asynchronous 
+suspension>
+           #11     Ap
+pContext.run.<anonymo
+us closure> (package:
+flutter_tools/src/bas
+e/context.dart:150:19
+)
+           
+<asynchronous 
+suspension>
+           #12     
+main (package:flutter
+_tools/executable.dar
+t:90:3)
+           
+<asynchronous 
+suspension>
+
+
+[        ] Running 0 shutdown hooks
+[        ] Shutdown hooks complete
+[        ] exiting with code 1

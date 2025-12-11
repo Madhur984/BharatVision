@@ -1,0 +1,217 @@
+# Deploy to HuggingFace Spaces - Quick Guide
+
+## Why HuggingFace Spaces?
+
+✅ **FREE** - No credit card required
+✅ **Easy** - Just push code, it deploys automatically  
+✅ **Fast** - Deploys in ~2 minutes
+✅ **HTTPS** - Free SSL certificate included
+✅ **Perfect for this use case** - Already using HF for Gemma model
+
+## Step-by-Step Deployment
+
+### 1. Create HuggingFace Account (if you don't have one)
+
+1. Go to https://huggingface.co/join
+2. Sign up (free)
+3. Verify your email
+
+### 2. Create a New Space
+
+1. Go to https://huggingface.co/new-space
+2. Fill in:
+   - **Space name:** `bharatvision-ml-api`
+   - **License:** Apache 2.0
+   - **Select SDK:** Docker
+   - **Space hardware:** CPU basic (free)
+   - **Visibility:** Public (or Private if you prefer)
+3. Click **Create Space**
+
+### 3. Add Your Files
+
+You can do this via web interface or Git:
+
+#### Option A: Web Interface (Easiest)
+
+1. In your new Space, click **Files** tab
+2. Click **Add file** → **Upload files**
+3. Upload these files:
+   - `simple_api.py` (from project root)
+   - `requirements_api.txt` (from project root)
+   - `Dockerfile` (from `deploy/huggingface/`)
+   - `README.md` (from `deploy/huggingface/`)
+
+#### Option B: Git (If you're comfortable with Git)
+
+```bash
+# Clone your Space
+git clone https://huggingface.co/spaces/YOUR_USERNAME/bharatvision-ml-api
+cd bharatvision-ml-api
+
+# Copy files
+cp "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\simple_api.py" .
+cp "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\requirements_api.txt" .
+cp "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\deploy\huggingface\Dockerfile" .
+cp "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\deploy\huggingface\README.md" .
+
+# Commit and push
+git add .
+git commit -m "Initial deployment"
+git push
+```
+
+### 4. Add Environment Variables (Secrets)
+
+1. In your Space, click **Settings** tab
+2. Scroll to **Repository secrets**
+3. Click **New secret**
+4. Add:
+   - **Name:** `HF_TOKEN`
+   - **Value:** `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`
+5. Click **Add**
+
+6. Add another secret:
+   - **Name:** `HF_MODEL`
+   - **Value:** `google/gemma-2-9b-it`
+7. Click **Add**
+
+8. Add another secret:
+   - **Name:** `ENVIRONMENT`
+   - **Value:** `production`
+9. Click **Add**
+
+### 5. Wait for Deployment
+
+- HuggingFace will automatically build and deploy your Space
+- Watch the **Logs** tab to see progress
+- Should take 2-3 minutes
+- When done, you'll see "Running" status
+
+### 6. Get Your API URL
+
+Your API will be available at:
+```
+https://YOUR_USERNAME-bharatvision-ml-api.hf.space
+```
+
+For example, if your username is `madhur984`:
+```
+https://madhur984-bharatvision-ml-api.hf.space
+```
+
+### 7. Test Your API
+
+```bash
+# Test health endpoint
+curl https://YOUR_USERNAME-bharatvision-ml-api.hf.space/health
+
+# Test AI endpoint
+curl -X POST https://YOUR_USERNAME-bharatvision-ml-api.hf.space/api/ai/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is MRP in India?"}'
+```
+
+### 8. Configure Streamlit Cloud
+
+1. Go to https://share.streamlit.io/
+2. Open your `bharatvision` app settings
+3. Go to **Secrets**
+4. Add:
+   ```toml
+   ML_API_URL = "https://YOUR_USERNAME-bharatvision-ml-api.hf.space"
+   ```
+5. Save and reboot app
+
+### 9. Push Streamlit Changes to GitHub
+
+```bash
+cd "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy"
+
+# Add the new files
+git add web/api_client.py
+git add web/pages/08_Help_AI.py
+
+# Make sure requests is in requirements
+echo "requests==2.31.0" >> requirements_frontend.txt
+git add requirements_frontend.txt
+
+# Commit and push
+git commit -m "Add cloud API integration with HuggingFace Spaces"
+git push origin main
+```
+
+### 10. Test Everything!
+
+1. Visit https://bharatvision.streamlit.app
+2. Go to **Help AI** page
+3. Look for "✅ Cloud AI Connected"
+4. Ask: "What is Legal Metrology?"
+5. You should get a response from Gemma-2-9b-it!
+
+---
+
+## Troubleshooting
+
+### Space shows "Building" for too long
+- Check the Logs tab for errors
+- Make sure all files are uploaded correctly
+- Verify Dockerfile syntax
+
+### API returns 503
+- Check that HF_TOKEN secret is set correctly
+- Verify the token is valid at https://huggingface.co/settings/tokens
+- Check Space logs for initialization errors
+
+### CORS errors in Streamlit
+- The `simple_api.py` already has CORS configured for Streamlit Cloud
+- Make sure you're using the correct API URL in Streamlit secrets
+
+### "Model not available" error
+- Check that HF_MODEL secret is set to `google/gemma-2-9b-it`
+- Verify your HF token has access to the model
+
+---
+
+## Advantages of HuggingFace Spaces
+
+✅ **Free forever** - No time limits
+✅ **Auto-scaling** - Handles traffic automatically
+✅ **HTTPS included** - Secure by default
+✅ **Easy updates** - Just push new code
+✅ **Logs available** - Debug easily
+✅ **Same ecosystem** - Already using HF for models
+✅ **No credit card** - Truly free tier
+
+---
+
+## Files You Need
+
+From your project, you need these 4 files:
+
+1. `simple_api.py` - The API code (already enhanced ✅)
+2. `requirements_api.txt` - Dependencies (already created ✅)
+3. `deploy/huggingface/Dockerfile` - Container config (just created ✅)
+4. `deploy/huggingface/README.md` - Space description (just created ✅)
+
+Everything is ready! Just follow the steps above.
+
+---
+
+## Next Steps After Deployment
+
+1. ✅ Deploy to HuggingFace Spaces
+2. ✅ Get your Space URL
+3. ✅ Add URL to Streamlit secrets
+4. ✅ Push code to GitHub
+5. ✅ Test on bharatvision.streamlit.app
+6. 🎉 Enjoy your cloud-powered AI assistant!
+
+---
+
+## Cost
+
+**HuggingFace Spaces:** FREE (CPU basic tier)
+**HuggingFace Inference API:** FREE tier available (rate limited)
+**Streamlit Cloud:** FREE (you're already using it)
+
+**Total cost: $0** 🎉

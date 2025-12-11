@@ -1,0 +1,60 @@
+# ================= LOCAL DEVELOPMENT REQUIREMENTS =================
+# Full dependencies for localhost with Surya OCR and YOLO
+# Use this file for local development: pip install -r requirements.local.txt
+#
+# For Streamlit Cloud deployment, use requirements.txt (lightweight version)
+
+# ================= STREAMLIT FRONTEND =================
+streamlit>=1.38.0
+streamlit-option-menu>=0.3.0
+streamlit-aggrid>=0.3.0
+
+# ================= CORE NUMPY / IMAGING =================
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0
+Pillow>=10.0.0
+
+# ================= OPENCV =================
+opencv-python-headless>=4.8.0
+
+# ================= PYTORCH & TRANSFORMERS =================
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.35.0
+
+# ================= SURYA OCR (Primary OCR - Best Quality) =================
+surya-ocr>=0.5.0
+
+# ================= YOLO MODEL =================
+ultralytics>=8.0.0
+selenium>=4.14.0
+webdriver-manager>=4.0.0
+
+# ================= FALLBACK OCR =================
+pytesseract>=0.3.10
+
+# ================= DOCUMENT PROCESSING =================
+pdf2image>=1.16.0
+pdfplumber>=0.10.0
+python-pptx>=0.6.21
+openpyxl>=3.1.0
+
+# ================= VISUALIZATION =================
+plotly>=5.18.0
+matplotlib>=3.8.0
+seaborn>=0.12.0
+
+# ================= WEB / UTILITIES =================
+requests>=2.31.0
+python-dotenv>=1.0.0
+PyYAML>=6.0
+python-multipart>=0.0.9
+psutil>=5.9.0
+regex>=2024.0.0
+beautifulsoup4>=4.12.0
+
+# ================= AUTH & SECURITY =================
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.0.0
+cryptography>=41.0.0

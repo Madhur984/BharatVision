@@ -1,0 +1,129 @@
+# 🚀 LIVE DEPLOYMENT GUIDE - Follow Along!
+
+## Step 1: Create HuggingFace Space (DOING NOW)
+
+I just opened https://huggingface.co/new-space in your browser.
+
+### Fill in the form:
+
+1. **Owner:** Select your username
+2. **Space name:** Type: `bharatvision-ml-api`
+3. **License:** Select: `Apache 2.0`
+4. **Select the Space SDK:** Choose: **Docker** ⚠️ IMPORTANT!
+5. **Space hardware:** Select: `CPU basic - 2 vCPU - 16 GB - Free`
+6. **Visibility:** Choose `Public` (or Private if you prefer)
+
+### Then click: **Create Space**
+
+---
+
+## Step 2: Upload Files (NEXT)
+
+I just opened the `deploy_package` folder in Windows Explorer.
+
+You'll see these 4 files:
+- ✅ simple_api.py
+- ✅ requirements_api.txt
+- ✅ Dockerfile
+- ✅ README.md
+
+### In your new HuggingFace Space:
+
+1. Click **Files** tab
+2. Click **Add file** → **Upload files**
+3. Drag and drop ALL 4 files from the Explorer window
+4. Click **Commit changes to main**
+
+---
+
+## Step 3: Add Secrets
+
+In your Space:
+1. Click **Settings** tab
+2. Scroll to **Repository secrets**
+3. Click **New secret** for each:
+
+### Secret 1:
+```
+Name: HF_TOKEN
+Value: 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
+```
+
+### Secret 2:
+```
+Name: HF_MODEL
+Value: google/gemma-2-9b-it
+```
+
+### Secret 3:
+```
+Name: ENVIRONMENT
+Value: production
+```
+
+---
+
+## Step 4: Watch Build
+
+1. Go to **App** tab
+2. Watch the logs
+3. Wait for "Running on http://0.0.0.0:7860"
+4. Status will show **Running** ✓
+
+---
+
+## Step 5: Get Your URL
+
+Your API will be at:
+```
+https://YOUR_USERNAME-bharatvision-ml-api.hf.space
+```
+
+Copy this URL - you'll need it next!
+
+---
+
+## Step 6: Test It
+
+Open PowerShell and run:
+```powershell
+curl https://YOUR_USERNAME-bharatvision-ml-api.hf.space/health
+```
+
+---
+
+## Step 7: Configure Streamlit
+
+1. Go to: https://share.streamlit.io/
+2. Find `bharatvision` app
+3. Settings → Secrets
+4. Add:
+```toml
+ML_API_URL = "https://YOUR_USERNAME-bharatvision-ml-api.hf.space"
+```
+5. Save and Reboot
+
+---
+
+## Step 8: Push to GitHub
+
+Run these commands:
+```powershell
+cd "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy"
+git add web/api_client.py web/pages/08_Help_AI.py requirements_frontend.txt
+git commit -m "Add cloud API integration"
+git push origin main
+```
+
+---
+
+## Step 9: Test!
+
+Visit: https://bharatvision.streamlit.app
+Go to Help AI page
+Look for: ✅ Cloud AI Connected
+Ask a question!
+
+---
+
+**I'm here to help at each step! Let me know when you complete each one and I'll guide you through the next.**

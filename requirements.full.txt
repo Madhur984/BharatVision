@@ -1,0 +1,62 @@
+# =============== STREAMLIT FRONTEND ===============
+streamlit==1.38.0
+streamlit-option-menu>=0.3.0
+streamlit-aggrid>=0.3.0
+
+# =============== CORE ARRAY / IMAGE ===============
+numpy==2.2.6
+Pillow==10.4.0
+pandas==2.2.2
+scikit-image==0.21.0
+
+# =============== OCR (PRIMARY: TESSERACT, FALLBACK: EASYOCR) ===============
+# Primary: Tesseract v5+ (system binary - Windows: https://github.com/UB-Mannheim/tesseract/wiki)
+# Fallback: EasyOCR (Python library with PyTorch backend)
+pytesseract==0.3.13
+easyocr==1.7.2
+torch==2.9.1
+torchvision==0.24.1
+torchaudio==2.9.1
+transformers==4.57.3
+transformers==4.39.0
+accelerate>=0.28.0
+bitsandbytes>=0.43.0
+onnxruntime==1.17.1
+
+# OpenCV: works with numpy 2.2.6
+opencv-python==4.12.0.88
+
+# =============== DOCUMENT / REPORTS ===============
+pdf2image==1.16.3
+pdfplumber==0.10.4
+python-pptx==0.6.21
+openpyxl==3.1.2
+
+# =============== VISUALIZATION ===============
+plotly==5.18.0
+matplotlib==3.8.2
+seaborn>=0.12.0
+
+# =============== WEB / UTILITIES ===============
+requests==2.31.0
+python-dotenv==1.0.0
+PyYAML==6.0.2
+python-multipart==0.0.9
+psutil>=5.9.8
+regex==2024.7.24
+beautifulsoup4==4.12.2
+
+# =============== WEB SCRAPING (FOR FLIPKART/MYNTRA CRAWLER) ===============
+selenium==4.27.1
+webdriver-manager==4.0.2
+
+# =============== AUTH & SECURITY ===============
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
+cryptography==41.0.7
+
+# =============== OPTIONAL BARCODE / HARDWARE ===============
+pyzbar>=0.1.9
+pyserial>=3.5
+pyusb>=1.2.1

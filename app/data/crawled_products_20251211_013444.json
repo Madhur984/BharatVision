@@ -1,0 +1,261 @@
+[
+  {
+    "title": "Kellogg's Chocos Moons & Stars, With Whole Grain, Source Of Fibre, High In Calcium & Protein, With 10 Essential Vitamins & Minerals, Breakfast Cereals, 1.15 /1.2 Kg Pack (Weight May Vary)",
+    "brand": null,
+    "price": 330.0,
+    "mrp": null,
+    "description": null,
+    "net_quantity": null,
+    "manufacturer": null,
+    "manufacturer_details": null,
+    "importer_details": null,
+    "country_of_origin": null,
+    "mfg_date": null,
+    "date_of_manufacture": null,
+    "expiry_date": null,
+    "best_before_date": null,
+    "customer_care_details": null,
+    "ingredients": null,
+    "features": [],
+    "specs": {},
+    "legal_disclaimer": null,
+    "aplus_content": null,
+    "platform": "amazon",
+    "seller": null,
+    "product_url": null,
+    "image_urls": [
+      "https://m.media-amazon.com/images/I/81ZxhQcqA8L._AC_UL320_.jpg"
+    ],
+    "local_image_paths": [
+      "app_data\\images\\KelloggsChocosMoo_1765397084_0.jpg"
+    ],
+    "category": null,
+    "rating": 4.4,
+    "reviews_count": null,
+    "ocr_text": "ZB LOCK.\n\n",
+    "full_page_text": null,
+    "extracted_at": "2025-12-11 01:34:43",
+    "compliance_score": 66.66666666666666,
+    "compliance_status": "VIOLATION",
+    "issues_found": [
+      "LM_RULE_05_COUNTRY_ORIGIN_MISSING: Country of Origin is missing.",
+      "LM_RULE_06_MFG_OR_IMPORT_MISSING: Both Manufacturing Date and Import Date are missing (at least one is required).",
+      "LM_RULE_08_MANUFACTURER_IMPORTER_MISSING: Manufacturer / Importer details are missing (at least one required).",
+      "LM_RULE_09_CUSTOMER_CARE_MISSING: Consumer / Customer care details are missing."
+    ],
+    "validation_result": {
+      "overall_status": "VIOLATION",
+      "total_rules": 12,
+      "violations_count": 4,
+      "rule_results": [
+        {
+          "rule_id": "LM_RULE_01_MRP_MISSING",
+          "description": "MRP is a mandatory declaration and is missing.",
+          "field": "mrp",
+          "severity": "critical",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_02_MRP_FORMAT",
+          "description": "MRP format looks invalid or not in standard ₹ / Rs form.",
+          "field": "mrp",
+          "severity": "high",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_03_NET_QTY_MISSING",
+          "description": "Net Quantity is a mandatory declaration and is missing.",
+          "field": "net_quantity",
+          "severity": "critical",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_04_NET_QTY_UNIT_INVALID",
+          "description": "Net Quantity unit is not a valid Legal Metrology unit.",
+          "field": "net_quantity",
+          "severity": "high",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_05_COUNTRY_ORIGIN_MISSING",
+          "description": "Country of Origin is a mandatory declaration and is missing.",
+          "field": "country_of_origin",
+          "severity": "critical",
+          "violated": true,
+          "details": "Country of Origin is missing."
+        },
+        {
+          "rule_id": "LM_RULE_06_MFG_OR_IMPORT_MISSING",
+          "description": "At least one of Manufacturing Date or Import Date must be declared.",
+          "field": "date_of_manufacture",
+          "severity": "critical",
+          "violated": true,
+          "details": "Both Manufacturing Date and Import Date are missing (at least one is required)."
+        },
+        {
+          "rule_id": "LM_RULE_07_FUTURE_DATES",
+          "description": "Manufacturing / Import / Best-Before / Expiry dates must not be in the future.",
+          "field": "date_fields",
+          "severity": "high",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_08_MANUFACTURER_IMPORTER_MISSING",
+          "description": "Manufacturer or Importer details must be present.",
+          "field": "manufacturer_details",
+          "severity": "critical",
+          "violated": true,
+          "details": "Manufacturer / Importer details are missing (at least one required)."
+        },
+        {
+          "rule_id": "LM_RULE_09_CUSTOMER_CARE_MISSING",
+          "description": "Consumer care details are required (address / email / phone).",
+          "field": "customer_care_details",
+          "severity": "critical",
+          "violated": true,
+          "details": "Consumer / Customer care details are missing."
+        },
+        {
+          "rule_id": "LM_RULE_10_CUSTOMER_CARE_FORMAT",
+          "description": "Consumer care details should contain a valid email or phone number.",
+          "field": "customer_care_details",
+          "severity": "medium",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_11_BEST_BEFORE_REQUIRED",
+          "description": "Best-before / expiry date must be printed for certain categories (e.g., Food, Beverages, Cosmetics).",
+          "field": "best_before_date",
+          "severity": "high",
+          "violated": false,
+          "details": ""
+        },
+        {
+          "rule_id": "LM_RULE_12_UNIT_SALE_PRICE_REQUIRED",
+          "description": "Unit Sale Price is required for certain grocery / food products.",
+          "field": "unit_sale_price",
+          "severity": "medium",
+          "violated": false,
+          "details": ""
+        }
+      ]
+    },
+    "compliance_details": {
+      "extracted_fields": {
+        "mrp": "₹330.0",
+        "net_quantity": "1.2 Kg"
+      },
+      "validation_result": {
+        "overall_status": "VIOLATION",
+        "total_rules": 12,
+        "violations_count": 4,
+        "rule_results": [
+          {
+            "rule_id": "LM_RULE_01_MRP_MISSING",
+            "description": "MRP is a mandatory declaration and is missing.",
+            "field": "mrp",
+            "severity": "critical",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_02_MRP_FORMAT",
+            "description": "MRP format looks invalid or not in standard ₹ / Rs form.",
+            "field": "mrp",
+            "severity": "high",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_03_NET_QTY_MISSING",
+            "description": "Net Quantity is a mandatory declaration and is missing.",
+            "field": "net_quantity",
+            "severity": "critical",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_04_NET_QTY_UNIT_INVALID",
+            "description": "Net Quantity unit is not a valid Legal Metrology unit.",
+            "field": "net_quantity",
+            "severity": "high",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_05_COUNTRY_ORIGIN_MISSING",
+            "description": "Country of Origin is a mandatory declaration and is missing.",
+            "field": "country_of_origin",
+            "severity": "critical",
+            "violated": true,
+            "details": "Country of Origin is missing."
+          },
+          {
+            "rule_id": "LM_RULE_06_MFG_OR_IMPORT_MISSING",
+            "description": "At least one of Manufacturing Date or Import Date must be declared.",
+            "field": "date_of_manufacture",
+            "severity": "critical",
+            "violated": true,
+            "details": "Both Manufacturing Date and Import Date are missing (at least one is required)."
+          },
+          {
+            "rule_id": "LM_RULE_07_FUTURE_DATES",
+            "description": "Manufacturing / Import / Best-Before / Expiry dates must not be in the future.",
+            "field": "date_fields",
+            "severity": "high",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_08_MANUFACTURER_IMPORTER_MISSING",
+            "description": "Manufacturer or Importer details must be present.",
+            "field": "manufacturer_details",
+            "severity": "critical",
+            "violated": true,
+            "details": "Manufacturer / Importer details are missing (at least one required)."
+          },
+          {
+            "rule_id": "LM_RULE_09_CUSTOMER_CARE_MISSING",
+            "description": "Consumer care details are required (address / email / phone).",
+            "field": "customer_care_details",
+            "severity": "critical",
+            "violated": true,
+            "details": "Consumer / Customer care details are missing."
+          },
+          {
+            "rule_id": "LM_RULE_10_CUSTOMER_CARE_FORMAT",
+            "description": "Consumer care details should contain a valid email or phone number.",
+            "field": "customer_care_details",
+            "severity": "medium",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_11_BEST_BEFORE_REQUIRED",
+            "description": "Best-before / expiry date must be printed for certain categories (e.g., Food, Beverages, Cosmetics).",
+            "field": "best_before_date",
+            "severity": "high",
+            "violated": false,
+            "details": ""
+          },
+          {
+            "rule_id": "LM_RULE_12_UNIT_SALE_PRICE_REQUIRED",
+            "description": "Unit Sale Price is required for certain grocery / food products.",
+            "field": "unit_sale_price",
+            "severity": "medium",
+            "violated": false,
+            "details": ""
+          }
+        ]
+      },
+      "ocr_performed": true,
+      "text_sources": 2
+    }
+  }
+]

@@ -1,0 +1,66 @@
+# ================= STREAMLIT FRONTEND =================
+# Python 3.11 (via runtime.txt) - December 9, 2025
+streamlit>=1.38.0
+streamlit-option-menu>=0.3.0
+streamlit-aggrid>=0.3.0
+
+# ================= CORE NUMPY / IMAGING =================
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0
+Pillow>=10.0.0
+
+# ================= OPENCV HEADLESS (MUST BE FIRST) =================
+# Install headless version BEFORE any package that might depend on opencv
+# This prevents libGL.so.1 issues on Streamlit Cloud
+opencv-python-headless>=4.8.0
+
+# ================= PYTORCH & TRANSFORMERS =================
+# Required for NLP structuring (Gemma 2)
+# Using CPU-only torch to save memory (Note: Gemma 9B requires significant RAM/VRAM)
+torch>=2.1.0
+# torchvision>=0.16.0  # Not needed without Surya
+transformers>=4.40.0
+bitsandbytes>=0.43.0
+accelerate>=0.29.0
+
+# ================= SURYA OCR - DISABLED =================
+# Surya OCR disabled - requires ~1.5GB RAM which exceeds Streamlit Cloud free tier
+# surya-ocr>=0.5.0
+
+# ================= YOLO MODEL - DISABLED =================
+# YOLO disabled to save memory - using Tesseract for OCR instead
+# ultralytics>=8.0.0
+
+# ================= FALLBACK OCR ENGINES =================
+# EasyOCR disabled - causes opencv-python conflict and libGL issues on Streamlit Cloud
+# easyocr>=1.7.0
+
+# Tesseract OCR - lightweight, works on Streamlit Cloud
+# Requires tesseract-ocr system package (in packages.txt)
+pytesseract>=0.3.10
+
+# ================= DOCUMENT PROCESSING =================
+pdf2image>=1.16.0
+pdfplumber>=0.10.0
+python-pptx>=0.6.21
+openpyxl>=3.1.0
+
+# ================= VISUALIZATION =================
+plotly>=5.18.0
+matplotlib>=3.8.0
+seaborn>=0.12.0
+
+# ================= WEB / UTILITIES =================
+requests>=2.31.0
+python-dotenv>=1.0.0
+PyYAML>=6.0
+python-multipart>=0.0.9
+psutil>=5.9.0
+regex>=2024.0.0
+beautifulsoup4>=4.12.0
+
+# ================= AUTH & SECURITY =================
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.0.0
+cryptography>=41.0.0

@@ -1,0 +1,66 @@
+# ✅ FIXED - Ready to Upload!
+
+## What Was Fixed
+
+HuggingFace detected a hardcoded token in `simple_api.py`. This has been removed for security.
+
+**Before:**
+```python
+HF_TOKEN = os.getenv("HF_TOKEN", "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")  # ❌ Hardcoded fallback
+```
+
+**After:**
+```python
+HF_TOKEN = os.getenv("HF_TOKEN")  # ✅ Only from environment variable
+```
+
+## ✅ Updated File
+
+The fixed `simple_api.py` is now in the `deploy_package` folder.
+
+## 🚀 Upload Again
+
+Now you can upload the files to HuggingFace Space:
+
+1. Go back to your Space
+2. Click **Files** tab
+3. Click **Add file** → **Upload files**
+4. Upload ALL 4 files from `deploy_package/`:
+   - ✅ `simple_api.py` (UPDATED - no hardcoded token)
+   - ✅ `requirements_api.txt`
+   - ✅ `Dockerfile`
+   - ✅ `README.md`
+5. Click **Commit changes**
+
+## ⚠️ IMPORTANT: Add the Secret!
+
+Since there's no fallback token anymore, you MUST add the HF_TOKEN secret:
+
+1. Go to **Settings** tab
+2. **Repository secrets**
+3. Click **New secret**
+4. Add:
+   ```
+   Name: HF_TOKEN
+   Value: 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
+   ```
+
+Also add the other 2 secrets:
+
+```
+Name: HF_MODEL
+Value: google/gemma-2-9b-it
+```
+
+```
+Name: ENVIRONMENT
+Value: production
+```
+
+## 🎯 This is More Secure!
+
+The token is now only in the Space secrets (encrypted), not in the code.
+
+---
+
+**Ready to upload? The files are updated in `deploy_package/`**

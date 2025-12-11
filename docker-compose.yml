@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ml_api:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models # Mount models cache if needed
+    environment:
+      - HF_HOME=/app/models
+
+  web_app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - ML_API_URL=http://ml_api:8000
+    depends_on:
+      - ml_api

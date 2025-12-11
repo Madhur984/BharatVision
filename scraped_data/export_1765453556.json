@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "url": "https://en.wikipedia.org/wiki/Honey",
+    "title": "Honey",
+    "price": "",
+    "description": "",
+    "scraped_at": "2025-12-11 11:45:56",
+    "images": [
+      {
+        "id": 1,
+        "product_id": 1,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Creamed_honey_Maillard_reaction_after_aging.jpg/250px-Creamed_honey_Maillard_reaction_after_aging.jpg",
+        "local_path": "D:\\Hokage X Pirate king\\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\\scraped_data\\images\\1765453539_0.jpg",
+        "ocr_text": ""
+      },
+      {
+        "id": 2,
+        "product_id": 1,
+        "image_url": "https://en.wikipedia.org/static/images/mobile/copyright/wikipedia-wordmark-en.svg",
+        "local_path": "D:\\Hokage X Pirate king\\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\\scraped_data\\images\\1765453539_1.jpg",
+        "ocr_text": ""
+      },
+      {
+        "id": 3,
+        "product_id": 1,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Flag_of_the_United_States_%2823px%29.png",
+        "local_path": "D:\\Hokage X Pirate king\\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\\scraped_data\\images\\1765453541_2.png",
+        "ocr_text": ""
+      },
+      {
+        "id": 4,
+        "product_id": 1,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Flag_of_the_People%27s_Republic_of_China.svg/40px-Flag_of_the_People%27s_Republic_of_China.svg.png",
+        "local_path": "D:\\Hokage X Pirate king\\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\\scraped_data\\images\\1765453541_3.png",
+        "ocr_text": ""
+      },
+      {
+        "id": 5,
+        "product_id": 1,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Texas_State_Fair_honey.jpg/250px-Texas_State_Fair_honey.jpg",
+        "local_path": "D:\\Hokage X Pirate king\\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\\scraped_data\\images\\1765453542_4.jpg",
+        "ocr_text": ""
+      }
+    ],
+    "validation": {
+      "id": 1,
+      "product_id": 1,
+      "manufacturer_compliant": 0,
+      "net_quantity_compliant": 0,
+      "mrp_compliant": 0,
+      "consumer_care_compliant": 0,
+      "date_of_manufacture_compliant": 0,
+      "country_of_origin_compliant": 0,
+      "compliance_score": 0.0,
+      "full_analysis": "{\"manufacturer\": {\"valid\": false, \"value\": \"MISSING\"}, \"net_quantity\": {\"valid\": false, \"value\": \"MISSING\"}, \"mrp\": {\"valid\": false, \"value\": \"MISSING\"}, \"consumer_care\": {\"valid\": false, \"value\": \"MISSING\"}, \"date_of_manufacture\": {\"valid\": false, \"value\": \"MISSING\"}, \"country_of_origin\": {\"valid\": false, \"value\": \"MISSING\"}, \"compliance_score\": 0, \"full_analysis\": \"```json\\n{\\n  \\\"manufacturer\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"net_quantity\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"mrp\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"consumer_care\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"date_of_manufacture\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"country_of_origin\\\": { \\\"valid\\\": false, \\\"value\\\": \\\"MISSING\\\" },\\n  \\\"compliance_score\\\": 0\\n}\\n``` \\n\\n\\nEXPLANATION:\\n\\nThe provided text does not include any of the mandatory declarations required by legal metrology. \\n\\n**Therefore, the compliance score is 0**. \\n\\n\\nLet me know if you have other product descriptions you'd like me to analyze.\\n\"}"
+    }
+  }
+]

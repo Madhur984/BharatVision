@@ -1,0 +1,13 @@
+
+fastapi
+uvicorn
+python-multipart
+requests
+python-dotenv
+huggingface-hub
+surya-ocr==0.17.0
+torch
+transformers
+pillow
+numpy
+opencv-python-headless

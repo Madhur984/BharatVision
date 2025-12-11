@@ -1,0 +1,214 @@
+{
+  "search_history": [
+    {
+      "id": 1,
+      "search_term": "Milk Product",
+      "category": "Dairy",
+      "timestamp": "2025-12-05T10:30:00",
+      "search_count": 15,
+      "results_found": 42,
+      "compliance_rate": 85.7,
+      "user": "admin"
+    },
+    {
+      "id": 2,
+      "search_term": "Oil Bottle",
+      "category": "Oils & Fats",
+      "timestamp": "2025-12-05T10:45:00",
+      "search_count": 12,
+      "results_found": 28,
+      "compliance_rate": 92.3,
+      "user": "admin"
+    },
+    {
+      "id": 3,
+      "search_term": "Spice Powder",
+      "category": "Spices",
+      "timestamp": "2025-12-05T11:00:00",
+      "search_count": 8,
+      "results_found": 15,
+      "compliance_rate": 78.5,
+      "user": "user1"
+    },
+    {
+      "id": 4,
+      "search_term": "Rice Sack",
+      "category": "Grains",
+      "timestamp": "2025-12-05T11:15:00",
+      "search_count": 20,
+      "results_found": 55,
+      "compliance_rate": 88.2,
+      "user": "admin"
+    },
+    {
+      "id": 5,
+      "search_term": "Sugar Pack",
+      "category": "Sugar",
+      "timestamp": "2025-12-05T11:30:00",
+      "search_count": 10,
+      "results_found": 25,
+      "compliance_rate": 95.0,
+      "user": "user2"
+    },
+    {
+      "id": 6,
+      "search_term": "Salt Container",
+      "category": "Minerals",
+      "timestamp": "2025-12-05T11:45:00",
+      "search_count": 9,
+      "results_found": 18,
+      "compliance_rate": 81.3,
+      "user": "admin"
+    },
+    {
+      "id": 7,
+      "search_term": "Flour Bag",
+      "category": "Grains",
+      "timestamp": "2025-12-05T12:00:00",
+      "search_count": 14,
+      "results_found": 35,
+      "compliance_rate": 87.1,
+      "user": "user1"
+    },
+    {
+      "id": 8,
+      "search_term": "Honey Jar",
+      "category": "Sweeteners",
+      "timestamp": "2025-12-05T12:15:00",
+      "search_count": 6,
+      "results_found": 12,
+      "compliance_rate": 100.0,
+      "user": "user2"
+    },
+    {
+      "id": 9,
+      "search_term": "Ghee Tin",
+      "category": "Dairy",
+      "timestamp": "2025-12-05T12:30:00",
+      "search_count": 11,
+      "results_found": 22,
+      "compliance_rate": 91.7,
+      "user": "admin"
+    },
+    {
+      "id": 10,
+      "search_term": "Biscuit Pack",
+      "category": "Bakery",
+      "timestamp": "2025-12-05T12:45:00",
+      "search_count": 7,
+      "results_found": 19,
+      "compliance_rate": 84.2,
+      "user": "user1"
+    },
+    {
+      "id": 11,
+      "search_term": "Tea Box",
+      "category": "Beverages",
+      "timestamp": "2025-12-05T13:00:00",
+      "search_count": 13,
+      "results_found": 38,
+      "compliance_rate": 89.5,
+      "user": "admin"
+    },
+    {
+      "id": 12,
+      "search_term": "Coffee Packet",
+      "category": "Beverages",
+      "timestamp": "2025-12-05T13:15:00",
+      "search_count": 5,
+      "results_found": 11,
+      "compliance_rate": 93.8,
+      "user": "user2"
+    },
+    {
+      "id": 13,
+      "search_term": "Turmeric Powder",
+      "category": "Spices",
+      "timestamp": "2025-12-05T13:30:00",
+      "search_count": 9,
+      "results_found": 20,
+      "compliance_rate": 86.0,
+      "user": "user1"
+    },
+    {
+      "id": 14,
+      "search_term": "Chili Powder",
+      "category": "Spices",
+      "timestamp": "2025-12-05T13:45:00",
+      "search_count": 8,
+      "results_found": 16,
+      "compliance_rate": 82.5,
+      "user": "admin"
+    },
+    {
+      "id": 15,
+      "search_term": "Cumin Seeds",
+      "category": "Spices",
+      "timestamp": "2025-12-05T14:00:00",
+      "search_count": 6,
+      "results_found": 13,
+      "compliance_rate": 88.5,
+      "user": "user2"
+    }
+  ],
+  "summary": {
+    "total_searches": 143,
+    "unique_products": 15,
+    "total_results": 369,
+    "average_compliance": 88.2,
+    "most_searched": "Rice Sack",
+    "most_compliant": "Honey Jar",
+    "least_compliant": "Spice Powder",
+    "date_range": {
+      "from": "2025-12-05",
+      "to": "2025-12-07"
+    }
+  },
+  "category_summary": {
+    "Dairy": {
+      "searches": 26,
+      "products": 2,
+      "compliance_rate": 88.5
+    },
+    "Oils & Fats": {
+      "searches": 12,
+      "products": 1,
+      "compliance_rate": 92.3
+    },
+    "Spices": {
+      "searches": 25,
+      "products": 3,
+      "compliance_rate": 82.3
+    },
+    "Grains": {
+      "searches": 34,
+      "products": 2,
+      "compliance_rate": 87.7
+    },
+    "Sugar": {
+      "searches": 10,
+      "products": 1,
+      "compliance_rate": 95.0
+    },
+    "Minerals": {
+      "searches": 9,
+      "products": 1,
+      "compliance_rate": 81.3
+    },
+    "Sweeteners": {
+      "searches": 6,
+      "products": 1,
+      "compliance_rate": 100.0
+    },
+    "Bakery": {
+      "searches": 7,
+      "products": 1,
+      "compliance_rate": 84.2
+    },
+    "Beverages": {
+      "searches": 18,
+      "products": 2,
+      "compliance_rate": 91.7
+    }
+  }
+}

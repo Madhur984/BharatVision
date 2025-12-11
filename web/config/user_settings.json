@@ -1,0 +1,36 @@
+{
+  "ocr_settings": {
+    "confidence_threshold": 0.6,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "enable_preprocessing": true,
+    "use_gpu": false,
+    "batch_size": 1
+  },
+  "camera_settings": {
+    "default_camera_index": 0,
+    "resolution": "1280x720",
+    "fps": 30,
+    "auto_focus": true
+  },
+  "compliance_settings": {
+    "strict_mode": false,
+    "custom_rules_enabled": false,
+    "severity_threshold": "CRITICAL",
+    "auto_validate": true
+  },
+  "ui_settings": {
+    "theme": "dark",
+    "auto_save_results": true,
+    "show_debug_info": false,
+    "notifications_enabled": true
+  },
+  "performance_settings": {
+    "max_concurrent_jobs": 3,
+    "processing_timeout": 60,
+    "memory_limit_gb": 4,
+    "cache_enabled": true
+  }
+}

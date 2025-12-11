@@ -1,0 +1,60 @@
+# 🎯 Compliance Checking - Updated to 6 Core Fields
+
+## What Changed
+
+Updated compliance validation to focus ONLY on the 6 mandatory Legal Metrology requirements:
+
+### 6 Core Fields (Equal Weight - ~16.67% each)
+
+1. **Manufacturer Name & Address**
+   - Keywords: "manufactured by", "mfd by", "manufacturer", "marketed by"
+   
+2. **Net Quantity**
+   - Keywords: "net qty", "net quantity", "net wt", "net weight", "contents"
+   
+3. **MRP (Maximum Retail Price)**
+   - Keywords: "mrp", "m.r.p", "maximum retail price", "₹", "rs"
+   
+4. **Consumer Care Details**
+   - Keywords: "customer care", "consumer care", "helpline", "contact", "email"
+   
+5. **Date of Manufacture**
+   - Keywords: "mfg date", "mfd date", "manufactured on", "dom"
+   
+6. **Country of Origin**
+   - Keywords: "made in", "country of origin", "manufactured in"
+
+## Scoring
+
+- Each field = 16.67 points
+- Missing field = -16.67 points
+- 100% = All 6 fields present
+- 0% = No fields found
+
+## What Was Removed
+
+Removed checking for non-essential fields like:
+- ❌ Ingredients (not always required)
+- ❌ Best before date (only for certain categories)
+- ❌ Import details (only for imported goods)
+- ❌ Seller information (not mandatory)
+
+## Next Steps
+
+1. **Upload to HuggingFace Spaces**
+   - Update `simple_api.py` in your Space
+   - Rebuild will happen automatically
+   
+2. **Wait for Streamlit Rebuild**
+   - Streamlit Cloud will pull latest code from GitHub
+   - OCR will use cloud API (better quality)
+   - Compliance will check only 6 core fields
+
+3. **Test Again**
+   - Try the same Amazon URL
+   - Should see focused, accurate compliance results
+
+---
+
+**Changes pushed to GitHub ✓**
+**Ready to upload to HuggingFace Spaces**

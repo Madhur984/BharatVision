@@ -1,0 +1,55 @@
+name: Reproduce Streamlit Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential libglib2.0-0 libgl1 pkg-config ca-certificates
+
+      - name: Install Python requirements (web)
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r web/requirements.txt 2>&1 | tee pip_install.log
+
+      - name: Build Docker reproducer
+        run: |
+          docker build -f docker/Dockerfile -t legal-metrology-repro:ci . 2>&1 | tee docker_build.log
+
+      - name: Quick runtime check (cv2 import)
+        run: |
+          python - <<'PY' 2>&1 | tee runtime.log
+import sys
+try:
+    import cv2
+    print('cv2 import OK:', cv2.__version__)
+except Exception as e:
+    print('cv2 import FAILED')
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+PY
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: repro-logs
+          path: |
+            pip_install.log
+            docker_build.log
+            runtime.log

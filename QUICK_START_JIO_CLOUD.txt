@@ -1,0 +1,79 @@
+# Quick Start Guide - Jio Cloud Deployment
+
+## What Was Done
+
+✅ Enhanced `simple_api.py` with production features:
+   - Environment variables for HF token
+   - CORS for Streamlit Cloud
+   - Comprehensive logging
+   - Better error handling
+
+✅ Created `web/api_client.py` - API wrapper for Streamlit
+
+✅ Updated Help AI page to use cloud API
+
+✅ Created deployment files:
+   - `Dockerfile.cloud` - Docker container
+   - `requirements_api.txt` - Minimal dependencies
+   - `.env.cloud` - Environment template
+   - `JIO_CLOUD_DEPLOYMENT.txt` - Full deployment guide
+
+✅ Tested locally - API works perfectly!
+
+## Deploy to Jio Cloud (Quick Steps)
+
+### Option 1: Docker (Easiest)
+
+1. Build image:
+   ```bash
+   docker build -f Dockerfile.cloud -t bharatvision-ml-api .
+   ```
+
+2. Test locally:
+   ```bash
+   docker run -p 8000:8000 --env-file .env.cloud bharatvision-ml-api
+   ```
+
+3. Push to Jio Cloud and deploy
+
+### Option 2: Direct VM
+
+1. Upload files to Jio Cloud VM
+2. Install dependencies: `pip install -r requirements_api.txt`
+3. Run: `python simple_api.py`
+
+## Configure Streamlit Cloud
+
+1. Go to https://share.streamlit.io/
+2. Settings → Secrets
+3. Add:
+   ```toml
+   ML_API_URL = "https://your-jio-cloud-api-url"
+   ```
+4. Save and reboot
+
+## Test
+
+1. Visit bharatvision.streamlit.app
+2. Go to Help AI page
+3. Look for "✅ Cloud AI Connected"
+4. Ask a question!
+
+## Files to Deploy
+
+- `simple_api.py`
+- `requirements_api.txt`
+- `.env.cloud` (rename to `.env` and fill in values)
+- `Dockerfile.cloud` (if using Docker)
+
+## Environment Variables Needed
+
+```
+HF_TOKEN=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
+HF_MODEL=google/gemma-2-9b-it
+ENVIRONMENT=production
+```
+
+## Full Documentation
+
+See `JIO_CLOUD_DEPLOYMENT.txt` for complete deployment guide with troubleshooting.

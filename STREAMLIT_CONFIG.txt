@@ -1,0 +1,48 @@
+# Streamlit Cloud Configuration
+
+## Add this to your Streamlit Cloud Secrets
+
+1. Go to: https://share.streamlit.io/
+2. Find your `bharatvision` app
+3. Click **Settings** (⚙️) → **Secrets**
+4. Add this line:
+
+```toml
+ML_API_URL = "https://madhur984-bharatvision-ml-api.hf.space"
+```
+
+5. Click **Save**
+6. Click **Reboot app**
+
+---
+
+## Your API is Live! ✅
+
+**API URL:** https://madhur984-bharatvision-ml-api.hf.space
+
+**Test it:**
+```bash
+curl https://madhur984-bharatvision-ml-api.hf.space/api/health
+```
+
+**Response:** ✅ Status 200 OK
+
+---
+
+## Next: Push Code to GitHub
+
+After adding the secret to Streamlit, run these commands:
+
+```powershell
+cd "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy"
+
+git add web/api_client.py
+git add web/pages/08_Help_AI.py
+git add requirements_frontend.txt
+
+git commit -m "Add cloud API integration with HuggingFace Spaces"
+
+git push origin main
+```
+
+This will deploy the updated code to Streamlit Cloud.

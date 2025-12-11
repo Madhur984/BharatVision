@@ -1,0 +1,391 @@
+# Deploying BharatVision ML API to Jio Cloud
+
+This guide walks you through deploying the BharatVision ML API to Jio Cloud and integrating it with your Streamlit app.
+
+## Prerequisites
+
+- Jio Cloud account with container/VM access
+- Docker installed (if deploying via containers)
+- HuggingFace token: `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`
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────┐
+│  Streamlit Cloud                    │
+│  bharatvision.streamlit.app         │
+│  ┌───────────────────────────────┐  │
+│  │  Frontend (Streamlit)         │  │
+│  │  - Help AI Page               │  │
+│  │  - Dashboard                  │  │
+│  └───────────┬───────────────────┘  │
+└──────────────┼──────────────────────┘
+               │ HTTPS
+               │ API Calls
+               ▼
+┌─────────────────────────────────────┐
+│  Jio Cloud                          │
+│  ┌───────────────────────────────┐  │
+│  │  ML API Service               │  │
+│  │  - FastAPI                    │  │
+│  │  - Gemma-2-9b-it (HF API)     │  │
+│  │  - Port 8000                  │  │
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+```
+
+## Deployment Options
+
+### Option 1: Docker Container Deployment (Recommended)
+
+#### Step 1: Prepare Files
+
+Ensure you have these files in your project root:
+- `simple_api.py` - Enhanced ML API
+- `requirements_api.txt` - Minimal dependencies
+- `Dockerfile.cloud` - Docker configuration
+- `.env.cloud` - Environment variables template
+
+#### Step 2: Build Docker Image
+
+```bash
+cd "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy"
+
+# Build the Docker image
+docker build -f Dockerfile.cloud -t bharatvision-ml-api:latest .
+```
+
+#### Step 3: Test Locally
+
+```bash
+# Run the container locally to test
+docker run -p 8000:8000 --env-file .env.cloud bharatvision-ml-api:latest
+
+# Test in another terminal
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/api/ai/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is MRP?"}'
+```
+
+#### Step 4: Push to Jio Cloud Container Registry
+
+```bash
+# Tag for Jio Cloud (replace with your registry URL)
+docker tag bharatvision-ml-api:latest <jio-cloud-registry>/bharatvision-ml-api:latest
+
+# Login to Jio Cloud registry
+docker login <jio-cloud-registry>
+
+# Push image
+docker push <jio-cloud-registry>/bharatvision-ml-api:latest
+```
+
+#### Step 5: Deploy on Jio Cloud
+
+Follow Jio Cloud's container deployment process:
+
+1. **Create a new container service**
+2. **Select the pushed image**: `bharatvision-ml-api:latest`
+3. **Configure environment variables**:
+   ```
+   HF_TOKEN=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
+   HF_MODEL=google/gemma-2-9b-it
+   ENVIRONMENT=production
+   API_HOST=0.0.0.0
+   API_PORT=8000
+   ```
+4. **Set port mapping**: Container port 8000 → Public port 80/443
+5. **Configure health check**: Path `/health`, Interval 30s
+6. **Deploy and start the service**
+
+---
+
+### Option 2: Direct VM Deployment
+
+#### Step 1: SSH into Jio Cloud VM
+
+```bash
+ssh user@your-jio-cloud-vm-ip
+```
+
+#### Step 2: Install Dependencies
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python 3.11
+sudo apt install python3.11 python3.11-venv python3-pip -y
+
+# Install system dependencies
+sudo apt install curl -y
+```
+
+#### Step 3: Upload Application Files
+
+```bash
+# From your local machine
+scp simple_api.py user@your-jio-cloud-vm-ip:~/app/
+scp requirements_api.txt user@your-jio-cloud-vm-ip:~/app/
+scp .env.cloud user@your-jio-cloud-vm-ip:~/app/.env
+```
+
+#### Step 4: Setup Application on VM
+
+```bash
+# On the VM
+cd ~/app
+
+# Create virtual environment
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements_api.txt
+
+# Test the API
+python simple_api.py
+```
+
+#### Step 5: Setup as System Service
+
+Create `/etc/systemd/system/bharatvision-api.service`:
+
+```ini
+[Unit]
+Description=BharatVision ML API
+After=network.target
+
+[Service]
+Type=simple
+User=your-user
+WorkingDirectory=/home/your-user/app
+Environment="PATH=/home/your-user/app/venv/bin"
+ExecStart=/home/your-user/app/venv/bin/uvicorn simple_api:app --host 0.0.0.0 --port 8000 --workers 2
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable bharatvision-api
+sudo systemctl start bharatvision-api
+sudo systemctl status bharatvision-api
+```
+
+#### Step 6: Configure Firewall & Reverse Proxy
+
+```bash
+# Allow port 8000
+sudo ufw allow 8000/tcp
+
+# Or setup Nginx reverse proxy (recommended for production)
+sudo apt install nginx -y
+```
+
+Nginx configuration (`/etc/nginx/sites-available/bharatvision-api`):
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable and restart Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/bharatvision-api /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+---
+
+## Configure Streamlit Cloud
+
+### Step 1: Get Your API URL
+
+After deployment, note your public API URL:
+- Docker: `https://<jio-cloud-url>`
+- VM: `http://<vm-ip>:8000` or `https://your-domain.com`
+
+### Step 2: Update Streamlit Cloud Settings
+
+1. Go to https://share.streamlit.io/
+2. Navigate to your app: `bharatvision`
+3. Click **Settings** → **Secrets**
+4. Add environment variable:
+
+```toml
+ML_API_URL = "https://your-jio-cloud-api-url"
+```
+
+5. Click **Save** and **Reboot app**
+
+### Step 3: Update requirements_frontend.txt
+
+Add the requests library if not already present:
+
+```bash
+# In your local project
+echo "requests==2.31.0" >> requirements_frontend.txt
+
+# Commit and push to trigger Streamlit Cloud rebuild
+git add requirements_frontend.txt
+git commit -m "Add requests for API client"
+git push
+```
+
+---
+
+## Verification
+
+### 1. Test API Health
+
+```bash
+curl https://your-jio-cloud-api-url/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "service": "BharatVision HF API",
+  "model": "google/gemma-2-9b-it",
+  "model_available": true,
+  "version": "2.0.0",
+  "environment": "production"
+}
+```
+
+### 2. Test AI Endpoint
+
+```bash
+curl -X POST https://your-jio-cloud-api-url/api/ai/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What are the requirements for MRP labeling in India?"}'
+```
+
+### 3. Test from Streamlit App
+
+1. Visit https://bharatvision.streamlit.app
+2. Navigate to **Help AI** page
+3. Ask a question: "What is Legal Metrology?"
+4. Verify you see "✅ Cloud AI Connected" status
+5. Check that response comes from the cloud API
+
+### 4. Monitor Logs
+
+**Docker:**
+```bash
+docker logs -f <container-id>
+```
+
+**VM (systemd):**
+```bash
+sudo journalctl -u bharatvision-api -f
+```
+
+---
+
+## Troubleshooting
+
+### Issue: CORS Errors
+
+**Symptom:** Browser console shows CORS policy errors
+
+**Solution:**
+1. Check that `ALLOWED_ORIGINS` in `simple_api.py` includes your Streamlit URL
+2. Verify the API is returning proper CORS headers:
+   ```bash
+   curl -I https://your-api-url/health
+   ```
+
+### Issue: API Returns 503
+
+**Symptom:** "AI service unavailable" error
+
+**Solution:**
+1. Check HF token is valid and set correctly
+2. Verify HuggingFace API is accessible from Jio Cloud
+3. Check logs for initialization errors
+
+### Issue: Slow Response Times
+
+**Symptom:** Requests timeout or take >30 seconds
+
+**Solution:**
+1. Increase `API_TIMEOUT` in Streamlit app settings
+2. Consider using a smaller/faster model
+3. Check Jio Cloud network latency to HuggingFace
+
+### Issue: Rate Limiting
+
+**Symptom:** "Rate limit exceeded" errors
+
+**Solution:**
+1. HuggingFace free tier has rate limits
+2. Consider upgrading to HF Pro
+3. Implement request caching in the API
+
+---
+
+## Security Best Practices
+
+1. **Never commit `.env` files** - Use `.env.cloud` as template only
+2. **Use HTTPS** - Always deploy with SSL/TLS certificates
+3. **Rotate tokens** - Periodically update HF_TOKEN
+4. **Monitor usage** - Track API calls and costs
+5. **Implement rate limiting** - Protect against abuse
+6. **Use secrets management** - Store tokens in Jio Cloud secrets manager
+
+---
+
+## Cost Optimization
+
+1. **Use HuggingFace Inference API** - No GPU costs, pay per request
+2. **Implement caching** - Cache common questions/responses
+3. **Right-size resources** - Start with minimal VM/container specs
+4. **Monitor usage** - Track and optimize API calls
+5. **Consider serverless** - Use Jio Cloud Functions for sporadic traffic
+
+---
+
+## Next Steps
+
+1. ✅ Deploy API to Jio Cloud
+2. ✅ Configure Streamlit Cloud with API URL
+3. ✅ Test end-to-end integration
+4. 📊 Monitor performance and costs
+5. 🔄 Iterate and optimize based on usage
+
+---
+
+## Support
+
+For issues or questions:
+- Check Jio Cloud documentation
+- Review API logs
+- Test endpoints with curl/Postman
+- Verify environment variables are set correctly
+
+**API Endpoints:**
+- Health: `GET /health`
+- AI Ask: `POST /api/ai/ask`
+- Dashboard Stats: `GET /api/dashboard/stats`
+- Search Products: `GET /api/search/products`
+- Upload Process: `POST /api/upload/process`

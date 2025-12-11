@@ -1,0 +1,91 @@
+# 🚀 Deploy Updated API to HuggingFace Spaces
+
+## What's New
+
+Your API now has 4 additional ML endpoints:
+
+1. **POST /api/ocr/extract** - Extract text from images
+2. **POST /api/detect/objects** - Detect objects in images  
+3. **POST /api/compliance/check** - Check Legal Metrology compliance
+4. **POST /api/process/image** - Full pipeline (OCR + Compliance)
+
+## Files to Upload
+
+Upload these 3 files to your HuggingFace Space:
+
+1. ✅ `simple_api.py` (updated with new endpoints)
+2. ✅ `requirements_api.txt` (added Pillow and numpy)
+3. ✅ `Dockerfile` (same as before)
+4. ✅ `README.md` (same as before)
+
+## Steps to Deploy
+
+### Option 1: Via Web Interface (Easiest)
+
+1. Go to your Space: https://huggingface.co/spaces/Madhur984/bharatvision-ml-api
+2. Click **Files** tab
+3. Click on `simple_api.py`
+4. Click **Edit** (pencil icon)
+5. Delete all content
+6. Copy content from: `deploy_package/simple_api.py`
+7. Paste and click **Commit changes**
+
+8. Repeat for `requirements_api.txt`:
+   - Click on `requirements_api.txt`
+   - Edit and replace with content from `deploy_package/requirements_api.txt`
+   - Commit changes
+
+### Option 2: Via Git (Faster)
+
+```bash
+# Clone your Space
+git clone https://huggingface.co/spaces/Madhur984/bharatvision-ml-api
+cd bharatvision-ml-api
+
+# Copy updated files
+copy "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\deploy_package\simple_api.py" .
+copy "d:\Hokage X Pirate king\legal-metrology-ocr-pipeline-main - Copy (2) - Copy\deploy_package\requirements_api.txt" .
+
+# Commit and push
+git add simple_api.py requirements_api.txt
+git commit -m "Add OCR and compliance endpoints"
+git push
+```
+
+## Wait for Rebuild
+
+1. Go to **App** tab
+2. Watch the build logs
+3. Wait 2-3 minutes for rebuild
+4. Look for "Running on http://0.0.0.0:7860"
+
+## Test New Endpoints
+
+Once deployed, test the new endpoints:
+
+```powershell
+# Test OCR
+curl -X POST https://madhur984-bharatvision-ml-api.hf.space/api/ocr/extract `
+  -F "file=@path/to/image.jpg"
+
+# Test compliance
+curl -X POST https://madhur984-bharatvision-ml-api.hf.space/api/compliance/check `
+  -H "Content-Type: application/json" `
+  -d '{"text":"MRP Rs. 500 Manufactured by ABC Ltd Net Qty 1kg Made in India"}'
+
+# Test full pipeline
+curl -X POST https://madhur984-bharatvision-ml-api.hf.space/api/process/image `
+  -F "file=@path/to/image.jpg"
+```
+
+## What Happens Next
+
+After the API is updated:
+1. Streamlit app will automatically use the new endpoints
+2. OCR will run on cloud instead of locally
+3. Compliance checking will use cloud API
+4. No more "Surya not installed" warnings!
+
+---
+
+**Ready to deploy? Choose Option 1 or Option 2 above!**
