@@ -678,7 +678,7 @@ def display_batch_results(results: List[Dict[str, Any]], context: str = "default
                 }
             )
         df = pd.DataFrame(table_data)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width=1000)
     else:
         with st.expander(" Summary Table View", expanded=False):
             table_data = []
@@ -694,7 +694,7 @@ def display_batch_results(results: List[Dict[str, Any]], context: str = "default
                     }
                 )
             df = pd.DataFrame(table_data)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width=1000)
 
 def display_single_result_detailed(result: Dict[str, Any], show_expander: bool = True, context: str = "default", idx: int = 0):
     filename = result.get("filename", "Unknown")
