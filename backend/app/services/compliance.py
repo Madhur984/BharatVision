@@ -67,20 +67,35 @@ class ComplianceService:
         if not missing_fields:
             return
 
-        logger.info(f"LLM Fallback triggered for missing fields: {missing_fields}")
+        logger.info(f"LLM Fallback triggered for fields: {missing_fields}")
         
+        # Increased context window and used Chain of Thought
         fields_str = ", ".join(missing_fields)
         prompt = f"""<start_of_turn>user
-You are a Legal Metrology Expert AI.
-I have extracted some data but missed these mandatory fields: {fields_str}.
-Please analyze the raw OCR text below. 
-If you find the value for any of these fields, extract it EXACTLY as it appears.
-If a value is not found, do not include it.
+You are an expert Legal Metrology Auditor.
+Your task is to extract specific mandatory declarations from Product Label Text.
+The OCR text might be messy, unordered, or contain noise.
 
-Raw OCR Text:
-\"\"\"{text[:2000]}\"\"\"
+Target Fields to Extract: {fields_str}
 
-Return ONLY a valid JSON object with the found values. Keys must be from: {fields_str}.
+**Extraction Rules:**
+1. **Manufacturer**: Look for "Mfd By", "Manufactured by", "Marketed by", or address blocks.
+2. **Net Quantity**: Look for "Net Qty", "Net Weight", "Vol", "N.W.", followed by number and unit (g, kg, ml, L).
+3. **MRP**: Look for "MRP", "Price", "Rs.", "₹" (inclusive of taxes).
+4. **Dates**: Look for "Pkd", "Unit Sale Price", "Use By", "Expiry", "Mfg Date" (DD/MM/YYYY or MM/YY).
+5. **Consumer Care**: Look for "Customer Care", "Feedback", "Complaint", email ID or phone numbers.
+6. **Country**: Look for "Made in", "Product of", "Country of Origin".
+
+**Raw OCR Text:**
+\"\"\"{text[:5000]}\"\"\"
+
+**Instructions:**
+- Analyze the text carefully.
+- If a value is split across lines, join them.
+- Return the result as a valid JSON object.
+- If a field is strictly NOT found, use null.
+
+Output Format: JSON ONLY.
 <end_of_turn>
 <start_of_turn>model
 ```json
@@ -92,13 +107,23 @@ Return ONLY a valid JSON object with the found values. Keys must be from: {field
             # Update data with found values
             corrections = 0
             for k, v in found_values.items():
-                if v and str(v).lower() not in ["not found", "none", "null", ""]:
-                    # Sanitize key to match expected fields if LLM hallucinated slightly?
-                    # Ideally we trust LLM to return requested keys.
-                    if k in missing_fields or k in data: 
-                         data[k] = v
+                # Allow fuzzy matching of keys if LLM returns slightly different names
+                target_key = k
+                if k not in data:
+                    # Try to map common variations
+                    if "mrp" in k.lower(): target_key = "mrp"
+                    elif "date" in k.lower(): target_key = "date_of_manufacture"
+                    elif "care" in k.lower(): target_key = "customer_care_details"
+                    elif "origin" in k.lower(): target_key = "country_of_origin"
+                    elif "quantity" in k.lower(): target_key = "net_quantity"
+                    elif "manufacturer" in k.lower(): target_key = "manufacturer_details"
+
+                # Update if valid value found
+                if v and str(v).lower() not in ["not found", "none", "null", "", "n/a"]:
+                     if target_key in missing_fields or target_key in data: 
+                         data[target_key] = v
                          corrections += 1
-                         logger.info(f"LLM Corrected {k}: {v}")
+                         logger.info(f"LLM Corrected {target_key}: {v}")
             
             if corrections > 0:
                 logger.info(f"LLM successfully corrected {corrections} fields.")
