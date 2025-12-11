@@ -433,7 +433,7 @@ def display_login_form():
 
                 # Guest Login Button
                 st.markdown('<div style="text-align: center; margin-top: 15px; font-size: 13px; color: #64748b;">Or</div>', unsafe_allow_html=True)
-                if st.button("Continue as Guest", use_container_width=True):
+                if st.button("Continue as Guest"):
                      guest_user = db.get_user("guest")
                      if guest_user:
                         st.session_state.authenticated = True
