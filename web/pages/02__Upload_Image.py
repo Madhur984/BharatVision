@@ -33,6 +33,7 @@ except ImportError:
 
 # Pipeline availability flag (set after imports below)
 PIPELINE_AVAILABLE = False
+IMPORT_ERRORS = []
 
 # -----------------------------------------------------------------------------
 # PAGE CONFIG
