@@ -78,7 +78,22 @@ else:
     EXPECTED_FIELDS = []
 
 # API Configuration
-ML_API_URL = os.environ.get("ML_API_URL", "http://localhost:8000")
+# API Configuration - Robust loading
+ML_API_URL = os.environ.get("ML_API_URL")
+
+# Check secrets if env var not set
+if not ML_API_URL:
+    try:
+        if "api" in st.secrets and "ML_API_URL" in st.secrets["api"]:
+            ML_API_URL = st.secrets["api"]["ML_API_URL"]
+        elif "ML_API_URL" in st.secrets:
+            ML_API_URL = st.secrets["ML_API_URL"]
+    except Exception:
+        pass
+
+# Final Fallback
+if not ML_API_URL:
+    ML_API_URL = "http://localhost:8000"
 
 def check_api_health():
     try:
@@ -431,18 +446,8 @@ def is_running_on_streamlit_cloud() -> bool:
             return True
     # Check hostname
     import socket
-# API Configuration - Default to Cloud Space
-ML_API_URL = os.environ.get("ML_API_URL", "https://madhur984-bharatvision-ml-api.hf.space")
-
-def check_api_health():
-    try:
-        r = requests.get(f"{ML_API_URL}/health", timeout=5) # Increased timeout for cloud
-        return r.status_code == 200
-    except:
-        return False
-
-# Pipeline is assumed available via API
-PIPELINE_AVAILABLE = True
+# API Configuration and Helpers already defined above
+# Removing duplicate definition blocks
 
 # ... (Previous imports kept)
 
