@@ -21,6 +21,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("simple_api")
 
+
 # Validating imports for Surya OCR
 try:
     # Append current directory to path to allow importing 'web'
@@ -29,11 +30,13 @@ try:
         sys.path.append(current_dir)
         
     from web.surya_ocr_main import surya_ocr_on_path
+    from lmpc_checker.compliance_validator import ComplianceValidator
     SURYA_AVAILABLE = True
     logger.info("Surya OCR module imported successfully")
 except Exception as e:
     logger.warning(f"Surya OCR module not found/importable: {e}")
     SURYA_AVAILABLE = False
+
 
 
 
@@ -297,70 +300,102 @@ async def detect_objects(file: UploadFile = File(...)):
 @app.post("/api/compliance/check")
 def check_compliance(request: ComplianceRequest):
     """
-    Check Legal Metrology compliance for extracted text
-    Focuses on 6 core mandatory fields as per Legal Metrology Act
+    Check Legal Metrology compliance for extracted text.
+    Uses Hybrid Approach:
+    1. Deterministic Rules (ComplianceValidator)
+    2. LLM Correction (Gemma-2) if violations found
     """
     logger.info(f"Compliance check for text length: {len(request.text)}")
     
     try:
-        violations = []
-        score = 100
-        penalty_per_field = 100 / 6  # Equal weight for each of 6 fields
+        # 1. Run Rule-Based Validation
+        validator = ComplianceValidator()
+        data = request.product_data or {}
         
-        # 6 Core Legal Metrology Requirements
-        required_fields = {
-            "Manufacturer Name & Address": [
-                "manufactured by", "mfd by", "manufacturer", 
-                "marketed by", "mkt by", "marketer"
-            ],
-            "Net Quantity": [
-                "net qty", "net quantity", "net wt", "net weight",
-                "net content", "contents:", "quantity:"
-            ],
-            "MRP (Maximum Retail Price)": [
-                "mrp", "m.r.p", "maximum retail price", "retail price",
-                "price:", "₹", "rs.", "rs "
-            ],
-            "Consumer Care Details": [
-                "customer care", "consumer care", "helpline",
-                "contact", "email", "phone", "toll free"
-            ],
-            "Date of Manufacture": [
-                "mfg date", "mfd date", "manufactured on",
-                "date of manufacture", "dom", "mfg:", "mfd:"
-            ],
-            "Country of Origin": [
-                "made in", "country of origin", "origin:",
-                "manufactured in", "product of"
-            ]
-        }
+        # Ensure data has some keys if empty, maybe assume text contains them?
+        # If product_data is empty, we might want to try to extract first? 
+        # But this endpoint assumes extraction happened. 
+        # For now, validate what we have.
         
-        text_lower = request.text.lower()
+        result = validator.validate(data)
         
-        for field, keywords in required_fields.items():
-            found = any(kw in text_lower for kw in keywords)
-            if not found:
-                violations.append({
-                    "field": field,
-                    "severity": "critical",
-                    "message": f"{field} is mandatory but not found on label"
-                })
-                score -= penalty_per_field
-        
-        is_compliant = len(violations) == 0
+        # 2. LLM "Smart Correction" (Hybrid Logic)
+        if result["violations_count"] > 0 and client and request.text:
+            logger.info(f"Violations found ({result['violations_count']}). Attempting LLM correction...")
+            
+            # Identify missing fields causing violations
+            missing_fields = []
+            for v in result["rule_results"]:
+                if v["violated"] and "missing" in v["description"].lower():
+                    missing_fields.append(v["field"])
+            
+            if missing_fields:
+                logger.info(f"Asking LLM to find missing fields: {missing_fields}")
+                
+                # Construct prompt for specific missing fields
+                fields_str = ", ".join(missing_fields)
+                prompt = f"""<start_of_turn>user
+You are a Legal Metrology Expert.
+I have extracted some data but missed these mandatory fields: {fields_str}.
+Check the raw OCR text below. If you find the value for any of these fields, extract it exactly.
+If not found, assume it is missing.
+
+Raw OCR Text:
+\"\"\"{request.text[:2000]}\"\"\"
+
+Return ONLY a JSON object with the found values. Keys: {fields_str}.
+Do not explain.
+<end_of_turn>
+<start_of_turn>model
+```json
+"""
+                try:
+                    response = client.text_generation(
+                        prompt, 
+                        model=REPO_ID, 
+                        max_new_tokens=200,
+                        temperature=0.1 # Low temp for precision
+                    )
+                    
+                    # Parse JSON from LLM
+                    import json
+                    # extract json block
+                    json_str = response.strip()
+                    if "```json" in json_str:
+                        json_str = json_str.split("```json")[1].split("```")[0]
+                    elif "```" in json_str:
+                        json_str = json_str.split("```")[1].split("```")[0]
+                    
+                    found_values = json.loads(json_str)
+                    
+                    # Update data with found values
+                    corrections_made = False
+                    for k, v in found_values.items():
+                        if v and str(v).lower() != "not found" and str(v).lower() != "none":
+                            data[k] = v
+                            corrections_made = True
+                            logger.info(f"LLM Corrected {k}: {v}")
+                    
+                    if corrections_made:
+                        # Re-run validation with corrected data
+                        result = validator.validate(data)
+                        result["was_corrected"] = True
+                        
+                except Exception as llm_e:
+                    logger.error(f"LLM correction failed: {llm_e}")
         
         return {
             "success": True,
-            "compliant": is_compliant,
-            "score": round(max(0, score), 2),
-            "violations": violations,
-            "fields_checked": list(required_fields.keys()),
-            "total_fields": 6,
-            "fields_found": 6 - len(violations)
+            "compliant": result["overall_status"] == "COMPLIANT",
+            "score": round(100 - (result["violations_count"] * 16.6), 2),
+            "violations": [r for r in result["rule_results"] if r["violated"]],
+            "fields_checked": [r["field"] for r in result["rule_results"]],
+            "full_report": result,
+            "data": data  # Return the (potentially corrected) data
         }
         
     except Exception as e:
-        logger.error(f"Compliance check failed: {e}")
+        logger.error(f"Compliance check failed: {e}", exc_info=True)
         return {
             "success": False,
             "error": str(e)

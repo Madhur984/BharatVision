@@ -487,43 +487,50 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
         # My core.py has structuring logic.
         
         start_time = time.time()
-        st.info(f"Processing {uploaded_file.name} via ML API...")
+        st.info(f"Processing {uploaded_file.name} via Full Hybrid API...")
         
         # Convert image to bytes
         img_byte_arr = io.BytesIO()
         image.save(img_byte_arr, format='JPEG')
         img_byte_arr.seek(0)
+        file_bytes = img_byte_arr.getvalue()
         
-        # Call API
-        files = {'file': ('image.jpg', img_byte_arr, 'image/jpeg')}
+        # Call Full Pipeline API (OCR + Hybrid Validation)
         try:
-             response = requests.post(f"{ML_API_URL}/extract", files=files, timeout=60)
-             if response.status_code == 200:
-                 api_result = response.json()
-                 st.success("✅ ML API processing successful")
-             else:
-                 raise Exception(f"API Error: {response.status_code} - {response.text}")
+            from web.api_client import get_api_client
+            client = get_api_client()
+            
+            # This calls /api/process/image which runs OCR -> Compliance (Validator + LLM)
+            api_result = client.process_image_full(file_bytes, uploaded_file.name)
+            
+            if not api_result.get("success"):
+                raise Exception(f"API Error: {api_result.get('error', 'Unknown error')}")
+                
+            st.success("✅ Hybrid processing successful")
+            
         except Exception as api_err:
              raise Exception(f"Failed to contact ML API: {api_err}")
              
-        ocr_result = api_result.get("raw_text", "")
-        #structured_data = api_result.get("structured_data", {})
+        # Parse API Result
+        # Structure expected from /api/process/image:
+        # { success, ocr: {text, ...}, compliance: {compliant, violations, full_report: {rule_results...}}, text }
         
-        # Local refinement if needed, or trust API structured data
-        # For now, let's trust API structured_data but maybe run local validator on it?
-        # The original code ran DataRefiner locally.
-        # If I moved NLP to API, DataRefiner (which uses NLP) should be skipped or adapted.
-        # My core.py returns 'structured_data'.
+        ocr_result_obj = api_result.get("ocr", {})
+        ocr_text = api_result.get("text", "") or ocr_result_obj.get("text", "")
         
-        refined_data = api_result.get("structured_data", {})
+        compliance_res = api_result.get("compliance", {})
+        violations = compliance_res.get("violations", [])
+        is_compliant = compliance_res.get("compliant", False)
         
-        # DataRefiner might doing extra logic. 
-        # Let's assume the API returns enough.
+        # Extract structured data from the validation report if available (from LLM correction)
+        # The backend 'check_compliance' returns 'full_report' -> 'rule_results'
+        # But we need the actual data values (MRP found etc).
+        # Currently check_compliance doesn't return the *corrected data* explicitly in the top level.
+        # But wait, in simple_api.py check_compliance returns 'full_report' which is the validator output.
+        # Validator output doesn't contain the data.
         
-        st.info("Validating compliance locally...")
-        # Initialize Validator
-        compliance_validator = ComplianceValidator()
-        violations = compliance_validator.validate(refined_data)
+        # Extract structured data from the validation report (which now includes LLM corrections)
+        refined_data = compliance_res.get("data", {})
         
         processing_time = time.time() - start_time
         
@@ -532,13 +539,14 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
             'filename': uploaded_file.name,
             'file_size': uploaded_file.size,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'method': 'File Upload (API)',
+            'method': 'Hybrid API',
             'processing_time': processing_time,
-            'ocr_result': ocr_result,
-            'refined_data': refined_data,
+            'ocr_result': ocr_text,
+            'refined_data': refined_data, 
             'violations': violations,
-            'compliance_status': 'COMPLIANT' if not violations else 'NON_COMPLIANT',
-            'image_dimensions': image.size
+            'compliance_status': 'COMPLIANT' if is_compliant else 'NON_COMPLIANT',
+            'image_dimensions': image.size,
+            'api_full_response': api_result # Store full response for debugging
         }
         
         # Save to DB
@@ -562,7 +570,7 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
                 username=username,
                 product_title=result.get("filename", "Unknown"),
                 platform="Upload", # Source
-                score=100.0 if result["compliance_status"] == "COMPLIANT" else 0.0, # Simple score
+                score=compliance_res.get("score", 0),
                 status=result["compliance_status"],
                 details=json.dumps(result.get("violations", []))
             )
