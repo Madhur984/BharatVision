@@ -28,33 +28,30 @@ class EcommerceScraper:
     Advanced E-commerce Scraper with Surya OCR and Gemma 2 NLP Validation.
     """
     
-    def __init__(self, db_path: str = "scraped_results.db", hf_token: Optional[str] = None):
+    
+    def __init__(self, db_path: str = "scraped_results.db", hf_token: Optional[str] = None, api_base_url: str = None):
         """
         Initialize the scraper.
         
         Args:
             db_path: Path to the SQLite database file.
-            hf_token: Hugging Face API token. If None, tries to load from environment.
+            hf_token: Hugging Face API token (Optional, mainly for local debug if needed).
+            api_base_url: Base URL of the API (e.g., https://...hf.space). 
+                          Defaults to env var API_BASE_URL or localhost.
         """
         self.db_path = db_path
         self.hf_token = hf_token or os.getenv("HF_TOKEN")
         
-        if not self.hf_token:
-            # Try loading from .env or .env.cloud
-            try:
-                from dotenv import load_dotenv
-                load_dotenv()
-                self.hf_token = os.getenv("HF_TOKEN")
-                if not self.hf_token and os.path.exists(".env.cloud"):
-                     with open(".env.cloud", "r") as f:
-                        for line in f:
-                            if line.startswith("HF_TOKEN="):
-                                self.hf_token = line.strip().split("=", 1)[1]
-            except Exception:
-                pass
-
-        if not self.hf_token:
-            logger.warning("HF_TOKEN not found. NLP validation will yield empty results.")
+        # Determine API Base URL
+        # Priority: Constructor -> Env Var -> Hardcoded Cloud URL -> Localhost
+        self.api_base_url = api_base_url or os.getenv("API_BASE_URL")
+        
+        # If running in cloud (on the space itself), localhost is fastest
+        # But if user wants to force cloud usage from local, they should set API_BASE_URL
+        if not self.api_base_url:
+            self.api_base_url = "https://madhur984-bharatvision-ml-api.hf.space"
+            
+        logger.info(f"Initialized Scraper with API Endpoint: {self.api_base_url}")
 
         self.output_dir = "scraped_data"
         self.images_dir = os.path.join(self.output_dir, "images")
@@ -123,14 +120,6 @@ class EcommerceScraper:
     def scrape_product(self, url: str) -> Optional[int]:
         """
         Main method to scrape a product page.
-        
-        Steps:
-        1. Fetch HTML
-        2. Extract Basic Details
-        3. Extract & Download Images
-        4. Perform OCR (Surya)
-        5. Validate Compliance (Gemma 2)
-        6. Save to DB
         """
         logger.info(f"Starting scrape for {url}")
         
@@ -178,7 +167,7 @@ class EcommerceScraper:
         # Combine all text for validation (Title + Desc + OCR)
         combined_text = f"Title: {title}\nPrice: {price}\nDescription: {description}\n\nOCR Text From Images:\n{full_ocr_text}"
 
-        # 5. Validate Compliance (Gemma 2)
+        # 5. Validate Compliance (Gemma 2 via API)
         validation_res = self._validate_with_gemma(combined_text)
         
         # 6. Save to DB
@@ -228,7 +217,6 @@ class EcommerceScraper:
             src = img.get('src') or img.get('data-src') or img.get('data-old-hires')
             if src and not src.startswith('data:'):
                 full_url = urljoin(base_url, src)
-                # Filter out tiny icons often < 50px dimensions logic skipped for speed, filtering by keywords
                 if 'sprite' not in full_url and 'icon' not in full_url and 'transparent' not in full_url:
                     urls.add(full_url)
         return list(urls)
@@ -257,17 +245,18 @@ class EcommerceScraper:
 
     def _run_surya_ocr(self, image_path: str) -> str:
         """
-        Runs OCR using local Surya OCR via API.
+        Runs OCR using the Cloud API endpoint.
         """
         try:
-            api_url = "http://localhost:8000/api/ocr/surya"
+            # Use dynamically configured API URL
+            api_url = f"{self.api_base_url.rstrip('/')}/api/ocr/surya"
             
             if not os.path.exists(image_path):
                 return ""
 
             with open(image_path, 'rb') as f:
                 files = {'file': f}
-                # Local OCR should be faster but initial load is slow
+                # 300s timeout for cold start models
                 response = requests.post(api_url, files=files, timeout=300)
             
             if response.status_code == 200:
@@ -277,7 +266,7 @@ class EcommerceScraper:
                     if text:
                         return text
                     else:
-                        logger.warning(f"Surya OCR API returned empty text for {os.path.basename(image_path)}")
+                        logger.warning(f"Surya OCR API returned empty text.")
                         return ""
                 else:
                     logger.warning(f"Surya OCR API error: {result.get('error')}")
@@ -292,12 +281,9 @@ class EcommerceScraper:
 
     def _validate_with_gemma(self, text: str) -> Dict[str, Any]:
         """
-        Validates text against 6 strict criteria using Gemma 2.
-        Returns a dictionary with validation results.
+        Validates text using the Cloud API (/api/ai/ask) instead of local client.
+        This ensures we use 'both APIs' (OCR and LLM) from the cloud.
         """
-        if not self.hf_token:
-            return {"score": 0, "analysis": "No HF Token detected."}
-            
         prompt = f"""
 You are a Legal Metrology Compliance Officer. Analyze the following product text (extracted from an e-commerce page and images) and verify if it contains the following 6 MANDATORY declarations.
 
@@ -325,32 +311,53 @@ Return ONLY a valid JSON object in the following format:
 }}
 """
         try:
-            client = InferenceClient(token=self.hf_token)
-            # Using chat completion for instruction following
-            messages = [{"role": "user", "content": prompt}]
+            # Use the same API Base URL for validation
+            api_url = f"{self.api_base_url.rstrip('/')}/api/ai/ask"
             
-            model = "google/gemma-2-9b-it" 
-            response = client.chat_completion(messages, model=model, max_tokens=1000)
+            # Construct payload
+            payload = {
+                "question": prompt,
+                "context": "Legal Metrology Compliance Check"
+            }
             
-            content = response.choices[0].message.content
+            response = requests.post(api_url, json=payload, timeout=120)
             
-            # Extract JSON from response
-            json_str = content
-            if "```json" in content:
-                json_str = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                json_str = content.split("```")[1].split("```")[0]
-                
-            data = json.loads(json_str.strip())
-            data['full_analysis'] = content # Save raw mostly for debug
-            return data
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                     # The API returns 'answer', which should be the JSON string
+                    content = result.get("answer", "")
+                    
+                    # Extract JSON from content
+                    json_str = content
+                    if "```json" in content:
+                        json_str = content.split("```json")[1].split("```")[0]
+                    elif "```" in content:
+                        json_str = content.split("```")[1].split("```")[0]
+                        
+                    try:
+                        data = json.loads(json_str.strip())
+                        data['full_analysis'] = content 
+                        return data
+                    except json.JSONDecodeError:
+                         # Fallback if AI didn't return proper JSON
+                         return {
+                             "compliance_score": 0,
+                             "full_analysis": content,
+                             "error": "Failed to parse JSON from AI response"
+                         }
+                else:
+                    return {"error": result.get("error"), "compliance_score": 0}
+            else:
+                 logger.error(f"Gemma API Error {response.status_code}: {response.text}")
+                 return {"error": f"API Status {response.status_code}", "compliance_score": 0}
             
         except Exception as e:
             logger.error(f"Gemma validation failed: {e}")
             return {
                 "error": str(e),
                 "compliance_score": 0,
-                "full_analysis": "Validation failed due to API error."
+                "full_analysis": "Validation failed due to API connection error."
             }
 
     def _save_results(self, url, title, price, description, downloaded_images, ocr_results, validation_res) -> int:

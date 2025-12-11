@@ -427,49 +427,28 @@ def is_running_on_streamlit_cloud() -> bool:
     if os.environ.get('STREAMLIT_SHARING_MODE'):
         return True
     if os.path.exists('/mount/src'):  # Streamlit Cloud mounts repo here
-        return True
-    if os.environ.get('HOME', '').startswith('/home/appuser'):
-        return True
+            return True
     # Check hostname
     import socket
-    hostname = socket.gethostname()
-    if 'streamlit' in hostname.lower():
-        return True
-    return False
+# API Configuration - Default to Cloud Space
+ML_API_URL = os.environ.get("ML_API_URL", "https://madhur984-bharatvision-ml-api.hf.space")
 
-IS_CLOUD = is_running_on_streamlit_cloud()
+def check_api_health():
+    try:
+        r = requests.get(f"{ML_API_URL}/health", timeout=5) # Increased timeout for cloud
+        return r.status_code == 200
+    except:
+        return False
 
-# -----------------------------------------------------------------------------
-# SURYA OCR - Only loaded on localhost (requires ~1.5GB RAM)
-# -----------------------------------------------------------------------------
-# Surya Helpers removed - logic moved to ML API Service
+# Pipeline is assumed available via API
+PIPELINE_AVAILABLE = True
 
+# ... (Previous imports kept)
 
 def extract_text_with_ocr(pil_img: Image.Image, filename: str) -> tuple[str, str]:
- 
-    # OCR pipeline - Tesseract is PRIMARY for reliability.
-    # Surya OCR only on localhost if Tesseract fails.
-    # 
-    # Returns (text, debug_message_for_logs).
-    # """
-    errors = []
-    
-    # PRIMARY: Use Tesseract (reliable, fast, extracts ALL text)
-    text, dbg = run_tesseract_ocr(pil_img)
-    if text:
-        return text, dbg
-    errors.append(f"Tesseract: {dbg}")
-    
-    # FALLBACK on localhost: Try Surya OCR
-    if not IS_CLOUD:
-        text, dbg = run_surya_ocr_direct(pil_img)
-        if text:
-            return text, dbg
-        errors.append(f"Surya: {dbg}")
-    
-    # All OCR engines failed
-    env_info = "Cloud" if IS_CLOUD else "Localhost"
-    return "", f"OCR failed ({env_info}). {'; '.join(errors)}"
+    # DEPRECATED: Local OCR logic. 
+    # Use process_single_image which calls the Cloud API.
+    return "", "Local OCR deprecated. Please use Cloud API."
 
 # -----------------------------------------------------------------------------
 # SINGLE IMAGE PROCESSING (With Fallback OCR Support)
