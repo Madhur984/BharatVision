@@ -431,25 +431,25 @@ def display_login_form():
                             st.success('Login successful! Redirecting...')
                             st.rerun()
 
-                # Guest Login Button (outside the form)
-                st.markdown('<div style="text-align: center; margin-top: 15px; font-size: 13px; color: #64748b;">Or</div>', unsafe_allow_html=True)
-                if st.button("Continue as Guest"):
-                    guest_user = db.get_user("guest")
-                    if guest_user:
-                        st.session_state.authenticated = True
-                        st.session_state.user = {
-                            'user_id': guest_user['id'],
-                            'username': guest_user['username'],
-                            'role': guest_user['role'],
-                            'email': guest_user['email'],
-                            'login_time': datetime.now(),
-                        }
-                        st.session_state.remember_login = False
-                        db.log_login("guest", status='success', device_info='Web Browser (Guest)')
-                        st.success('Logged in as Guest! Redirecting...')
-                        st.rerun()
-                    else:
-                        st.error("Guest account not configured.")
+            # Guest Login Button (outside the form)
+            st.markdown('<div style="text-align: center; margin-top: 15px; font-size: 13px; color: #64748b;">Or</div>', unsafe_allow_html=True)
+            if st.button("Continue as Guest"):
+                guest_user = db.get_user("guest")
+                if guest_user:
+                    st.session_state.authenticated = True
+                    st.session_state.user = {
+                        'user_id': guest_user['id'],
+                        'username': guest_user['username'],
+                        'role': guest_user['role'],
+                        'email': guest_user['email'],
+                        'login_time': datetime.now(),
+                    }
+                    st.session_state.remember_login = False
+                    db.log_login("guest", status='success', device_info='Web Browser (Guest)')
+                    st.success('Logged in as Guest! Redirecting...')
+                    st.rerun()
+                else:
+                    st.error("Guest account not configured.")
 
         else:
             # --- REGISTER FORM ---
