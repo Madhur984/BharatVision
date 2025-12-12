@@ -879,13 +879,13 @@ with tab1:
         cfg = default_settings.copy()
 
     use_surya_default = st.checkbox('Use Surya OCR by default', value=bool(cfg.get('use_surya_default', False)))
-    use_llm = st.checkbox('Enable LLM field extraction (Gemma 2)', value=bool(cfg.get('use_llm', cfg.get('use_flan_t5', False))))
+    # LLM extraction removed - using compliance validator instead
 
     if st.button('Save Settings'):
         try:
             cfg_out = {
                 'use_surya_default': bool(use_surya_default),
-                'use_llm': bool(use_llm)
+                'use_llm': False  # Always disabled
             }
             config_path.parent.mkdir(parents=True, exist_ok=True)
             config_path.write_text(json.dumps(cfg_out, indent=2))

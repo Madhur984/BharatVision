@@ -750,12 +750,9 @@ def main():
             help="Save results after each job completion"
         )
         
-        use_llm = st.checkbox(
-            "Enable Gemma 2 AI Extraction",
-            value=True,
-            help="Use Gemma 2 (9B) LLM for enhanced field extraction (slower but more accurate)"
-        )
-        st.session_state.batch_use_llm = use_llm
+        # Gemma 2 extraction removed - using compliance validator
+        use_llm = False
+        st.session_state.batch_use_llm = False
         
         st.markdown("---")
         
