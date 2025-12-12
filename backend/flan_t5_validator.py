@@ -20,21 +20,19 @@ class FlanT5Validator:
         self._load_model()
     
     def _load_model(self):
-        """Load Flan-T5 model"""
-        try:
-            from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-            
-            model_name = "google/flan-t5-base"
-            logger.info(f"Loading {model_name}...")
-            
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-            
-            logger.info("Flan-T5 model loaded successfully")
-        except Exception as e:
-            logger.error(f"Failed to load Flan-T5: {e}")
-            self.model = None
-            self.tokenizer = None
+        """Load Flan-T5 model - DISABLED, using regex fallback"""
+        # Transformers removed - not using Flan-T5 anymore
+        # try:
+        #     from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+        #     model_name = "google/flan-t5-base"
+        #     logger.info(f"Loading {model_name}...")
+        #     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        #     self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        #     logger.info("Flan-T5 model loaded successfully")
+        # except Exception as e:
+        #     logger.error(f"Failed to load Flan-T5: {e}")
+        self.model = None
+        self.tokenizer = None
     
     def _ask_model(self, question: str, context: str) -> str:
         """Ask Flan-T5 a question about the text"""

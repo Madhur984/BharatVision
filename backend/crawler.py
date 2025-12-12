@@ -22,12 +22,8 @@ from pathlib import Path
 from io import BytesIO
 import hashlib
 import traceback
-try:
-    # Lazy import placeholder for transformers
-    from transformers import pipeline as _hf_pipeline  # type: ignore
-    TRANSFORMERS_AVAILABLE = True
-except Exception:
-    TRANSFORMERS_AVAILABLE = False
+# Transformers removed - using compliance validator only
+TRANSFORMERS_AVAILABLE = False
 
 # Selenium removed: force requests + BeautifulSoup scraping only
 SELENIUM_AVAILABLE = False
