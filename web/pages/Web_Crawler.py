@@ -1610,234 +1610,37 @@ with tab1:
                                         else:
                                             st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
 
-                                        # 2. Mandatory Fields Grid
-                                        st.markdown("#### 🏛️ Mandatory Declarations")
-                                        
-                                        # Prepare data
-                                        # USE BACKEND'S ALREADY-VALIDATED DATA (from crawler.py:2402)
-                                        if hasattr(product, 'compliance_details') and product.compliance_details:
-                                            # Use the exact data that was validated by the backend
-                                            p_data = product.compliance_details.get('extracted_fields', {})
-                                            validation_result = product.compliance_details.get('validation_result', {})
-                                            
-                                            # Get validation status from backend's validation
-                                            passed_rules = validation_result.get("passed_rules", {})
-                                            
-                                            # Create validation status for each field
-                                            validation_status = {
-                                                "manufacturer_details": bool(passed_rules.get("packed_and_marketed_by") or passed_rules.get("manufacturer_details")),
-                                                "country_of_origin": bool(passed_rules.get("country_of_origin") or passed_rules.get("country")),
-                                                "net_quantity": bool(passed_rules.get("net_quantity") or passed_rules.get("gross_content")),
-                                                "mrp": bool(passed_rules.get("mrp") or passed_rules.get("mrp_incl_taxes")),
-                                                "date_of_manufacture": bool(passed_rules.get("mfg_date") or passed_rules.get("best_before")),
-                                                "customer_care_details": True  # Always True as per LMPC rules
-                                            }
-                                        else:
-                                            # Fallback: create p_data from product attributes
-                                            p_data = {
-                                                "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
-                                                "country_of_origin": getattr(product, 'country_of_origin', ''),
-                                                "net_quantity": getattr(product, 'net_quantity', ''),
-                                                "mrp": getattr(product, 'mrp', ''),
-                                                "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
-                                                "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
-                                            }
-                                            # Fill missing date/care from flat attributes
-                                            if not p_data['date_of_manufacture']:
-                                                p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '')
-                                            
-                                            # Simple presence check
-                                            validation_status = {
-                                                "manufacturer_details": bool(p_data.get("manufacturer_details")),
-                                                "country_of_origin": bool(p_data.get("country_of_origin")),
-                                                "net_quantity": bool(p_data.get("net_quantity")),
-                                                "mrp": bool(p_data.get("mrp")),
-                                                "date_of_manufacture": bool(p_data.get("date_of_manufacture")),
-                                                "customer_care_details": True  # Always True
-                                            }
-                                        
-                                        field_map = [
-                                            {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "backend_keys": ["manufacturer_details", "packed_and_marketed_by", "manufacturer"], "icon": "🏭"},
-                                            {"label": "Country of Origin", "key": "country_of_origin", "backend_keys": ["country_of_origin", "country"], "icon": "🌍"},
-                                            {"label": "Net Quantity", "key": "net_quantity", "backend_keys": ["net_quantity", "gross_content", "net"], "icon": "⚖️"},
-                                            {"label": "Mfg / Import Date", "key": "date_of_manufacture", "backend_keys": ["date_of_manufacture", "mfg_date", "best_before", "best_before_date"], "icon": "📅"},
-                                            {"label": "MRP (Max Retail Price)", "key": "mrp", "backend_keys": ["mrp", "mrp_incl_taxes"], "icon": "💰"},
-                                            {"label": "Customer Care Details", "key": "customer_care_details", "backend_keys": ["customer_care_details", "customer_care"], "icon": "📞"},
-                                        ]
-
-                                        grid_cols = st.columns(2)
-                                        for idx, item in enumerate(field_map):
-                                            # Try all possible backend keys
-                                            val = None
-                                            for backend_key in item.get("backend_keys", [item["key"]]):
-                                                val = p_data.get(backend_key)
-                                                if val:
-                                                    break
-                                            
-                                            # Check validation status
-                                            is_valid = validation_status.get(item["key"], False)
-                                            
-                                            # format value
-                                            if is_valid and val and str(val).lower() != "none" and str(val).strip():
-                                                # Handle dict values (like manufacturer details)
-                                                if isinstance(val, dict):
-                                                    if 'name' in val:
-                                                        display_val = val['name']
-                                                    elif 'phone' in val or 'email' in val:
-                                                        parts = []
-                                                        if val.get('phone'): parts.append(f"📞 {val['phone']}")
-                                                        if val.get('email'): parts.append(f"📧 {val['email']}")
-                                                        display_val = ", ".join(parts) if parts else str(val)
-                                                    else:
-                                                        display_val = str(val)
-                                                else:
-                                                    display_val = str(val)
-                                                is_missing = False
-                                            else:
-                                                display_val = "❌ Not Found"
-                                                is_missing = True
-                                            
-                                            border_color = "#ff4b4b" if is_missing else "#09ab3b"
-                                            bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
-
-                                            with grid_cols[idx % 2]:
-                                                st.markdown(f"""
-                                                <div style="border: 1px solid {border_color}; background-color: {bg_color}; padding: 8px; border-radius: 5px; margin-bottom: 8px;">
-                                                    <div style="font-weight:bold; font-size:0.85em; color:#555;">{item['icon']} {item['label']}</div>
-                                                    <div style="font-size:1em; color: black; word-wrap: break-word;">{display_val}</div>
-                                                </div>
-                                                """, unsafe_allow_html=True)
-                                        
-                                        # Show ALL extracted fields (for debugging)
-                                        with st.expander("🔍 All Extracted Fields (Debug)"):
-                                            st.write("**Fields in structured_data:**")
-                                            for key, value in p_data.items():
-                                                st.write(f"- `{key}`: {value}")
-                                        
-                                        # 3. Violations
-                                        issues = getattr(product, 'issues_found', []) or []
-                                        if issues:
-                                            st.markdown("#### ⚠️ Violations")
-                                            for issue in issues:
-                                                st.warning(f"• {issue}")
-                                        
-                                        # 4. LMPC Validation Summary (NEW)
-                                        with st.expander("📋 LMPC Validation Summary - Click to View Details"):
-                                            st.markdown("### ✅ Extracted Fields & LMPC Rule Results")
-                                            
+                                        # 2. LMPC Validation Details - What's Present & What's Missing
+                                        with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
                                             if hasattr(product, 'compliance_details') and product.compliance_details:
                                                 validation_result = product.compliance_details.get('validation_result', {})
                                                 rule_results = validation_result.get('rule_results', [])
-                                                
-                                                # Summary stats
-                                                total_rules = len(rule_results)
-                                                passed_rules_count = sum(1 for r in rule_results if not r.get('violated', True))
-                                                failed_rules_count = total_rules - passed_rules_count
-                                                
-                                                col1, col2, col3 = st.columns(3)
-                                                with col1:
-                                                    st.metric("Total Rules", total_rules)
-                                                with col2:
-                                                    st.metric("✅ Passed", passed_rules_count, delta_color="normal")
-                                                with col3:
-                                                    st.metric("❌ Failed", failed_rules_count, delta_color="inverse")
-                                                
-                                                st.markdown("---")
-                                                
-                                                # Show each rule result
-                                                st.markdown("#### 📊 Detailed Rule Results:")
-                                                for rule in rule_results:
-                                                    rule_id = rule.get('rule_id', 'Unknown')
-                                                    description = rule.get('description', 'No description')
-                                                    violated = rule.get('violated', True)
-                                                    details = rule.get('details', '')
-                                                    
-                                                    if violated:
-                                                        st.error(f"❌ **{rule_id}**: {description}")
-                                                        if details:
-                                                            st.write(f"   ↳ {details}")
-                                                    else:
-                                                        st.success(f"✅ **{rule_id}**: {description}")
-                                                        if details:
-                                                            st.write(f"   ↳ {details}")
-                                                
-                                                st.markdown("---")
-                                                
-                                                # Show extracted fields
-                                                st.markdown("#### 📦 Extracted Fields:")
                                                 extracted_fields = product.compliance_details.get('extracted_fields', {})
-                                                if extracted_fields:
-                                                    for key, value in extracted_fields.items():
-                                                        if value and str(value).lower() != 'none':
-                                                            st.write(f"✅ **{key}**: `{value}`")
+                                                
+                                                if rule_results:
+                                                    # Show each LMPC rule result
+                                                    for rule in rule_results:
+                                                        rule_id = rule.get('rule_id', '')
+                                                        description = rule.get('description', '')
+                                                        violated = rule.get('violated', True)
+                                                        
+                                                        # Extract field name from description
+                                                        if not violated:
+                                                            st.success(f"✅ **{description}**")
                                                         else:
-                                                            st.write(f"❌ **{key}**: Not found")
+                                                            st.error(f"❌ **{description}**")
+                                                    
+                                                    # Show summary
+                                                    passed_count = sum(1 for r in rule_results if not r.get('violated', True))
+                                                    total_count = len(rule_results)
+                                                    st.markdown("---")
+                                                    st.info(f"**Summary:** {passed_count} out of {total_count} LMPC rules passed")
                                                 else:
-                                                    st.info("No fields extracted")
-                                            else:
-                                                st.info("No validation details available")
-                                        
-                                        # 4. LMPC Validation Details - Simple Present/Missing Display
-                                        with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
-                                            st.markdown("### Field Validation Results")
-                                            
-                                            # Get validation data
-                                            if hasattr(product, 'compliance_details') and product.compliance_details:
-                                                extracted_fields = product.compliance_details.get('extracted_fields', {})
-                                                validation_result = product.compliance_details.get('validation_result', {})
-                                                
-                                                # Define the 6 mandatory LMPC fields
-                                                mandatory_fields = [
-                                                    ("Manufacturer Name/Address", ["manufacturer_details", "packed_and_marketed_by", "manufacturer"]),
-                                                    ("Country of Origin", ["country_of_origin", "country"]),
-                                                    ("Net Quantity", ["net_quantity", "gross_content", "net"]),
-                                                    ("MRP (Max Retail Price)", ["mrp", "mrp_incl_taxes"]),
-                                                    ("Date of Manufacture", ["date_of_manufacture", "mfg_date", "best_before"]),
-                                                    ("Customer Care Details", ["customer_care_details", "customer_care"])
-                                                ]
-                                                
-                                                present_fields = []
-                                                missing_fields = []
-                                                
-                                                # Check each field
-                                                for field_name, possible_keys in mandatory_fields:
-                                                    found = False
-                                                    found_value = None
-                                                    for key in possible_keys:
-                                                        if key in extracted_fields and extracted_fields[key]:
-                                                            found = True
-                                                            found_value = extracted_fields[key]
-                                                            break
-                                                    
-                                                    if found:
-                                                        present_fields.append((field_name, found_value))
-                                                    else:
-                                                        missing_fields.append(field_name)
-                                                
-                                                # Display present fields
-                                                if present_fields:
-                                                    st.markdown("#### ✅ **Present Fields:**")
-                                                    for field_name, value in present_fields:
-                                                        # Format value nicely
-                                                        if isinstance(value, dict):
-                                                            value_str = str(value)
-                                                        else:
-                                                            value_str = str(value)[:100]  # Limit length
-                                                        st.success(f"**{field_name}**: {value_str}")
-                                                
-                                                # Display missing fields
-                                                if missing_fields:
-                                                    st.markdown("#### ❌ **Missing Fields:**")
-                                                    for field_name in missing_fields:
-                                                        st.error(f"**{field_name}**: Not found")
-                                                
-                                                # Show summary
-                                                st.markdown("---")
-                                                st.info(f"**Summary:** {len(present_fields)} out of {len(mandatory_fields)} mandatory fields found")
+                                                    st.warning("No LMPC validation results available")
                                             else:
                                                 st.warning("No validation data available for this product")
                                         
-                                        # 5. Raw Data Expander
+                                        # 3. Raw Data Expander
                                         with st.expander("📂 View Raw Data & Technical Details"):
                                             st.write(f"**Title:** {product.title}")
                                             st.write(f"**Brand:** {product.brand}")
