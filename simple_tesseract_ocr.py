@@ -25,7 +25,7 @@ def validate_legal_metrology(text):
         "Manufacturer Name/Address": False,
         "Net Quantity": False,
         "MRP": False,
-        "Customer Care": False,
+        "Customer Care": False,  # Will be set to True if found in text
         "Date of Manufacture": False,
         "Country of Origin": False
     }
