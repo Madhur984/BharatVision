@@ -392,15 +392,15 @@ class EcommerceScraper:
 
     def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Validates using enhanced Legal Metrology validator with comprehensive keywords.
+        Validates using Flan-T5 LLM for intelligent field extraction.
         """
         try:
-            from backend.enhanced_validator import LegalMetrologyValidator
+            from backend.flan_t5_validator import FlanT5Validator
             
-            validator = LegalMetrologyValidator()
+            validator = FlanT5Validator()
             results = validator.validate(text, product_data)
             
-            logger.info(f"Enhanced validation complete: {results['compliance_score']:.1f}%")
+            logger.info(f"Flan-T5 validation complete: {results['compliance_score']:.1f}%")
             logger.info(f"Found: {[k for k, v in results.items() if isinstance(v, dict) and v.get('valid')]}")
             
             return results
