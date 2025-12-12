@@ -222,8 +222,27 @@ class EcommerceScraper:
         return text
 
     def _extract_specs(self, soup):
-        """Extract product specifications/details table (Amazon, Flipkart) and convert to text"""
+        """Extract product specifications - parse JSON if available, otherwise HTML tables"""
         specs_text = ""
+        
+        # Try to find JSON data in script tags first (most reliable)
+        scripts = soup.find_all('script', {'type': 'text/javascript'})
+        for script in scripts:
+            if script.string and 'dimensionsDisplay' in script.string:
+                # Amazon stores specs in JavaScript variables
+                try:
+                    import json
+                    import re
+                    # Look for data objects
+                    json_match = re.search(r'var\s+\w+\s*=\s*({.*?});', script.string, re.DOTALL)
+                    if json_match:
+                        data = json.loads(json_match.group(1))
+                        if isinstance(data, dict):
+                            for key, value in data.items():
+                                if isinstance(value, (str, int, float)):
+                                    specs_text += f"{key}: {value}\n"
+                except:
+                    pass
         
         # Amazon: Product details table
         tables = soup.find_all('table', {'id': 'productDetails_detailBullets_sections1'})
@@ -240,37 +259,24 @@ class EcommerceScraper:
                     key = cells[0].get_text(strip=True)
                     value = cells[1].get_text(strip=True)
                     # Clean invisible characters
-                    key = key.replace('\u200e', '').replace('\u200f', '').strip()
-                    value = value.replace('\u200e', '').replace('\u200f', '').strip()
-                    specs_text += f"{key}: {value}\n"
+                    key = key.replace('\u200e', '').replace('\u200f', '').replace('‎', '').strip()
+                    value = value.replace('\u200e', '').replace('\u200f', '').replace('‎', '').strip()
+                    if key and value:
+                        specs_text += f"{key}: {value}\n"
         
-        # Also try div-based specs (Flipkart style)
-        spec_divs = soup.find_all('div', {'class': '_1hKmbr'})
-        for div in spec_divs:
-            text = div.get_text(strip=True)
-            text = text.replace('\u200e', '').replace('\u200f', '').strip()
-            specs_text += text + "\n"
-        
-        # Try to find JSON-LD structured data (common in modern e-commerce)
-        scripts = soup.find_all('script', {'type': 'application/ld+json'})
-        for script in scripts:
-            try:
-                import json
-                data = json.loads(script.string)
-                # Extract product properties if available
-                if isinstance(data, dict):
-                    if 'offers' in data and isinstance(data['offers'], dict):
-                        price = data['offers'].get('price')
-                        if price:
-                            specs_text += f"Price: {price}\n"
-                    if 'brand' in data:
-                        specs_text += f"Brand: {data['brand']}\n"
-            except:
-                pass
+        # Also try list-based specs (common format)
+        detail_bullets = soup.find('div', {'id': 'detailBullets_feature_div'})
+        if detail_bullets:
+            items = detail_bullets.find_all('li')
+            for item in items:
+                text = item.get_text(strip=True)
+                text = text.replace('\u200e', '').replace('\u200f', '').replace('‎', '').strip()
+                if ':' in text:
+                    specs_text += text + "\n"
         
         logger.info(f"Extracted specs text length: {len(specs_text)} chars")
         if specs_text:
-            logger.info(f"Sample specs: {specs_text[:200]}...")
+            logger.info(f"Sample specs:\n{specs_text[:300]}...")
         
         return specs_text
 
