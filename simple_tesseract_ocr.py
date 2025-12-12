@@ -32,29 +32,84 @@ def validate_legal_metrology(text):
     
     text_lower = text.lower()
     
-    # 1. Manufacturer (look for "mfd by", "manufactured by", "marketed by")
-    if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
-        results["Manufacturer Name/Address"] = True
-    
-    # 2. Net Quantity (look for units: kg, g, ml, l, litre)
-    if re.search(r'\d+\s*(kg|g|gm|ml|l|litre|ltr)', text_lower):
-        results["Net Quantity"] = True
-    
-    # 3. MRP (look for "mrp", "price", "rs", "₹")
-    if any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
-        results["MRP"] = True
-    
-    # 4. Customer Care (look for phone, email, "customer care")
-    if any(word in text_lower for word in ['customer care', 'care', 'contact', '@', 'phone']):
-        results["Customer Care"] = True
-    
-    # 5. Date of Manufacture (look for "mfg", "date", "exp")
-    if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
-        results["Date of Manufacture"] = True
-    
-    # 6. Country of Origin (look for "made in", "country", "india")
-    if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
-        results["Country of Origin"] = True
+    # 1. Manufacturer / Packer / Importer
+manufacturer_keywords = [
+    'mfd by', 'mfg by', 'manufactured by', 'manufacturer',
+    'marketed by', 'packed by', 'pkd by', 'packer', 'imported by',
+    'importer', 'mnf by', 'mfg.', 'mfd.', 'mfr.', 'pkd', 'pkgd by',
+    'address', 'addr', 'office', 'factory', 'works', 'company',
+    'marketed', 'distributed by'
+]
+
+if any(word in text_lower for word in manufacturer_keywords):
+    results["Manufacturer Name/Address"] = True
+
+
+# 2. Net Quantity (units & quantity indicators)
+net_quantity_keywords = [
+    'net quantity', 'net qty', 'net qtty', 'net wt', 'net weight', 
+    'weight', 'wt.', 'quantity', 'qty', 'net vol', 'content', 'contents',
+    'g', 'gm', 'gram', 'grams', 'kg', 'kilogram',
+    'ml', 'millilitre', 'l', 'ltr', 'litre',
+    'mg', 'units', 'pcs', 'pieces', 'pack', 'packs',
+    'approx', '~', '±'
+]
+
+if any(word in text_lower for word in net_quantity_keywords) or \
+   re.search(r'\d+\s*(kg|g|gm|ml|l|ltr|litre|mg)', text_lower):
+    results["Net Quantity"] = True
+
+
+# 3. MRP (Maximum Retail Price)
+mrp_keywords = [
+    'mrp', 'm.r.p', 'maximum retail price', 'max retail price',
+    'price', 'retail price', 'mrp:', 'mrp rs', 'mrp ₹',
+    'price inclusive of all taxes', 'incl. of all taxes', 'incl taxes',
+    'rs.', 'rs', '₹', 'inr', 'rupees', 'mrp-', 'm r p'
+]
+
+if any(word in text_lower for word in mrp_keywords):
+    results["MRP"] = True
+
+
+# 4. Customer Care / Consumer Support
+customer_care_keywords = [
+    'customer care', 'consumer care', 'customer support',
+    'helpline', 'toll free', 'support', 'complaints', 'grievance',
+    'contact', 'contact us', 'phone', 'call', 'email', '@',
+    'care no', 'support no', 'helpline no', 'cust. care', 'write to'
+]
+
+if any(word in text_lower for word in customer_care_keywords):
+    results["Customer Care"] = True
+
+
+# 5. Date of Manufacture / Packing / Expiry
+date_keywords = [
+    'mfg', 'mfd', 'manufactured on', 'manufacturing date',
+    'mfg date', 'mfd date', 'date of mfg', 'packaged on',
+    'packed on', 'pkd', 'pkd on', 'pkd date',
+    'best before', 'expiry', 'exp', 'exp date', 'exp.', 'use before',
+    'm/y', 'm:y', 'month year'
+]
+
+if any(word in text_lower for word in date_keywords) or \
+   re.search(r'\b(0[1-9]|1[0-2])/[0-9]{2,4}\b', text_lower):  # date patterns
+    results["Date of Manufacture"] = True
+
+
+# 6. Country of Origin
+origin_keywords = [
+    'country of origin', 'origin:', 'origin -', 'origin –',
+    'made in', 'manufactured in', 'product of',
+    'imported from', 'source country', 'country:',
+    'india', 'china', 'japan', 'usa', 'germany', 'korea',
+    'thailand', 'vietnam', 'indonesia'
+]
+
+if any(word in text_lower for word in origin_keywords):
+    results["Country of Origin"] = True
+
     
     # Calculate compliance score
     compliant_count = sum(results.values())
