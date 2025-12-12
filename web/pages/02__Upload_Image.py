@@ -23,6 +23,7 @@ from typing import List, Dict, Any
 from PIL import Image
 import pandas as pd
 import numpy as np
+import re  # For regex pattern matching
 
 # Try to import cv2, but it's optional (may fail on Python 3.13)
 try:
