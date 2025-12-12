@@ -1622,10 +1622,6 @@ with tab1:
                                             p_data = product.compliance_details.get('extracted_fields', {})
                                             validation_result = product.compliance_details.get('validation_result', {})
                                             
-                                            # DEBUG: Show what we received
-                                            st.write(f"DEBUG: p_data keys = {list(p_data.keys())}")
-                                            st.write(f"DEBUG: p_data = {p_data}")
-                                            
                                             # Get validation status from backend's validation
                                             passed_rules = validation_result.get("passed_rules", {})
                                             

@@ -2403,8 +2403,6 @@ class EcommerceCrawler:
                     'text_sources': len(all_text_parts)
                 }
                 
-                # DEBUG: Log what we're storing
-                logger.info(f"Stored compliance_details for '{product.title[:30]}': extracted_fields keys = {list(structured_data.keys())}")
                 logger.info(f"Compliance check for '{product.title[:30]}': {product.compliance_status} (Score: {product.compliance_score:.1f})")
             else:
                 # Fallback if no validator
