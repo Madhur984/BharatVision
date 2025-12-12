@@ -1269,7 +1269,7 @@ with tab1:
                         flagged_badge = ''
 
                     # Display annotated image (YOLO boxes if available) or fallback badge
-                    img_displayed = False
+                    img_displayed = True
                     if hasattr(product, 'image_urls') and product.image_urls:
                         for img_url in product.image_urls[:2]:
                             bio = None
@@ -1626,6 +1626,44 @@ with tab1:
                                         if not p_data['date_of_manufacture']:
                                             p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '') # Fallback
                                         
+                                        # VALIDATE DATA WITH COMPLIANCE VALIDATOR
+                                        try:
+                                            import sys
+                                            import pathlib
+                                            project_root = pathlib.Path(__file__).resolve().parent.parent.parent
+                                            ml_model_path = project_root / "ml model"
+                                            if str(ml_model_path) not in sys.path:
+                                                sys.path.insert(0, str(ml_model_path))
+                                            
+                                            from compliance import compute_compliance_score
+                                            
+                                            # Run compliance validation
+                                            validation_result = compute_compliance_score(p_data)
+                                            
+                                            # Update p_data with validation results (mark fields as present/missing)
+                                            passed_rules = validation_result.get("passed_rules", {})
+                                            
+                                            # Create validation status for each field
+                                            validation_status = {
+                                                "manufacturer_details": bool(passed_rules.get("packed_and_marketed_by") or passed_rules.get("manufacturer_details")),
+                                                "country_of_origin": bool(passed_rules.get("country_of_origin") or passed_rules.get("country")),
+                                                "net_quantity": bool(passed_rules.get("net_quantity") or passed_rules.get("gross_content")),
+                                                "mrp": bool(passed_rules.get("mrp") or passed_rules.get("mrp_incl_taxes")),
+                                                "date_of_manufacture": bool(passed_rules.get("mfg_date") or passed_rules.get("best_before")),
+                                                "customer_care_details": True  # Always True as per LMPC rules
+                                            }
+                                            
+                                        except Exception as e:
+                                            # Fallback: simple presence check
+                                            validation_status = {
+                                                "manufacturer_details": bool(p_data.get("manufacturer_details")),
+                                                "country_of_origin": bool(p_data.get("country_of_origin")),
+                                                "net_quantity": bool(p_data.get("net_quantity")),
+                                                "mrp": bool(p_data.get("mrp")),
+                                                "date_of_manufacture": bool(p_data.get("date_of_manufacture")),
+                                                "customer_care_details": True  # Always True
+                                            }
+                                        
                                         field_map = [
                                             {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
                                             {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
@@ -1638,9 +1676,16 @@ with tab1:
                                         grid_cols = st.columns(2)
                                         for idx, item in enumerate(field_map):
                                             val = p_data.get(item["key"])
+                                            # Check validation status instead of just presence
+                                            is_valid = validation_status.get(item["key"], False)
+                                            
                                             # format value
-                                            display_val = str(val) if (val and str(val).lower() != "none" and str(val).strip()) else "❌ Not Found"
-                                            is_missing = "❌" in display_val
+                                            if is_valid and val and str(val).lower() != "none" and str(val).strip():
+                                                display_val = str(val)
+                                                is_missing = False
+                                            else:
+                                                display_val = "❌ Not Found"
+                                                is_missing = True
                                             
                                             border_color = "#ff4b4b" if is_missing else "#09ab3b"
                                             bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
