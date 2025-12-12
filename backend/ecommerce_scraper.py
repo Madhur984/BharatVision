@@ -303,81 +303,96 @@ class EcommerceScraper:
 
     def _run_surya_ocr(self, image_path: str) -> str:
         """
-        Runs OCR using the Cloud API endpoint.
+        Runs OCR using Tesseract directly (no API needed).
         """
         try:
-            # Use dynamically configured API URL
-            api_url = f"{self.api_base_url.rstrip('/')}/api/ocr/surya"
+            import pytesseract
+            from PIL import Image
             
             if not os.path.exists(image_path):
                 return ""
-
-            with open(image_path, 'rb') as f:
-                files = {'file': f}
-                # 300s timeout for cold start models
-                response = requests.post(api_url, files=files, timeout=300)
             
-            if response.status_code == 200:
-                result = response.json()
-                if result.get("success"):
-                    text = result.get("text", "")
-                    if text:
-                        return text
-                    else:
-                        logger.warning(f"Surya OCR API returned empty text.")
-                        return ""
-                else:
-                    logger.warning(f"Surya OCR API error: {result.get('error')}")
-                    return ""
+            # Open image and run Tesseract
+            img = Image.open(image_path)
+            text = pytesseract.image_to_string(img)
+            
+            if text:
+                logger.info(f"Tesseract OCR extracted {len(text)} characters from {image_path}")
+                return text
             else:
-                logger.warning(f"Surya OCR API status {response.status_code}: {response.text}")
+                logger.warning(f"Tesseract OCR returned empty text for {image_path}")
                 return ""
                 
         except Exception as e:
-            logger.error(f"Failed to run Surya OCR via API: {e}")
+            logger.error(f"Failed to run Tesseract OCR: {e}")
             return ""
 
     def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Validates text using the new Hybrid Compliance Service.
+        Validates text using simple rule-based checking (no API needed).
         """
         try:
-            # Construct Request
-            req = ComplianceRequest(
-                text=text,
-                product_data=product_data or {}
-            )
+            import re
             
-            # Call Service
-            res_obj = compliance_service.check_compliance(req)
+            text_lower = text.lower()
+            product_data = product_data or {}
             
-            # Map Response to Legacy Format for DB Compatibility
-            mapped_res = {
-                "compliance_score": res_obj.score,
-                "full_analysis": json.dumps(res_obj.full_report),
-                "manufacturer": {"valid": True, "value": res_obj.data.get("manufacturer_details", "Found")},
-                "net_quantity": {"valid": True, "value": res_obj.data.get("net_quantity", "Found")},
-                "mrp": {"valid": True, "value": res_obj.data.get("mrp", "Found")},
-                "consumer_care": {"valid": True, "value": res_obj.data.get("customer_care_details", "Found")},
-                "date_of_manufacture": {"valid": True, "value": res_obj.data.get("date_of_manufacture", "Found")},
-                "country_of_origin": {"valid": True, "value": res_obj.data.get("country_of_origin", "Found")},
+            # Check each mandatory field
+            validation_results = {
+                "manufacturer": {"valid": False, "value": "MISSING"},
+                "net_quantity": {"valid": False, "value": "MISSING"},
+                "mrp": {"valid": False, "value": "MISSING"},
+                "consumer_care": {"valid": False, "value": "MISSING"},
+                "date_of_manufacture": {"valid": False, "value": "MISSING"},
+                "country_of_origin": {"valid": False, "value": "MISSING"}
             }
             
-            # Mark fields as invalid if they appear in violations
-            for v in res_obj.violations:
-                field = v.field
-                if field in mapped_res:
-                     mapped_res[field]["valid"] = False
-                     mapped_res[field]["value"] = "MISSING"
-                
-                # Handle mapped names
-                if field == "manufacturer_details": mapped_res["manufacturer"]["valid"] = False
-                if field == "customer_care_details": mapped_res["consumer_care"]["valid"] = False
+            # 1. Manufacturer
+            if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
+                validation_results["manufacturer"]["valid"] = True
+                validation_results["manufacturer"]["value"] = "Found"
             
-            return mapped_res
+            # 2. Net Quantity
+            qty_match = re.search(r'(\d+\s*(kg|g|gm|ml|l|litre|ltr))', text_lower)
+            if qty_match:
+                validation_results["net_quantity"]["valid"] = True
+                validation_results["net_quantity"]["value"] = qty_match.group(1)
+            
+            # 3. MRP (check product_data first, then text)
+            if product_data.get("mrp"):
+                validation_results["mrp"]["valid"] = True
+                validation_results["mrp"]["value"] = product_data["mrp"]
+            elif any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
+                validation_results["mrp"]["valid"] = True
+                validation_results["mrp"]["value"] = "Found"
+            
+            # 4. Customer Care
+            if any(word in text_lower for word in ['customer care', 'care', 'contact', '@', 'phone']):
+                validation_results["consumer_care"]["valid"] = True
+                validation_results["consumer_care"]["value"] = "Found"
+            
+            # 5. Date of Manufacture
+            if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
+                validation_results["date_of_manufacture"]["valid"] = True
+                validation_results["date_of_manufacture"]["value"] = "Found"
+            
+            # 6. Country of Origin
+            if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
+                validation_results["country_of_origin"]["valid"] = True
+                validation_results["country_of_origin"]["value"] = "Found"
+            
+            # Calculate compliance score
+            compliant_count = sum(1 for v in validation_results.values() if v["valid"])
+            score = (compliant_count / 6) * 100
+            
+            validation_results["compliance_score"] = score
+            validation_results["full_analysis"] = f"Simple validation: {compliant_count}/6 fields found"
+            
+            logger.info(f"Validation complete: {score:.1f}% compliant ({compliant_count}/6 fields)")
+            return validation_results
             
         except Exception as e:
-            logger.error(f"Hybrid validation failed: {e}")
+            logger.error(f"Validation failed: {e}")
             return {
                 "error": str(e),
                 "compliance_score": 0,
