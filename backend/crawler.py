@@ -684,11 +684,79 @@ class EcommerceCrawler:
         return result
 
     def _run_llm_extract(self, text: str) -> Dict[str, Any]:
-        """Extract ALL Legal Metrology compliance fields using REGEX ONLY (No LLM)"""
+        """Extract ALL Legal Metrology compliance fields using ml model compliance validator"""
         if not text:
             return {}
+        
+        try:
+            # Import the compliance validator from ml model
+            import sys
+            import os
+            ml_model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ml model')
+            if ml_model_path not in sys.path:
+                sys.path.insert(0, ml_model_path)
             
-        # Comprehensive regex patterns for all fields
+            from compliance import compute_compliance_score
+            
+            # Prepare parsed data structure expected by compliance validator
+            parsed_data = {
+                "raw_text": text,
+                "product_name": "",  # Will be extracted from text
+                "mrp": None,
+                "net_quantity": None,
+                "manufacturer": None,
+                "customer_care": {},
+                "mfg_date": None,
+                "country_of_origin": None,
+            }
+            
+            # Run compliance check
+            compliance_result = compute_compliance_score(parsed_data)
+            
+            # Extract fields from compliance result
+            extracted = {}
+            passed_rules = compliance_result.get("passed_rules", {})
+            
+            # Map passed rules to extracted fields
+            if "mrp" in passed_rules:
+                info = passed_rules["mrp"].get("info")
+                if info:
+                    extracted["mrp"] = info
+            
+            if "net_quantity" in passed_rules:
+                info = passed_rules["net_quantity"].get("info")
+                if info:
+                    extracted["net_quantity"] = info
+            
+            if "manufacturer" in passed_rules:
+                info = passed_rules["manufacturer"].get("info")
+                if info:
+                    extracted["manufacturer"] = info
+            
+            if "consumer_care" in passed_rules:
+                info = passed_rules["consumer_care"].get("info")
+                if info:
+                    extracted["consumer_care"] = info
+            
+            if "mfg_date" in passed_rules:
+                info = passed_rules["mfg_date"].get("info")
+                if info:
+                    extracted["best_before"] = info
+            
+            if "country_of_origin" in passed_rules:
+                info = passed_rules["country_of_origin"].get("info")
+                if info:
+                    extracted["country_of_origin"] = info
+            
+            logger.info(f"Compliance validator extracted {len(extracted)} fields (score: {compliance_result.get('compliance_percentage', 0)}%)")
+            return extracted if extracted else self._regex_fallback(text)
+            
+        except Exception as e:
+            logger.debug(f"Compliance validator failed: {e}, using regex fallback")
+            return self._regex_fallback(text)
+    
+    def _regex_fallback(self, text: str) -> Dict[str, Any]:
+        """Fallback regex extraction if compliance validator fails"""
         out = {}
         
         # Net quantity - expanded patterns
@@ -741,7 +809,7 @@ class EcommerceCrawler:
                 out['generic_name'] = food.capitalize()
                 break
         
-        logger.info(f"Regex extracted {len(out)} fields")
+        logger.info(f"Regex fallback extracted {len(out)} fields")
         return out
 
         if not TRANSFORMERS_AVAILABLE:
@@ -2337,7 +2405,7 @@ Text:
                 use_llm = True # Placeholder for faithful edit
                 batch_texts = [combined_text] # Placeholder for faithful edit
                 if use_llm:
-                    logger.info(f"Refining extraction with REGEX for {len(batch_texts)} texts...")
+                    logger.info(f"Refining extraction with COMPLIANCE VALIDATOR for {len(batch_texts)} texts...")
                     llm_fields = self._run_llm_extract(combined_text)
                     if llm_fields and isinstance(llm_fields, dict):
                         structured_data.update({k: v for k, v in llm_fields.items() if v})
