@@ -1657,23 +1657,41 @@ with tab1:
                                             }
                                         
                                         field_map = [
-                                            {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
-                                            {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
-                                            {"label": "Net Quantity", "key": "net_quantity", "icon": "⚖️"},
-                                            {"label": "Mfg / Import Date", "key": "date_of_manufacture", "icon": "📅"},
-                                            {"label": "MRP (Max Retail Price)", "key": "mrp", "icon": "💰"},
-                                            {"label": "Customer Care Details", "key": "customer_care_details", "icon": "📞"},
+                                            {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "backend_keys": ["manufacturer_details", "packed_and_marketed_by", "manufacturer"], "icon": "🏭"},
+                                            {"label": "Country of Origin", "key": "country_of_origin", "backend_keys": ["country_of_origin", "country"], "icon": "🌍"},
+                                            {"label": "Net Quantity", "key": "net_quantity", "backend_keys": ["net_quantity", "gross_content", "net"], "icon": "⚖️"},
+                                            {"label": "Mfg / Import Date", "key": "date_of_manufacture", "backend_keys": ["date_of_manufacture", "mfg_date", "best_before", "best_before_date"], "icon": "📅"},
+                                            {"label": "MRP (Max Retail Price)", "key": "mrp", "backend_keys": ["mrp", "mrp_incl_taxes"], "icon": "💰"},
+                                            {"label": "Customer Care Details", "key": "customer_care_details", "backend_keys": ["customer_care_details", "customer_care"], "icon": "📞"},
                                         ]
 
                                         grid_cols = st.columns(2)
                                         for idx, item in enumerate(field_map):
-                                            val = p_data.get(item["key"])
-                                            # Check validation status instead of just presence
+                                            # Try all possible backend keys
+                                            val = None
+                                            for backend_key in item.get("backend_keys", [item["key"]]):
+                                                val = p_data.get(backend_key)
+                                                if val:
+                                                    break
+                                            
+                                            # Check validation status
                                             is_valid = validation_status.get(item["key"], False)
                                             
                                             # format value
                                             if is_valid and val and str(val).lower() != "none" and str(val).strip():
-                                                display_val = str(val)
+                                                # Handle dict values (like manufacturer details)
+                                                if isinstance(val, dict):
+                                                    if 'name' in val:
+                                                        display_val = val['name']
+                                                    elif 'phone' in val or 'email' in val:
+                                                        parts = []
+                                                        if val.get('phone'): parts.append(f"📞 {val['phone']}")
+                                                        if val.get('email'): parts.append(f"📧 {val['email']}")
+                                                        display_val = ", ".join(parts) if parts else str(val)
+                                                    else:
+                                                        display_val = str(val)
+                                                else:
+                                                    display_val = str(val)
                                                 is_missing = False
                                             else:
                                                 display_val = "❌ Not Found"
