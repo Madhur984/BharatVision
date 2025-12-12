@@ -216,90 +216,57 @@ class ComplianceValidator:
     # ---------- build rule list ----------
 
     def _build_rules(self) -> None:
+        """
+        Build only the 6 MANDATORY Legal Metrology rules:
+        1. Manufacturer Name/Address
+        2. Net Quantity
+        3. MRP (Price)
+        4. Consumer Care Details
+        5. Date of Manufacture
+        6. Country of Origin
+        """
         self.rules = [
             Rule(
-                "LM_RULE_01_MRP_MISSING",
-                "MRP is a mandatory declaration and is missing.",
-                "mrp",
-                "critical",
-                self._rule_mrp_missing,
-            ),
-            Rule(
-                "LM_RULE_02_MRP_FORMAT",
-                "MRP format looks invalid or not in standard ₹ / Rs form.",
-                "mrp",
-                "high",
-                self._rule_mrp_format,
-            ),
-            Rule(
-                "LM_RULE_03_NET_QTY_MISSING",
-                "Net Quantity is a mandatory declaration and is missing.",
-                "net_quantity",
-                "critical",
-                self._rule_net_qty_missing,
-            ),
-            Rule(
-                "LM_RULE_04_NET_QTY_UNIT_INVALID",
-                "Net Quantity unit is not a valid Legal Metrology unit.",
-                "net_quantity",
-                "high",
-                self._rule_net_qty_unit,
-            ),
-            Rule(
-                "LM_RULE_05_COUNTRY_ORIGIN_MISSING",
-                "Country of Origin is a mandatory declaration and is missing.",
-                "country_of_origin",
-                "critical",
-                self._rule_country_origin_missing,
-            ),
-            Rule(
-                "LM_RULE_06_MFG_OR_IMPORT_MISSING",
-                "At least one of Manufacturing Date or Import Date must be declared.",
-                "date_of_manufacture",
-                "critical",
-                self._rule_mfg_or_import_missing,
-            ),
-            Rule(
-                "LM_RULE_07_FUTURE_DATES",
-                "Manufacturing / Import / Best-Before / Expiry dates must not be in the future.",
-                "date_fields",
-                "high",
-                self._rule_future_dates,
-            ),
-            Rule(
-                "LM_RULE_08_MANUFACTURER_IMPORTER_MISSING",
-                "Manufacturer or Importer details must be present.",
+                "LM_RULE_01_MANUFACTURER_MISSING",
+                "Manufacturer Name/Address is mandatory and is missing.",
                 "manufacturer_details",
                 "critical",
                 self._rule_manufacturer_or_importer_missing,
             ),
             Rule(
-                "LM_RULE_09_CUSTOMER_CARE_MISSING",
-                "Consumer care details are required (address / email / phone).",
+                "LM_RULE_02_NET_QTY_MISSING",
+                "Net Quantity is mandatory and is missing.",
+                "net_quantity",
+                "critical",
+                self._rule_net_qty_missing,
+            ),
+            Rule(
+                "LM_RULE_03_MRP_MISSING",
+                "MRP (Maximum Retail Price) is mandatory and is missing.",
+                "mrp",
+                "critical",
+                self._rule_mrp_missing,
+            ),
+            Rule(
+                "LM_RULE_04_CONSUMER_CARE_MISSING",
+                "Consumer Care Details are mandatory and are missing.",
                 "customer_care_details",
                 "critical",
                 self._rule_consumer_care_missing,
             ),
             Rule(
-                "LM_RULE_10_CUSTOMER_CARE_FORMAT",
-                "Consumer care details should contain a valid email or phone number.",
-                "customer_care_details",
-                "medium",
-                self._rule_consumer_care_format,
+                "LM_RULE_05_DATE_OF_MANUFACTURE_MISSING",
+                "Date of Manufacture/Import is mandatory and is missing.",
+                "date_of_manufacture",
+                "critical",
+                self._rule_mfg_or_import_missing,
             ),
             Rule(
-                "LM_RULE_11_BEST_BEFORE_REQUIRED",
-                "Best-before / expiry date must be printed for certain categories (e.g., Food, Beverages, Cosmetics).",
-                "best_before_date",
-                "high",
-                self._rule_best_before_required_missing,
-            ),
-            Rule(
-                "LM_RULE_12_UNIT_SALE_PRICE_REQUIRED",
-                "Unit Sale Price is required for certain grocery / food products.",
-                "unit_sale_price",
-                "medium",
-                self._rule_unit_sale_price_required,
+                "LM_RULE_06_COUNTRY_OF_ORIGIN_MISSING",
+                "Country of Origin is mandatory and is missing.",
+                "country_of_origin",
+                "critical",
+                self._rule_country_origin_missing,
             ),
         ]
 
