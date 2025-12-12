@@ -9,7 +9,7 @@ pinned: false
 
 # BharatVision ML API
 
-Cloud-hosted ML API for Legal Metrology Compliance using Gemma-2-9b-it.
+Cloud-hosted ML API for Legal Metrology Compliance using -2-9b-it.
 
 This API provides AI-powered assistance for Legal Metrology compliance questions for the BharatVision application.
 

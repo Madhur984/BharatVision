@@ -63,7 +63,7 @@ class DataRefiner:
         
         Args:
             messy_data: Dictionary with messy OCR output
-            use_nlp: (Optional) Whether to use Gemma 2 AI for extraction (default: True)
+            use_nlp: (Optional) Whether to use  2 AI for extraction (default: True)
             
         Returns:
             Dictionary matching ComplianceValidator schema with clean data
@@ -279,7 +279,7 @@ class DataRefiner:
             return None
         
         try:
-            # Gemma chat template construction
+            #  chat template construction
             base_prompt = NLP_PROMPTS[field_type].format(text=text[:1500])  # Increased context window
             chat = [
                 {"role": "user", "content": base_prompt}

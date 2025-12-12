@@ -15,8 +15,8 @@ Pillow>=10.0.0
 opencv-python-headless>=4.8.0
 
 # ================= PYTORCH & TRANSFORMERS =================
-# Required for NLP structuring (Gemma 2)
-# Using CPU-only torch to save memory (Note: Gemma 9B requires significant RAM/VRAM)
+# Required for NLP structuring ( 2)
+# Using CPU-only torch to save memory (Note:  9B requires significant RAM/VRAM)
 torch>=2.1.0
 # torchvision>=0.16.0  # Not needed without Surya
 transformers>=4.40.0

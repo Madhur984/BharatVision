@@ -6,7 +6,7 @@
 ✅ **Easy** - Just push code, it deploys automatically  
 ✅ **Fast** - Deploys in ~2 minutes
 ✅ **HTTPS** - Free SSL certificate included
-✅ **Perfect for this use case** - Already using HF for Gemma model
+✅ **Perfect for this use case** - Already using HF for  model
 
 ## Step-by-Step Deployment
 
@@ -72,7 +72,7 @@ git push
 
 6. Add another secret:
    - **Name:** `HF_MODEL`
-   - **Value:** `google/gemma-2-9b-it`
+   - **Value:** `google/-2-9b-it`
 7. Click **Add**
 
 8. Add another secret:
@@ -146,7 +146,7 @@ git push origin main
 2. Go to **Help AI** page
 3. Look for "✅ Cloud AI Connected"
 4. Ask: "What is Legal Metrology?"
-5. You should get a response from Gemma-2-9b-it!
+5. You should get a response from -2-9b-it!
 
 ---
 
@@ -167,7 +167,7 @@ git push origin main
 - Make sure you're using the correct API URL in Streamlit secrets
 
 ### "Model not available" error
-- Check that HF_MODEL secret is set to `google/gemma-2-9b-it`
+- Check that HF_MODEL secret is set to `google/-2-9b-it`
 - Verify your HF token has access to the model
 
 ---

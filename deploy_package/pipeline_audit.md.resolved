@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-✅ **All Requirements Met**: The web crawler successfully extracts every image with descriptions, applies OCR to all images, and uses NLP (Gemma2 via Ollama) to process all text data.
+✅ **All Requirements Met**: The web crawler successfully extracts every image with descriptions, applies OCR to all images, and uses NLP (2 via Ollama) to process all text data.
 
 ---
 
@@ -133,10 +133,10 @@ combined_text = "\n".join(all_text_parts)
 
 ### 5. **NLP Processing** ([_run_llm_extract](file:///d:/Hokage%20X%20Pirate%20king/legal-metrology-ocr-pipeline-main%20-%20Copy%20%282%29%20-%20Copy/backend/crawler.py#626-728))
 
-Gemma2 via Ollama analyzes the consolidated text to extract structured compliance fields:
+2 via Ollama analyzes the consolidated text to extract structured compliance fields:
 
 #### Extraction Method:
-- **Model**: Gemma2 (locally via Ollama)
+- **Model**: 2 (locally via Ollama)
 - **API**: `http://localhost:11434/api/generate`
 - **Temperature**: 0.1 (consistent extraction)
 - **Tokens**: 200 (comprehensive response)
@@ -146,7 +146,7 @@ Gemma2 via Ollama analyzes the consolidated text to extract structured complianc
 response = requests.post(
     'http://localhost:11434/api/generate',
     json={
-        'model': 'gemma2',
+        'model': '2',
         'prompt': comprehensive_extraction_prompt,
         'stream': False,
         'options': {'temperature': 0.1, 'num_predict': 200}
@@ -165,7 +165,7 @@ response = requests.post(
 8. [consumer_care](file:///d:/Hokage%20X%20Pirate%20king/legal-metrology-ocr-pipeline-main%20-%20Copy%20%282%29%20-%20Copy/data_refiner/refiner.py#213-230) - Customer support contact
 9. [country_of_origin](file:///d:/Hokage%20X%20Pirate%20king/legal-metrology-ocr-pipeline-main%20-%20Copy%20%282%29%20-%20Copy/data_refiner/refiner.py#203-212) - Manufacturing country
 
-**Result**: **Comprehensive NLP extraction** using state-of-the-art Gemma2 model.
+**Result**: **Comprehensive NLP extraction** using state-of-the-art 2 model.
 
 ---
 
@@ -238,7 +238,7 @@ Product URL
     ├→ Page Text
     └→ OCR Text (ALL images)
     ↓
-[NLP Extraction] → Gemma2 via Ollama
+[NLP Extraction] → 2 via Ollama
     ├→ Net Quantity
     ├→ MRP
     ├→ Manufacturer
@@ -264,7 +264,7 @@ Product URL
 | **Text Detection** | YOLO | ✅ Active |
 | **Primary OCR** | Surya | ✅ Installed |
 | **Fallback OCR** | Tesseract | ✅ Active |
-| **NLP Model** | Gemma2 (Ollama) | ✅ Active |
+| **NLP Model** | 2 (Ollama) | ✅ Active |
 | **API Endpoint** | localhost:11434 | ✅ Running |
 | **Compliance** | ComplianceValidator | ✅ Active |
 | **Database** | SQLite (products.db) | ✅ Active |
@@ -289,7 +289,7 @@ Based on recent logs:
 ✅ **Every image extracted** - Multiple source fallbacks ensure comprehensive coverage  
 ✅ **Image descriptions captured** - Feature bullets + product descriptions + A+ content  
 ✅ **OCR on all images** - YOLO + Surya/Tesseract dual-engine processing  
-✅ **NLP on all text** - Gemma2 analyzes combined text from all sources  
+✅ **NLP on all text** - 2 analyzes combined text from all sources  
 ✅ **Continuous processing** - Deduplication prevents reprocessing  
 ✅ **Data persistence** - All results saved to database  
 
@@ -302,8 +302,8 @@ The web crawler implements a **complete, production-ready pipeline** that:
 1. **Extracts every available image** from product pages using multiple techniques
 2. **Captures all textual descriptions** from multiple page sections
 3. **Applies OCR to every image** using YOLO + dual OCR engines
-4. **Processes all text with NLP** using Gemma2 via Ollama for field extraction
+4. **Processes all text with NLP** using 2 via Ollama for field extraction
 5. **Validates compliance** against Legal Metrology rules
 6. **Persists all data** to SQLite database
 
-The implementation **exceeds requirements** by processing 70-90 images per product (requested 20) and using state-of-the-art models (Gemma2, Surya OCR, YOLO) for maximum accuracy.
+The implementation **exceeds requirements** by processing 70-90 images per product (requested 20) and using state-of-the-art models (2, Surya OCR, YOLO) for maximum accuracy.

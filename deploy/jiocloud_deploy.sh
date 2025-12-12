@@ -36,7 +36,7 @@ else
 fi
 
 # 4. Install Ollama (Native) - Required for local LLM inference
-echo "[3/7] 🦙 Installing Ollama (for Gemma2 model)..."
+echo "[3/7] 🦙 Installing Ollama (for 2 model)..."
 if ! command -v ollama &> /dev/null; then
     curl -fsSL https://ollama.com/install.sh | sh
     echo "✅ Ollama installed."
@@ -45,10 +45,10 @@ else
 fi
 
 # 5. Pull ML Models
-echo "[4/7] 📥 Downloading Gemma2 Model (This may take time)..."
+echo "[4/7] 📥 Downloading 2 Model (This may take time)..."
 # Check if model exists or just pull
-ollama pull gemma2
-echo "✅ Gemma2 Model ready."
+ollama pull 2
+echo "✅ 2 Model ready."
 
 # 6. Setup Project Directory
 PROJECT_DIR="legal-metrology-ocr"

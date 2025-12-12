@@ -17,7 +17,7 @@ which:
         - country_of_origin_panel
         - customer_care_panel
   3. For each detected panel, crops and runs OCR (Surya OCR if available, else pytesseract)
-  4. Feeds tagged per-panel OCR text to Gemma 2 (LLM) to get structured fields (mrp, net_quantity, etc.)
+  4. Feeds tagged per-panel OCR text to  2 (LLM) to get structured fields (mrp, net_quantity, etc.)
   5. Validates the fields using ComplianceValidator
   6. Returns:
         {
@@ -41,8 +41,8 @@ from PIL import Image
 from .compliance_validator import ComplianceValidator
 
 # Optional heavy deps – imported lazily
-_gemma_tokenizer = None
-_gemma_model = None
+__tokenizer = None
+__model = None
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -258,25 +258,25 @@ def extract_panel_texts(
 
 
 # -------------------------------------------------------------------
-# GEMMA 2 STRUCTURING
+#  2 STRUCTURING
 # -------------------------------------------------------------------
 
 
 
-def _load_gemma():
+def _load_():
     """
-    Lazy-load Gemma 2 (9B) with 4-bit quantization.
+    Lazy-load  2 (9B) with 4-bit quantization.
     Only loads once and caches globally.
     """
-    global _gemma_tokenizer, _gemma_model  # Reuse existing global vars to avoid breaking other refs, structurally okay
-    if _gemma_tokenizer is not None and _gemma_model is not None:
-        return _gemma_tokenizer, _gemma_model
+    global __tokenizer, __model  # Reuse existing global vars to avoid breaking other refs, structurally okay
+    if __tokenizer is not None and __model is not None:
+        return __tokenizer, __model
 
     from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
     import torch
 
-    model_name = "google/gemma-2-9b-it"
-    logger.info(f"Loading Gemma 2 model: {model_name} (4-bit)...")
+    model_name = "google/-2-9b-it"
+    logger.info(f"Loading  2 model: {model_name} (4-bit)...")
     
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -284,18 +284,18 @@ def _load_gemma():
         bnb_4bit_compute_dtype=torch.float16,
     )
 
-    _gemma_tokenizer = AutoTokenizer.from_pretrained(model_name)
-    _gemma_model = AutoModelForCausalLM.from_pretrained(
+    __tokenizer = AutoTokenizer.from_pretrained(model_name)
+    __model = AutoModelForCausalLM.from_pretrained(
         model_name,
         quantization_config=bnb_config,
         device_map="auto"
     )
-    return _gemma_tokenizer, _gemma_model
+    return __tokenizer, __model
 
 
 def structure_ocr_from_panels(panel_texts: Dict[str, str]) -> Dict[str, Any]:
     """
-    Use Gemma 2 to convert tagged per-panel OCR into structured fields.
+    Use  2 to convert tagged per-panel OCR into structured fields.
     """
     # if we have no panel texts, return empty structure
     if not panel_texts:
@@ -315,7 +315,7 @@ def structure_ocr_from_panels(panel_texts: Dict[str, str]) -> Dict[str, Any]:
             "unit_sale_price": None,
         }
 
-    tokenizer, model = _load_gemma()
+    tokenizer, model = _load_()
 
     # Build a prompt with explicit tags to help the model
     segments = []
@@ -323,7 +323,7 @@ def structure_ocr_from_panels(panel_texts: Dict[str, str]) -> Dict[str, Any]:
         segments.append(f"[{k.upper()}]\n{v}")
     tagged_text = "\n\n".join(segments)
 
-    # Use strict Chat Template for Gemma
+    # Use strict Chat Template for 
     chat = [
         { "role": "user", "content": f"""
 You are a Legal Metrology packaging assistant.
@@ -397,7 +397,7 @@ PANEL_OCR_TEXT:
                 
             return data
     except Exception as e:
-        logger.warning(f"Failed to parse Gemma output as JSON: {e}. Output was: {decoded!r}")
+        logger.warning(f"Failed to parse  output as JSON: {e}. Output was: {decoded!r}")
 
     # Fallback: just return raw text in minimal structure
     return {
@@ -450,7 +450,7 @@ def run_pipeline_for_image(image_bytes: bytes) -> Dict[str, Any]:
         full_text = run_ocr_pipeline_full(pil_image)
         panel_texts = {"full_image": full_text}
 
-    # 4. Structure text with Gemma 2
+    # 4. Structure text with  2
     structured_data = structure_ocr_from_panels(panel_texts)
 
     # 5. Validate with rule engine

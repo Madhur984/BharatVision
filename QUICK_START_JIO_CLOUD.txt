@@ -70,7 +70,7 @@
 
 ```
 HF_TOKEN=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
-HF_MODEL=google/gemma-2-9b-it
+HF_MODEL=google/-2-9b-it
 ENVIRONMENT=production
 ```
 

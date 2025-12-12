@@ -52,7 +52,7 @@ Value: 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
 ### Secret 2:
 ```
 Name: HF_MODEL
-Value: google/gemma-2-9b-it
+Value: google/-2-9b-it
 ```
 
 ### Secret 3:

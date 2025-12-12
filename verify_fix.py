@@ -57,18 +57,18 @@ if not os.path.exists(image_path):
 
 from huggingface_hub import InferenceClient
 
-test_model = "google/gemma-2-9b-it" 
+test_model = "google/-2-9b-it" 
 
 print(f"\nVerifying with InferenceClient and model: {test_model}")
 try:
     client = InferenceClient(token=HF_TOKEN)
-    # Use chat_completion for Gemma
+    # Use chat_completion for 
     messages = [{"role": "user", "content": "Hello"}]
     response = client.chat_completion(messages, model=test_model)
-    print(f"Gemma passed! Client resolved URL automatically.")
+    print(f" passed! Client resolved URL automatically.")
     print(f"Response: {response.choices[0].message.content}")
 except Exception as e:
-    print(f"Gemma client test error: {e}")
+    print(f" client test error: {e}")
 
 # Now try OCR model with Client
 ocr_models = [

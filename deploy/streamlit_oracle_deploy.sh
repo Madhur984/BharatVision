@@ -36,9 +36,9 @@ fi
 echo "[5/9] Installing Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 
-# Pull Gemma2 model
-echo "[6/9] Pulling Gemma2 model (15-20 minutes)..."
-ollama pull gemma2
+# Pull 2 model
+echo "[6/9] Pulling 2 model (15-20 minutes)..."
+ollama pull 2
 
 # Clone/upload project
 echo "[7/9] Setting up project..."

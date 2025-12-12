@@ -45,9 +45,9 @@ else
     echo "Ollama already installed"
 fi
 
-# Pull Gemma2 model
-echo "[5/8] Pulling Gemma2 model (this may take 10-15 minutes)..."
-ollama pull gemma2
+# Pull 2 model
+echo "[5/8] Pulling 2 model (this may take 10-15 minutes)..."
+ollama pull 2
 
 # Clone repository (if not already done)
 echo "[6/8] Setting up project..."

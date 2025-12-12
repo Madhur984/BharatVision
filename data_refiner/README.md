@@ -140,7 +140,7 @@ def process_with_refinement(frame):
 
 ### NLP Processing
 
-- **Model**: Google Gemma 2 (9B) for reliability
+- **Model**: Google  2 (9B) for reliability
 - **Targeted Prompts**: Field-specific extraction prompts
 - **Fallback**: Regex-only mode if NLP unavailable
 - **Validation**: Business rule compliance checking
@@ -181,7 +181,7 @@ RegexPatterns.MRP_PATTERNS.append(
 
 ### NLP Model Settings
 ```python
-MODEL_NAME = "google/gemma-2-9b-it"  # Change model
+MODEL_NAME = "google/-2-9b-it"  # Change model
 MAX_NEW_TOKENS = 100               # Adjust response length
 TEMPERATURE = 0.1                  # Control randomness
 ```

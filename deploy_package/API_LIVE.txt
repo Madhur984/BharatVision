@@ -4,7 +4,7 @@
 
 **Space URL:** https://madhur984-bharatvision-ml-api.hf.space
 **Status:** Running ✓
-**Model:** google/gemma-2-9b-it ✓
+**Model:** google/-2-9b-it ✓
 
 ## 📋 Available Endpoints
 
@@ -15,7 +15,7 @@ Your API now has these endpoints:
 - `GET /api/health` - Alternative health check
 
 ### AI & ML Endpoints
-- `POST /api/ai/ask` - AI chatbot (Gemma-2-9b-it)
+- `POST /api/ai/ask` - AI chatbot (-2-9b-it)
 - `POST /api/ocr/extract` - OCR text extraction (TrOCR)
 - `POST /api/detect/objects` - Object detection (DETR)
 - `POST /api/compliance/check` - Compliance validation
@@ -68,7 +68,7 @@ The code changes are already pushed to GitHub, so Streamlit Cloud should rebuild
 
 **After:**
 - OCR: HuggingFace TrOCR (cloud, better quality)
-- AI: HuggingFace Gemma-2-9b-it (cloud, working)
+- AI: HuggingFace -2-9b-it (cloud, working)
 - Result: Clean, working, cloud-powered!
 
 ---

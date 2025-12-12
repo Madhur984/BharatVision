@@ -117,9 +117,9 @@ def run_llm_extract(text):
         import torch
         from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
         
-        print("Loading Gemma 2 (9B) - this may take a while...")
+        print("Loading  2 (9B) - this may take a while...")
         
-        model_id = "google/gemma-2-9b-it"
+        model_id = "google/-2-9b-it"
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -151,13 +151,13 @@ Text:
         outputs = model.generate(**inputs, max_new_tokens=256, do_sample=True, temperature=0.1)
         gen = tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # Strip prompt if included (Gemma usually returns full text or part of it depending on config, check)
+        # Strip prompt if included ( usually returns full text or part of it depending on config, check)
         # Actually generate usually returns full text? No, standard generate returns what was generated appended to input?
         # AutoModelForCausalLM.generate returns input + output usually.
         # But we can decode only new tokens if we slice.
         # Let's just try to find the JSON in the output from the last turn.
         
-        print('Gemma output raw:', gen[-500:]) # Log end of output
+        print(' output raw:', gen[-500:]) # Log end of output
         
         # Try to find JSON object
         json_match = re.search(r'\{.*\}', gen, re.DOTALL)
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     print('\n--- OCR snippet (first 800 chars) ---\n')
     print('\n'.join(collected_ocr)[:800])
 
-    print('\n--- Running LLM (Gemma 2) extraction ---\n')
+    print('\n--- Running LLM ( 2) extraction ---\n')
     fields = run_llm_extract(combined)
     print('Extracted fields:', fields)
 

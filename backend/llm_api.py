@@ -9,7 +9,7 @@ from typing import Dict, Any
 logger = logging.getLogger(__name__)
 
 def run_llm_extract_api(text: str) -> Dict[str, Any]:
-    """Run google/gemma-2-9b-it via HuggingFace API to extract structured fields.
+    """Run google/-2-9b-it via HuggingFace API to extract structured fields.
     Returns a dict with extracted fields. Falls back to simple regex if API not available.
     """
     if not text:
@@ -42,7 +42,7 @@ def run_llm_extract_api(text: str) -> Dict[str, Any]:
         truncated = re.sub(r"\s+", " ", text).strip()[:1500]
         
         completion = client.chat.completions.create(
-            model="google/gemma-2-9b-it",
+            model="google/-2-9b-it",
             messages=[
                 {
                     "role": "user",

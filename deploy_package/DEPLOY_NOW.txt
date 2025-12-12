@@ -46,7 +46,7 @@ In your new Space:
    
    **Secret 2:**
    - Name: `HF_MODEL`
-   - Value: `google/gemma-2-9b-it`
+   - Value: `google/-2-9b-it`
    
    **Secret 3:**
    - Name: `ENVIRONMENT`
@@ -84,7 +84,7 @@ You should see:
 {
   "status": "healthy",
   "service": "BharatVision HF API",
-  "model": "google/gemma-2-9b-it",
+  "model": "google/-2-9b-it",
   "model_available": true
 }
 ```

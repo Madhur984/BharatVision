@@ -8,7 +8,7 @@ import re
 from typing import Dict, List, Pattern
 
 # Model Configuration
-MODEL_NAME = "gemma2"  # Ollama model name
+MODEL_NAME = "2"  # Ollama model name
 MAX_NEW_TOKENS = 100
 TEMPERATURE = 0.1  # Low temperature for consistent extraction
 

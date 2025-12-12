@@ -28,7 +28,7 @@ This guide walks you through deploying the BharatVision ML API to Jio Cloud and 
 │  ┌───────────────────────────────┐  │
 │  │  ML API Service               │  │
 │  │  - FastAPI                    │  │
-│  │  - Gemma-2-9b-it (HF API)     │  │
+│  │  - -2-9b-it (HF API)     │  │
 │  │  - Port 8000                  │  │
 │  └───────────────────────────────┘  │
 └─────────────────────────────────────┘
@@ -90,7 +90,7 @@ Follow Jio Cloud's container deployment process:
 3. **Configure environment variables**:
    ```
    HF_TOKEN=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
-   HF_MODEL=google/gemma-2-9b-it
+   HF_MODEL=google/-2-9b-it
    ENVIRONMENT=production
    API_HOST=0.0.0.0
    API_PORT=8000
@@ -265,7 +265,7 @@ Expected response:
 {
   "status": "healthy",
   "service": "BharatVision HF API",
-  "model": "google/gemma-2-9b-it",
+  "model": "google/-2-9b-it",
   "model_available": true,
   "version": "2.0.0",
   "environment": "production"
