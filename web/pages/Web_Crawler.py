@@ -1708,6 +1708,12 @@ with tab1:
                                                 </div>
                                                 """, unsafe_allow_html=True)
                                         
+                                        # Show ALL extracted fields (for debugging)
+                                        with st.expander("🔍 All Extracted Fields (Debug)"):
+                                            st.write("**Fields in structured_data:**")
+                                            for key, value in p_data.items():
+                                                st.write(f"- `{key}`: {value}")
+                                        
                                         # 3. Violations
                                         issues = getattr(product, 'issues_found', []) or []
                                         if issues:
