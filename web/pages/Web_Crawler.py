@@ -710,11 +710,7 @@ try:
 except Exception:
     _ultralytics_available = False
 
-if not _selenium_available:
-    st.warning("Selenium is not available in this environment. Crawling that relies on Selenium may fail. Consider installing `selenium` and a compatible browser driver on the deployment host.")
-
-if not _ultralytics_available:
-    st.info("Ultralytics (YOLO) is not installed. Image/YOLO model based extraction will fall back to lighter methods (OCR-only). Installing `ultralytics` will enable model-based detection.")
+# Warnings removed - dependencies are optional
 
 
 # Lazy-load YOLO model if available
