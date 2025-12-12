@@ -50,7 +50,9 @@ app.add_middleware(
 # Hugging Face Configuration
 # IMPORTANT: HF_TOKEN must be set as environment variable (no fallback for security)
 HF_TOKEN = os.getenv("HF_TOKEN")
-REPO_ID = os.getenv("HF_MODEL", "google/gemma-2-9b-it")
+# HF_MODEL removed - not using Gemma anymore
+# REPO_ID = os.getenv("HF_MODEL", "google/gemma-2-9b-it")
+REPO_ID = None  # Disabled
 
 # Validate HF_TOKEN is set
 if not HF_TOKEN:

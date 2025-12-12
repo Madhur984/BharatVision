@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Mock keys/config if needed or load from env
-HF_MODEL_NAME = "google/gemma-2b-it" # Or whatever was in config.py
+# HF_MODEL_NAME removed - not using Gemma anymore
+# HF_MODEL_NAME = "google/gemma-2b-it"
 YOLO_MODEL_PATH = "yolov8n.pt" # Ensure this file is available or downloaded
 
 class MLProcessor:
