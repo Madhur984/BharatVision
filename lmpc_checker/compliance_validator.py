@@ -181,10 +181,9 @@ class ComplianceValidator:
         return False, ""
 
     def _rule_consumer_care_missing(self, data: Dict[str, Any]) -> Tuple[bool, str]:
-        care = self._get(data, "customer_care_details")
-        if self._is_none_or_empty(care):
-            return True, "Consumer / Customer care details are missing."
-        return False, ""
+        # Always assume consumer care is present on e-commerce websites
+        # User requested this field to always show as green/compliant
+        return False, "Consumer care assumed present on e-commerce platform"
 
     def _rule_consumer_care_format(self, data: Dict[str, Any]) -> Tuple[bool, str]:
         care = self._get(data, "customer_care_details")
