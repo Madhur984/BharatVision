@@ -1614,33 +1614,13 @@ with tab1:
                                         st.markdown("#### 🏛️ Mandatory Declarations")
                                         
                                         # Prepare data
-                                        p_data = {
-                                            "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
-                                            "country_of_origin": getattr(product, 'country_of_origin', ''),
-                                            "net_quantity": getattr(product, 'net_quantity', ''),
-                                            "mrp": getattr(product, 'mrp', ''),
-                                            "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
-                                            "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
-                                        }
-                                        # Fill missing date/care from flat attributes if available & not in declarations
-                                        if not p_data['date_of_manufacture']:
-                                            p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '') # Fallback
-                                        
-                                        # VALIDATE DATA WITH COMPLIANCE VALIDATOR
-                                        try:
-                                            import sys
-                                            import pathlib
-                                            project_root = pathlib.Path(__file__).resolve().parent.parent.parent
-                                            ml_model_path = project_root / "ml model"
-                                            if str(ml_model_path) not in sys.path:
-                                                sys.path.insert(0, str(ml_model_path))
+                                        # USE BACKEND'S ALREADY-VALIDATED DATA (from crawler.py:2402)
+                                        if hasattr(product, 'compliance_details') and product.compliance_details:
+                                            # Use the exact data that was validated by the backend
+                                            p_data = product.compliance_details.get('extracted_fields', {})
+                                            validation_result = product.compliance_details.get('validation_result', {})
                                             
-                                            from compliance import compute_compliance_score
-                                            
-                                            # Run compliance validation
-                                            validation_result = compute_compliance_score(p_data)
-                                            
-                                            # Update p_data with validation results (mark fields as present/missing)
+                                            # Get validation status from backend's validation
                                             passed_rules = validation_result.get("passed_rules", {})
                                             
                                             # Create validation status for each field
@@ -1652,9 +1632,21 @@ with tab1:
                                                 "date_of_manufacture": bool(passed_rules.get("mfg_date") or passed_rules.get("best_before")),
                                                 "customer_care_details": True  # Always True as per LMPC rules
                                             }
+                                        else:
+                                            # Fallback: create p_data from product attributes
+                                            p_data = {
+                                                "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
+                                                "country_of_origin": getattr(product, 'country_of_origin', ''),
+                                                "net_quantity": getattr(product, 'net_quantity', ''),
+                                                "mrp": getattr(product, 'mrp', ''),
+                                                "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
+                                                "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
+                                            }
+                                            # Fill missing date/care from flat attributes
+                                            if not p_data['date_of_manufacture']:
+                                                p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '')
                                             
-                                        except Exception as e:
-                                            # Fallback: simple presence check
+                                            # Simple presence check
                                             validation_status = {
                                                 "manufacturer_details": bool(p_data.get("manufacturer_details")),
                                                 "country_of_origin": bool(p_data.get("country_of_origin")),
