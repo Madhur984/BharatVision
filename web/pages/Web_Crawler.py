@@ -1720,6 +1720,62 @@ with tab1:
                                             st.markdown("#### ⚠️ Violations")
                                             for issue in issues:
                                                 st.warning(f"• {issue}")
+                                        
+                                        # 4. LMPC Validation Summary (NEW)
+                                        with st.expander("📋 LMPC Validation Summary - Click to View Details"):
+                                            st.markdown("### ✅ Extracted Fields & LMPC Rule Results")
+                                            
+                                            if hasattr(product, 'compliance_details') and product.compliance_details:
+                                                validation_result = product.compliance_details.get('validation_result', {})
+                                                rule_results = validation_result.get('rule_results', [])
+                                                
+                                                # Summary stats
+                                                total_rules = len(rule_results)
+                                                passed_rules_count = sum(1 for r in rule_results if not r.get('violated', True))
+                                                failed_rules_count = total_rules - passed_rules_count
+                                                
+                                                col1, col2, col3 = st.columns(3)
+                                                with col1:
+                                                    st.metric("Total Rules", total_rules)
+                                                with col2:
+                                                    st.metric("✅ Passed", passed_rules_count, delta_color="normal")
+                                                with col3:
+                                                    st.metric("❌ Failed", failed_rules_count, delta_color="inverse")
+                                                
+                                                st.markdown("---")
+                                                
+                                                # Show each rule result
+                                                st.markdown("#### 📊 Detailed Rule Results:")
+                                                for rule in rule_results:
+                                                    rule_id = rule.get('rule_id', 'Unknown')
+                                                    description = rule.get('description', 'No description')
+                                                    violated = rule.get('violated', True)
+                                                    details = rule.get('details', '')
+                                                    
+                                                    if violated:
+                                                        st.error(f"❌ **{rule_id}**: {description}")
+                                                        if details:
+                                                            st.write(f"   ↳ {details}")
+                                                    else:
+                                                        st.success(f"✅ **{rule_id}**: {description}")
+                                                        if details:
+                                                            st.write(f"   ↳ {details}")
+                                                
+                                                st.markdown("---")
+                                                
+                                                # Show extracted fields
+                                                st.markdown("#### 📦 Extracted Fields:")
+                                                extracted_fields = product.compliance_details.get('extracted_fields', {})
+                                                if extracted_fields:
+                                                    for key, value in extracted_fields.items():
+                                                        if value and str(value).lower() != 'none':
+                                                            st.write(f"✅ **{key}**: `{value}`")
+                                                        else:
+                                                            st.write(f"❌ **{key}**: Not found")
+                                                else:
+                                                    st.info("No fields extracted")
+                                            else:
+                                                st.info("No validation details available")
 
                                         # 4. Raw Data Expander
                                         with st.expander("📂 View Raw Data & Technical Details"):
