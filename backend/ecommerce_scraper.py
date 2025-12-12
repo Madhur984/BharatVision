@@ -393,6 +393,10 @@ class EcommerceScraper:
     def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Validates using Flan-T5 LLM for intelligent field extraction.
+        
+        Note: Method name kept for backward compatibility, but this now uses
+        Google Flan-T5 (not Gemma-2) for better accuracy and local execution.
+        Falls back to regex patterns if Flan-T5 is not available.
         """
         try:
             from backend.flan_t5_validator import FlanT5Validator
