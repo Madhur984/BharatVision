@@ -750,7 +750,7 @@ def main():
             help="Save results after each job completion"
         )
         
-        # Gemma 2 extraction removed - using compliance validator
+        # LLM extraction removed - using compliance validator
         use_llm = False
         st.session_state.batch_use_llm = False
         

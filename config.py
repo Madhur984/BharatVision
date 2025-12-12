@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).parent
 # Model Configuration
 YOLO_MODEL_PATH = PROJECT_ROOT / 'yolov8n.pt'  # Use absolute path from project root
 # HF_MODEL_NAME removed - using compliance validator instead
-# HF_MODEL_NAME = 'google/gemma-2-9b-it'  # State-of-the-art instruction tuned model
+# HF_MODEL_NAME = 'google/gemma-2-9b-it'  # Deprecated - using compliance validator now
 SURYA_LANG_CODES = ['en', 'hi']  # English and Hindi support
 
 # Since YOLOv8n isn't trained for text detection, we'll rely on Surya for both detection and recognition

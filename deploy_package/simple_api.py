@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="BharatVision ML API",
     version="2.0.0",
-    description="Cloud-hosted ML API for Legal Metrology Compliance using Gemma-2-9b-it"
+    description="Cloud-hosted ML API for Legal Metrology Compliance using Compliance Validator"
 )
 
 # CORS Configuration - Allow Streamlit Cloud and localhost
@@ -50,8 +50,8 @@ app.add_middleware(
 # Hugging Face Configuration
 # IMPORTANT: HF_TOKEN must be set as environment variable (no fallback for security)
 HF_TOKEN = os.getenv("HF_TOKEN")
-# HF_MODEL removed - not using Gemma anymore
-# REPO_ID = os.getenv("HF_MODEL", "google/gemma-2-9b-it")
+# HF_MODEL removed - not using LLM anymore
+# REPO_ID = os.getenv("HF_MODEL", "google/gemma-2-9b-it")  # Deprecated
 REPO_ID = None  # Disabled
 
 # Validate HF_TOKEN is set
@@ -101,7 +101,7 @@ def ask_ai(request: AskRequest):
         )
     
     try:
-        # Construct the prompt for Gemma 2
+        # Construct the prompt for Compliance Validator
         prompt = f"""<start_of_turn>user
 You are an expert Legal Metrology assistant for India. 
 Answer the following question clearly and concisely about proper labelling, compliance, and laws.

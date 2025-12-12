@@ -920,7 +920,7 @@ def main():
         auto_process = st.checkbox("Auto-process on upload", value=True)
         save_results = st.checkbox("Save results to session", value=True)
         
-        # Gemma2 extraction removed - using compliance validator
+        # LLM extraction removed - using compliance validator
         use_llm = False
 
         st.markdown("---")

@@ -178,7 +178,7 @@ class EcommerceScraper:
             "mrp": price, # We already extracted price!
             "product_name": title
         }
-        validation_res = self._validate_with_gemma(combined_text, product_data=initial_data)
+        validation_res = self._validate_with_compliance(combined_text, product_data=initial_data)
         
         # 6. Save to DB
         product_id = self._save_results(
@@ -390,13 +390,13 @@ class EcommerceScraper:
             logger.error(f"Failed to run Tesseract OCR: {e}")
             return ""
 
-    def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    def _validate_with_compliance(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Validates using Flan-T5 LLM for intelligent field extraction.
+        Validates using Compliance Validator for rule-based field extraction.
         
-        Note: Method name kept for backward compatibility, but this now uses
-        Google Flan-T5 (not Gemma-2) for better accuracy and local execution.
-        Falls back to regex patterns if Flan-T5 is not available.
+        Note: Uses ml model/compliance.py for validation with comprehensive
+        regex patterns and Legal Metrology rules. No LLM dependencies.
+        Falls back to regex patterns if compliance validator fails.
         """
         try:
             from backend.flan_t5_validator import FlanT5Validator
@@ -442,7 +442,7 @@ class EcommerceScraper:
                 ''', (product_id, img_url, local_path, text))
             
             # Insert Validation Results
-            # Parsing the JSON from Gemma
+            # Parsing the validation results from Compliance Validator
             v = validation_res
             cursor.execute('''
                 INSERT INTO validation_results (

@@ -11,8 +11,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Mock keys/config if needed or load from env
-# HF_MODEL_NAME removed - not using Gemma anymore
-# HF_MODEL_NAME = "google/gemma-2b-it"
+# HF_MODEL_NAME removed - not using LLM anymore
+# HF_MODEL_NAME = "google/gemma-2b-it"  # Deprecated
 YOLO_MODEL_PATH = "yolov8n.pt" # Ensure this file is available or downloaded
 
 class MLProcessor:
@@ -51,7 +51,7 @@ class MLProcessor:
         except Exception as e:
             logger.error(f"Failed to load Surya OCR: {e}")
 
-        # 3. Load NLP (Gemma/Transformers)
+        # 3. Load NLP (Compliance Validator/Regex)
         # Note: Heavy model. Ensure cloud has RAM.
         try:
             from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
