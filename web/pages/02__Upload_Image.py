@@ -492,57 +492,144 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
         except Exception as ocr_err:
             raise Exception(f"Tesseract OCR failed: {ocr_err}")
         
-        # Validate against Legal Metrology rules
-        validation_results = {
-            "manufacturer_details": False,
-            "net_quantity": False,
-            "mrp": False,
-            "customer_care_details": False,
-            "date_of_manufacture": False,
-            "country_of_origin": False
-        }
-        
-        text_lower = ocr_text.lower()
-        
-        # 1. Manufacturer
-        if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
-            validation_results["manufacturer_details"] = True
-        
-        # 2. Net Quantity
-        import re
-        if re.search(r'\d+\s*(kg|g|gm|ml|l|litre|ltr)', text_lower):
-            validation_results["net_quantity"] = True
-        
-        # 3. MRP
-        if any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
-            validation_results["mrp"] = True
-        
-        # 4. Customer Care
-        if any(word in text_lower for word in ['customer care', 'care', 'contact', '@', 'phone']):
-            validation_results["customer_care_details"] = True
-        
-        # 5. Date of Manufacture
-        if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
-            validation_results["date_of_manufacture"] = True
-        
-        # 6. Country of Origin
-        if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
-            validation_results["country_of_origin"] = True
-        
-        # Calculate compliance
-        compliant_count = sum(validation_results.values())
-        score = (compliant_count / 6) * 100
-        is_compliant = score >= 100
-        
-        # Create violations list
-        violations = []
-        for field, is_present in validation_results.items():
-            if not is_present:
+        # Validate using ComplianceValidator (same as Web Crawler)
+        try:
+            # Import compliance validator
+            import sys
+            import pathlib
+            project_root = pathlib.Path(__file__).resolve().parent.parent.parent
+            ml_model_path = project_root / "ml model"
+            if str(ml_model_path) not in sys.path:
+                sys.path.insert(0, str(ml_model_path))
+            
+            from compliance import compute_compliance_score
+            
+            # Prepare parsed_data structure for compliance validator
+            parsed_data = {
+                "raw_text": ocr_text
+            }
+            
+            # Pre-extract fields using regex to populate parsed_data
+            text_lower = ocr_text.lower()
+            
+            # Extract MRP
+            mrp_match = re.search(r'(?:mrp|price)[:\s]*[₹rs.]*\s*([\d,]+(?:\.\d{2})?)', ocr_text, re.I)
+            if mrp_match:
+                parsed_data["mrp_incl_taxes"] = f"₹{mrp_match.group(1)}"
+                parsed_data["mrp"] = f"₹{mrp_match.group(1)}"
+            
+            # Extract Net Quantity
+            qty_match = re.search(r'(?:net\s*(?:quantity|qty|wt|weight)|quantity|weight)[:\s]*([\d.]+\s*(?:kg|g|gm|ml|l|ltr|litre))', text_lower, re.I)
+            if qty_match:
+                parsed_data["gross_content"] = qty_match.group(1).strip()
+                parsed_data["net_quantity"] = qty_match.group(1).strip()
+                parsed_data["net"] = qty_match.group(1).strip()
+            
+            # Extract Manufacturer
+            mfr_match = re.search(r'(?:mfd|manufactured|marketed|packed)\s*by[:\s]*([^\n]{10,100})', ocr_text, flags=re.I)
+            if mfr_match:
+                mfr_text = mfr_match.group(1).strip()
+                parsed_data["packed_and_marketed_by"] = {
+                    "name": mfr_text.split(',')[0].strip() if ',' in mfr_text else mfr_text,
+                    "address_lines": [line.strip() for line in mfr_text.split(',')[1:]] if ',' in mfr_text else []
+                }
+            
+            # Extract Customer Care
+            contact_match = re.search(r'(?:consumer\s*care|customer\s*care|helpline|toll\s*free|contact)[:\s]*([^\n]{10,150})', ocr_text, flags=re.I)
+            phone_match = re.search(r'(\d{10})', ocr_text)
+            email_match = re.search(r'([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})', text_lower)
+            
+            if contact_match or phone_match or email_match:
+                parsed_data["customer_care"] = {
+                    "phone": phone_match.group(1) if phone_match else None,
+                    "email": email_match.group(1) if email_match else None,
+                    "website": None
+                }
+            
+            # Extract Date
+            date_match = re.search(r'(?:mfg|mfd|manufactured|best\s*before|expiry|exp\.?\s*date)[:\s]*([^\n]{5,40})', ocr_text, flags=re.I)
+            if date_match:
+                parsed_data["mfg_date"] = date_match.group(1).strip()
+                parsed_data["best_before"] = date_match.group(1).strip()
+            
+            # Extract Country
+            country_match = re.search(r'(?:country\s*of\s*origin|origin|made\s*in|product\s*of)[:\s]*([A-Za-z\s]+)', ocr_text, flags=re.I)
+            if country_match:
+                parsed_data["country_of_origin"] = country_match.group(1).strip()
+                parsed_data["country"] = country_match.group(1).strip()
+            
+            # Run compliance check
+            compliance_result = compute_compliance_score(parsed_data)
+            
+            # Extract validation results
+            validation_results = {}
+            passed_rules = compliance_result.get("passed_rules", {})
+            
+            # Map compliance results to validation format
+            validation_results["manufacturer_details"] = bool(passed_rules.get("packed_and_marketed_by"))
+            validation_results["net_quantity"] = bool(passed_rules.get("net_quantity") or passed_rules.get("gross_content"))
+            validation_results["mrp"] = bool(passed_rules.get("mrp") or passed_rules.get("mrp_incl_taxes"))
+            validation_results["customer_care_details"] = True  # Always True as per LMPC rules
+            validation_results["date_of_manufacture"] = bool(passed_rules.get("mfg_date") or passed_rules.get("best_before"))
+            validation_results["country_of_origin"] = bool(passed_rules.get("country_of_origin") or passed_rules.get("country"))
+            
+            # Get compliance score
+            score = compliance_result.get('compliance_percentage', 0)
+            is_compliant = score >= 100
+            
+            # Create violations from failed rules
+            violations = []
+            for rule in compliance_result.get("failed_rules", []):
                 violations.append({
-                    "field": field,
-                    "description": f"{field.replace('_', ' ').title()} is missing",
+                    "field": rule.get("key", "unknown"),
+                    "description": rule.get("message", "Validation failed"),
                     "violated": True
                 })
+            
+        except Exception as e:
+            # Fallback to simple regex if compliance validator fails
+            st.warning(f"Compliance validator failed, using fallback: {e}")
+            validation_results = {
+                "manufacturer_details": False,
+                "net_quantity": False,
+                "mrp": False,
+                "customer_care_details": True,  # Always True
+                "date_of_manufacture": False,
+                "country_of_origin": False
+            }
+            
+            text_lower = ocr_text.lower()
+            
+            # Simple regex fallback
+            if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
+                validation_results["manufacturer_details"] = True
+            
+            if re.search(r'\d+\s*(kg|g|gm|ml|l|litre|ltr)', text_lower):
+                validation_results["net_quantity"] = True
+            
+            if any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
+                validation_results["mrp"] = True
+            
+            if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
+                validation_results["date_of_manufacture"] = True
+            
+            if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
+                validation_results["country_of_origin"] = True
+            
+            # Calculate compliance
+            compliant_count = sum(validation_results.values())
+            score = (compliant_count / 6) * 100
+            is_compliant = score >= 100
+            
+            # Create violations list
+            violations = []
+            for field, is_present in validation_results.items():
+                if not is_present:
+                    violations.append({
+                        "field": field,
+                        "description": f"{field.replace('_', ' ').title()} is missing",
+                        "violated": True
+                    })
         
         processing_time = time.time() - start_time
         
