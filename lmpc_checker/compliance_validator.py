@@ -217,13 +217,16 @@ class ComplianceValidator:
 
     def _build_rules(self) -> None:
         """
-        Build only the 6 MANDATORY Legal Metrology rules:
+        Build the 9 MANDATORY Legal Metrology rules:
         1. Manufacturer Name/Address
         2. Net Quantity
         3. MRP (Price)
         4. Consumer Care Details
         5. Date of Manufacture
         6. Country of Origin
+        7. MRP Format Validation
+        8. Net Quantity Unit Validation
+        9. Generic Name of Product
         """
         self.rules = [
             Rule(
@@ -268,7 +271,35 @@ class ComplianceValidator:
                 "critical",
                 self._rule_country_origin_missing,
             ),
+            Rule(
+                "LM_RULE_07_MRP_FORMAT",
+                "MRP format is invalid (should be ₹XX.XX or Rs. XX).",
+                "mrp",
+                "high",
+                self._rule_mrp_format,
+            ),
+            Rule(
+                "LM_RULE_08_NET_QTY_UNIT_INVALID",
+                "Net Quantity unit is not a valid Legal Metrology unit.",
+                "net_quantity",
+                "high",
+                self._rule_net_qty_unit,
+            ),
+            Rule(
+                "LM_RULE_09_GENERIC_NAME_MISSING",
+                "Generic Name of the product is mandatory and is missing.",
+                "generic_name",
+                "critical",
+                self._rule_generic_name_missing,
+            ),
         ]
+    
+    def _rule_generic_name_missing(self, data: Dict[str, Any]) -> Tuple[bool, str]:
+        """Check if generic name is present"""
+        generic_name = self._get(data, "generic_name")
+        if self._is_none_or_empty(generic_name):
+            return True, "Generic name of the product is missing."
+        return False, ""
 
     # ---------- public API ----------
 
