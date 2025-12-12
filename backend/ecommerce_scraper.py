@@ -360,7 +360,7 @@ class EcommerceScraper:
 
     def _validate_with_gemma(self, text: str, product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Validates text using simple rule-based checking (no API needed).
+        Validates by actually parsing the extracted data from specs and text.
         """
         try:
             import re
@@ -368,7 +368,7 @@ class EcommerceScraper:
             text_lower = text.lower()
             product_data = product_data or {}
             
-            # Check each mandatory field
+            # Initialize validation results
             validation_results = {
                 "manufacturer": {"valid": False, "value": "MISSING"},
                 "net_quantity": {"valid": False, "value": "MISSING"},
@@ -378,48 +378,123 @@ class EcommerceScraper:
                 "country_of_origin": {"valid": False, "value": "MISSING"}
             }
             
-            # 1. Manufacturer
-            if any(word in text_lower for word in ['mfd by', 'manufactured by', 'marketed by', 'manufacturer']):
-                validation_results["manufacturer"]["valid"] = True
-                validation_results["manufacturer"]["value"] = "Found"
+            # Parse specs section for structured data
+            specs_section = ""
+            if "product specifications:" in text_lower:
+                specs_start = text_lower.find("product specifications:")
+                specs_end = text_lower.find("ocr text from images:", specs_start)
+                if specs_end == -1:
+                    specs_end = len(text_lower)
+                specs_section = text[specs_start:specs_end]
+            
+            # 1. Manufacturer / Packer
+            manufacturer_patterns = [
+                r'manufacturer[:\s]+([^\n]+)',
+                r'packer[:\s]+([^\n]+)',
+                r'marketed by[:\s]+([^\n]+)',
+                r'mfd\.?\s*by[:\s]+([^\n]+)'
+            ]
+            for pattern in manufacturer_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    value = match.group(1).strip()
+                    if len(value) > 3:  # Valid if more than 3 chars
+                        validation_results["manufacturer"]["valid"] = True
+                        validation_results["manufacturer"]["value"] = value[:100]
+                        break
             
             # 2. Net Quantity
-            qty_match = re.search(r'(\d+\s*(kg|g|gm|ml|l|litre|ltr))', text_lower)
-            if qty_match:
-                validation_results["net_quantity"]["valid"] = True
-                validation_results["net_quantity"]["value"] = qty_match.group(1)
+            qty_patterns = [
+                r'net quantity[:\s]+([0-9.]+\s*(?:ml|l|g|kg|gm|grams?|liters?|milliliters?))',
+                r'quantity[:\s]+([0-9.]+\s*(?:ml|l|g|kg|gm|grams?|liters?|milliliters?))',
+                r'weight[:\s]+([0-9.]+\s*(?:ml|l|g|kg|gm|grams?|liters?|milliliters?))',
+                r'(\d+\.?\d*\s*(?:ml|l|g|kg|gm|grams?|liters?|milliliters?))'
+            ]
+            for pattern in qty_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    validation_results["net_quantity"]["valid"] = True
+                    validation_results["net_quantity"]["value"] = match.group(1).strip()
+                    break
             
-            # 3. MRP (check product_data first, then text)
+            # 3. MRP (check product_data first, then parse from text)
             if product_data.get("mrp"):
                 validation_results["mrp"]["valid"] = True
-                validation_results["mrp"]["value"] = product_data["mrp"]
-            elif any(word in text_lower for word in ['mrp', 'price', 'rs.', '₹']):
-                validation_results["mrp"]["valid"] = True
-                validation_results["mrp"]["value"] = "Found"
+                validation_results["mrp"]["value"] = str(product_data["mrp"])
+            else:
+                mrp_patterns = [
+                    r'mrp[:\s]*₹?\s*([0-9,]+)',
+                    r'price[:\s]*₹?\s*([0-9,]+)',
+                    r'₹\s*([0-9,]+)',
+                    r'rs\.?\s*([0-9,]+)'
+                ]
+                for pattern in mrp_patterns:
+                    match = re.search(pattern, text_lower)
+                    if match:
+                        validation_results["mrp"]["valid"] = True
+                        validation_results["mrp"]["value"] = "₹" + match.group(1).strip()
+                        break
             
-            # 4. Customer Care
-            if any(word in text_lower for word in ['customer care', 'care', 'contact', '@', 'phone']):
-                validation_results["consumer_care"]["valid"] = True
-                validation_results["consumer_care"]["value"] = "Found"
+            # 4. Customer Care / Contact
+            contact_patterns = [
+                r'customer care[:\s]+([^\n]+)',
+                r'contact[:\s]+([^\n]+)',
+                r'packer[:\s]+[^0-9]*([0-9]{10})',
+                r'(\d{10})',  # 10 digit phone
+                r'([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})'  # email
+            ]
+            for pattern in contact_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    value = match.group(1).strip() if match.lastindex else match.group(0)
+                    if len(value) > 5:
+                        validation_results["consumer_care"]["valid"] = True
+                        validation_results["consumer_care"]["value"] = value[:100]
+                        break
             
-            # 5. Date of Manufacture
-            if any(word in text_lower for word in ['mfg', 'date', 'exp', 'expiry', 'best before']):
-                validation_results["date_of_manufacture"]["valid"] = True
-                validation_results["date_of_manufacture"]["value"] = "Found"
+            # 5. Date of Manufacture / Best Before / Expiry
+            date_patterns = [
+                r'date of manufacture[:\s]+([^\n]+)',
+                r'mfg\.?\s*date[:\s]+([^\n]+)',
+                r'best before[:\s]+([^\n]+)',
+                r'expiry[:\s]+([^\n]+)',
+                r'shelf life[:\s]+([^\n]+)'
+            ]
+            for pattern in date_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    value = match.group(1).strip()
+                    if len(value) > 2:
+                        validation_results["date_of_manufacture"]["valid"] = True
+                        validation_results["date_of_manufacture"]["value"] = value[:50]
+                        break
             
             # 6. Country of Origin
-            if any(word in text_lower for word in ['made in', 'country of origin', 'product of', 'india']):
-                validation_results["country_of_origin"]["valid"] = True
-                validation_results["country_of_origin"]["value"] = "Found"
+            country_patterns = [
+                r'country of origin[:\s]+([^\n]+)',
+                r'made in[:\s]+([^\n]+)',
+                r'product of[:\s]+([^\n]+)',
+                r'origin[:\s]+([^\n]+)'
+            ]
+            for pattern in country_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    value = match.group(1).strip()
+                    if len(value) > 2:
+                        validation_results["country_of_origin"]["valid"] = True
+                        validation_results["country_of_origin"]["value"] = value[:50]
+                        break
             
             # Calculate compliance score
             compliant_count = sum(1 for v in validation_results.values() if v["valid"])
             score = (compliant_count / 6) * 100
             
             validation_results["compliance_score"] = score
-            validation_results["full_analysis"] = f"Simple validation: {compliant_count}/6 fields found"
+            validation_results["full_analysis"] = f"Parsed validation: {compliant_count}/6 fields found"
             
             logger.info(f"Validation complete: {score:.1f}% compliant ({compliant_count}/6 fields)")
+            logger.info(f"Found: {[k for k, v in validation_results.items() if isinstance(v, dict) and v.get('valid')]}")
+            
             return validation_results
             
         except Exception as e:
