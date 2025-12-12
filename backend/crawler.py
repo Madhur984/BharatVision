@@ -684,7 +684,7 @@ class EcommerceCrawler:
         return result
 
     def _run_llm_extract(self, text: str) -> Dict[str, Any]:
-        """Extract ALL Legal Metrology compliance fields using Ollama Gemma2"""
+        """Extract ALL Legal Metrology compliance fields using Flan-T5"""
         if not text:
             return {}
             
@@ -735,40 +735,32 @@ class EcommerceCrawler:
             return out
         
         try:
-            import requests
+            # Use Flan-T5 validator for extraction
+            from backend.flan_t5_validator import FlanT5Validator
             
-            # Prepare ULTRA-DETAILED prompt
-            truncated = re.sub(r"\s+", " ", text).strip()[:3000]
-            prompt = f"""EXTRACT Legal Metrology info. READ CAREFULLY:
-
-1. manufacturer: Look for "Manufactured by", "Mfd by", "Marketed by", "Packed by" - Extract EVERYTHING after it including full address with pincode!
-2. country_of_origin: "Made in", "Country of Origin", "Product of" - If you see "India" or "Indian" ANYWHERE, return "India"
-3. net_quantity: "Net Wt", "Net Weight" - number + unit (g/kg/ml/L). Example: "500g"
-4. mrp: "MRP", "Price", "Rs", "₹" - number only
-5. generic_name: Product TYPE (not brand). Examples: "Biscuits", "Ghee", "Oil"
-6. fssai_license: 14 digits only
-7. best_before: "Best Before", "Expiry", "Exp"
-8. consumer_care: "Consumer Care", "Helpline" - phone/email
-
-IMPORTANT:
-- Manufacturer: If text says "Manufactured by ABC Corp, 123 Street, Delhi-110001", extract "ABC Corp, 123 Street, Delhi-110001"
-- Country: Look for India/Indian/Hindi/Made in India ANYWHERE in text
-- Include complete addresses with pincodes
-
-TEXT:
-{truncated}
-
-Return ONLY JSON:
-{{"manufacturer": "full address", "country_of_origin": "country", "net_quantity": "amt", "mrp": "price", "generic_name": "type", "fssai_license": "14digits", "best_before": "date", "consumer_care": "contact", "importer": "if_any"}}
-
-JSON:"""
+            validator = FlanT5Validator()
+            result = validator.validate(text, {})
             
-            # Skip localhost LLM call on Cloud
-            # response = requests.post('http://localhost:11434/api/generate' ...)
-            return regex_extract(text)
-
+            # Convert validator format to crawler format
+            extracted = {}
+            if result.get('manufacturer', {}).get('valid'):
+                extracted['manufacturer'] = result['manufacturer']['value']
+            if result.get('net_quantity', {}).get('valid'):
+                extracted['net_quantity'] = result['net_quantity']['value']
+            if result.get('mrp', {}).get('valid'):
+                extracted['mrp'] = result['mrp']['value']
+            if result.get('consumer_care', {}).get('valid'):
+                extracted['consumer_care'] = result['consumer_care']['value']
+            if result.get('date_of_manufacture', {}).get('valid'):
+                extracted['best_before'] = result['date_of_manufacture']['value']
+            if result.get('country_of_origin', {}).get('valid'):
+                extracted['country_of_origin'] = result['country_of_origin']['value']
+            
+            logger.info(f"Flan-T5 extracted {len(extracted)} fields")
+            return extracted if extracted else regex_extract(text)
+            
         except Exception as e:
-            logger.debug(f"Ollama API failed: {e}")
+            logger.debug(f"Flan-T5 extraction failed: {e}, using regex fallback")
             return regex_extract(text)
 
         if not TRANSFORMERS_AVAILABLE:
