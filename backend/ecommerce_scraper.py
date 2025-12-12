@@ -165,8 +165,12 @@ class EcommerceScraper:
         
         logger.info(f"OCR completed. Total text length: {len(full_ocr_text)}")
 
-        # Combine all text for validation (Title + Desc + OCR)
-        combined_text = f"Title: {title}\nPrice: {price}\nDescription: {description}\n\nOCR Text From Images:\n{full_ocr_text}"
+        # 4.5. Extract Product Specs/Details Table (Amazon, Flipkart)
+        specs_text = self._extract_specs(soup)
+        logger.info(f"Extracted specs: {len(specs_text)} characters")
+
+        # Combine all text for validation (Title + Desc + Specs + OCR)
+        combined_text = f"Title: {title}\nPrice: {price}\nDescription: {description}\n\nProduct Specifications:\n{specs_text}\n\nOCR Text From Images:\n{full_ocr_text}"
 
         # 5. Validate Compliance (Hybrid Service)
         # Pre-populate some data from scraping to help the validator
@@ -216,6 +220,33 @@ class EcommerceScraper:
                 else:
                     text += el.get_text() + "\n"
         return text
+
+    def _extract_specs(self, soup):
+        """Extract product specifications/details table (Amazon, Flipkart)"""
+        specs_text = ""
+        
+        # Amazon: Product details table
+        tables = soup.find_all('table', {'id': 'productDetails_detailBullets_sections1'})
+        if not tables:
+            tables = soup.find_all('table', {'class': 'prodDetTable'})
+        if not tables:
+            tables = soup.find_all('table', {'id': 'productDetails_techSpec_section_1'})
+        
+        for table in tables:
+            rows = table.find_all('tr')
+            for row in rows:
+                cells = row.find_all(['th', 'td'])
+                if len(cells) >= 2:
+                    key = cells[0].get_text(strip=True)
+                    value = cells[1].get_text(strip=True)
+                    specs_text += f"{key}: {value}\n"
+        
+        # Also try div-based specs (Flipkart style)
+        spec_divs = soup.find_all('div', {'class': '_1hKmbr'})
+        for div in spec_divs:
+            specs_text += div.get_text(strip=True) + "\n"
+        
+        return specs_text
 
     def _extract_image_urls(self, soup, base_url) -> List[str]:
         """
