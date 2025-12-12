@@ -918,48 +918,32 @@ with tab1:
                     else:
                         st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
 
-                    # 2. Mandatory Fields Grid
-                    st.markdown("#### 🏛️ Mandatory Declarations")
-                    
-                    # Prepare data
-                    p_data = {
-                        "manufacturer_details": getattr(product, 'manufacturer_details', '') or getattr(product, 'manufacturer', ''),
-                        "country_of_origin": getattr(product, 'country_of_origin', ''),
-                        "net_quantity": getattr(product, 'net_quantity', ''),
-                        "mrp": getattr(product, 'mrp', ''),
-                        "date_of_manufacture": getattr(product, 'declarations', {}).get('date_of_manufacture') if hasattr(product, 'declarations') else None,
-                        "customer_care_details": getattr(product, 'declarations', {}).get('customer_care_details') if hasattr(product, 'declarations') else None
-                    }
-                    # Fill missing date/care from flat attributes if available & not in declarations
-                    if not p_data['date_of_manufacture']:
-                        p_data['date_of_manufacture'] = getattr(product, 'best_before_date', '') # Fallback
-                    
-                    field_map = [
-                        {"label": "Manufacturer Name/Address", "key": "manufacturer_details", "icon": "🏭"},
-                        {"label": "Country of Origin", "key": "country_of_origin", "icon": "🌍"},
-                        {"label": "Net Quantity", "key": "net_quantity", "icon": "⚖️"},
-                        {"label": "Mfg / Import Date", "key": "date_of_manufacture", "icon": "📅"},
-                        {"label": "MRP (Max Retail Price)", "key": "mrp", "icon": "💰"},
-                        {"label": "Customer Care Details", "key": "customer_care_details", "icon": "📞"},
-                    ]
-
-                    grid_cols = st.columns(2)
-                    for idx, item in enumerate(field_map):
-                        val = p_data.get(item["key"])
-                        # format value
-                        display_val = str(val) if (val and str(val).lower() != "none" and str(val).strip()) else "❌ Not Found"
-                        is_missing = "❌" in display_val
-                        
-                        border_color = "#ff4b4b" if is_missing else "#09ab3b"
-                        bg_color = "rgba(255, 75, 75, 0.1)" if is_missing else "rgba(9, 171, 59, 0.1)"
-
-                        with grid_cols[idx % 2]:
-                            st.markdown(f"""
-                            <div style="border: 1px solid {border_color}; background-color: {bg_color}; padding: 8px; border-radius: 5px; margin-bottom: 8px;">
-                                <div style="font-weight:bold; font-size:0.85em; color:#555;">{item['icon']} {item['label']}</div>
-                                <div style="font-size:1em; color: black; word-wrap: break-word;">{display_val}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                    # 2. LMPC Validation Details
+                    with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
+                        if hasattr(product, 'compliance_details') and product.compliance_details:
+                            validation_result = product.compliance_details.get('validation_result', {})
+                            rule_results = validation_result.get('rule_results', [])
+                            
+                            if rule_results:
+                                # Show each LMPC rule result
+                                for rule in rule_results:
+                                    description = rule.get('description', '')
+                                    violated = rule.get('violated', True)
+                                    
+                                    if not violated:
+                                        st.success(f"✅ **{description}**")
+                                    else:
+                                        st.error(f"❌ **{description}**")
+                                
+                                # Show summary
+                                passed_count = sum(1 for r in rule_results if not r.get('violated', True))
+                                total_count = len(rule_results)
+                                st.markdown("---")
+                                st.info(f"**Summary:** {passed_count} out of {total_count} LMPC rules passed")
+                            else:
+                                st.warning("No LMPC validation results available")
+                        else:
+                            st.warning("No validation data available for this product")
                     
                     # 3. Violations
                     issues = getattr(product, 'issues_found', []) or []
