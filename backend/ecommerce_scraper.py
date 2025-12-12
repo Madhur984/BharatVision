@@ -222,7 +222,7 @@ class EcommerceScraper:
         return text
 
     def _extract_specs(self, soup):
-        """Extract product specifications/details table (Amazon, Flipkart)"""
+        """Extract product specifications/details table (Amazon, Flipkart) and convert to text"""
         specs_text = ""
         
         # Amazon: Product details table
@@ -239,12 +239,38 @@ class EcommerceScraper:
                 if len(cells) >= 2:
                     key = cells[0].get_text(strip=True)
                     value = cells[1].get_text(strip=True)
+                    # Clean invisible characters
+                    key = key.replace('\u200e', '').replace('\u200f', '').strip()
+                    value = value.replace('\u200e', '').replace('\u200f', '').strip()
                     specs_text += f"{key}: {value}\n"
         
         # Also try div-based specs (Flipkart style)
         spec_divs = soup.find_all('div', {'class': '_1hKmbr'})
         for div in spec_divs:
-            specs_text += div.get_text(strip=True) + "\n"
+            text = div.get_text(strip=True)
+            text = text.replace('\u200e', '').replace('\u200f', '').strip()
+            specs_text += text + "\n"
+        
+        # Try to find JSON-LD structured data (common in modern e-commerce)
+        scripts = soup.find_all('script', {'type': 'application/ld+json'})
+        for script in scripts:
+            try:
+                import json
+                data = json.loads(script.string)
+                # Extract product properties if available
+                if isinstance(data, dict):
+                    if 'offers' in data and isinstance(data['offers'], dict):
+                        price = data['offers'].get('price')
+                        if price:
+                            specs_text += f"Price: {price}\n"
+                    if 'brand' in data:
+                        specs_text += f"Brand: {data['brand']}\n"
+            except:
+                pass
+        
+        logger.info(f"Extracted specs text length: {len(specs_text)} chars")
+        if specs_text:
+            logger.info(f"Sample specs: {specs_text[:200]}...")
         
         return specs_text
 
