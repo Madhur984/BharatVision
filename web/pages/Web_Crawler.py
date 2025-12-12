@@ -909,9 +909,9 @@ with tab1:
                     comp_score = getattr(product, 'compliance_score', 0) or 0
                     comp_status = getattr(product, 'compliance_status', "UNKNOWN")
                     
-                    if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 90):
+                    if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 75):
                         st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
-                    elif comp_status == "PARTIAL" or (isinstance(comp_score, (int, float)) and 50 <= comp_score <= 90):
+                    elif comp_status == "PARTIAL" or (isinstance(comp_score, (int, float)) and 50 <= comp_score <= 75):
                         st.warning(f"🟡 **PARTIAL COMPLIANCE** (Score: {comp_score})")
                     elif comp_status == "ERROR":
                         st.error(f"🔴 **ERROR** (Score: {comp_score})")
