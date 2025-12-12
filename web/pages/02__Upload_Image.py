@@ -482,12 +482,46 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
         start_time = time.time()
         st.info(f"Processing {uploaded_file.name} with Tesseract OCR...")
         
+        # Preprocess image for better OCR results
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert PIL Image to numpy array
+            img_array = np.array(image)
+            
+            # Convert to grayscale
+            if len(img_array.shape) == 3:
+                gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+            else:
+                gray = img_array
+            
+            # Apply adaptive thresholding to improve text clarity
+            binary = cv2.adaptiveThreshold(
+                gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                cv2.THRESH_BINARY, 11, 2
+            )
+            
+            # Denoise
+            denoised = cv2.fastNlMeansDenoising(binary, None, 10, 7, 21)
+            
+            # Convert back to PIL Image for Tesseract
+            processed_image = Image.fromarray(denoised)
+            
+            st.success("✅ Image preprocessed for better OCR")
+            
+        except Exception as prep_err:
+            # If preprocessing fails, use original image
+            st.warning(f"Image preprocessing failed, using original: {prep_err}")
+            processed_image = image
+        
         # Use Tesseract OCR directly
         try:
             import pytesseract
             
-            # Extract text using Tesseract
-            ocr_text = pytesseract.image_to_string(image)
+            # Extract text using Tesseract with custom config for better accuracy
+            custom_config = r'--oem 3 --psm 6'  # OEM 3 = Default, PSM 6 = Assume uniform block of text
+            ocr_text = pytesseract.image_to_string(processed_image, config=custom_config)
             st.success("✅ OCR extraction successful")
             
         except Exception as ocr_err:
