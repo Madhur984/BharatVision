@@ -911,7 +911,7 @@ with tab1:
                     
                     if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 90):
                         st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
-                    elif comp_status == "NON-COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score < 90<50):
+                    elif comp_status == "NON-COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score < 60 <50):
                         st.error(f"🟡 **NON-COMPLIANT** (Score: {comp_score})")
                     elif comp_status == "ERROR":
                         st.error(f"🔴 **ERROR** (Score: {comp_score})")
