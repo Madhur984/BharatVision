@@ -154,3 +154,67 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Failed to upsert product {product_data.get('product_url')}: {e}")
             # Don't raise, just log error to allow crawler to continue
+    
+    def get_all_products(self):
+        """Get all products from database."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row  # Return rows as dictionaries
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM products ORDER BY extracted_at DESC")
+            rows = cursor.fetchall()
+            conn.close()
+            
+            # Convert to list of dicts
+            products = []
+            for row in rows:
+                product = dict(row)
+                # Parse JSON fields
+                for json_field in ['features', 'specs', 'image_urls', 'local_image_paths', 'issues_found']:
+                    if product.get(json_field):
+                        try:
+                            product[json_field] = json.loads(product[json_field])
+                        except:
+                            pass
+                products.append(product)
+            
+            return products
+        except Exception as e:
+            logger.error(f"Failed to get products: {e}")
+            return []
+    
+    def export_to_csv(self, output_path: str = "exported_products.csv"):
+        """Export all products to a CSV file."""
+        import csv
+        
+        try:
+            products = self.get_all_products()
+            if not products:
+                logger.warning("No products to export")
+                return None
+            
+            # Define CSV columns
+            fieldnames = [
+                'product_url', 'platform', 'title', 'brand', 'price', 'mrp',
+                'net_quantity', 'manufacturer', 'country_of_origin', 
+                'compliance_status', 'compliance_score', 'issues_found',
+                'description', 'ocr_text', 'extracted_at'
+            ]
+            
+            with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
+                writer.writeheader()
+                
+                for product in products:
+                    # Convert lists to readable strings
+                    if isinstance(product.get('issues_found'), list):
+                        product['issues_found'] = '; '.join(product['issues_found'])
+                    
+                    writer.writerow(product)
+            
+            logger.info(f"Exported {len(products)} products to {output_path}")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"Failed to export to CSV: {e}")
+            return None
