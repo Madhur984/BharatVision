@@ -443,7 +443,7 @@ class EcommerceCrawler:
             return None
 
     def _enrich_product(self, product: ProductData, platform: str):
-        """Run image OCR (YOLO -> Surya/Tesseract), combine text sources, run LLM (Gemma 2) extraction and compliance validation.
+        """Run image OCR (Tesseract), combine text sources, run LLM (Flan-T5) extraction and compliance validation.
 
         Mutates `product` in-place and returns it.
         """
@@ -2364,7 +2364,7 @@ Text:
                 use_llm = True # Placeholder for faithful edit
                 batch_texts = [combined_text] # Placeholder for faithful edit
                 if use_llm:
-                    logger.info(f"Refining extraction with LLM (Gemma 2) for {len(batch_texts)} texts...")
+                    logger.info(f"Refining extraction with LLM (Flan-T5) for {len(batch_texts)} texts...")
                     llm_fields = self._run_llm_extract(combined_text)
                     if llm_fields and isinstance(llm_fields, dict):
                         structured_data.update({k: v for k, v in llm_fields.items() if v})

@@ -26,7 +26,7 @@ logger = logging.getLogger("EcommerceScraper")
 
 class EcommerceScraper:
     """
-    Advanced E-commerce Scraper with Surya OCR and Gemma 2 NLP Validation.
+    Advanced E-commerce Scraper with Tesseract OCR and Flan-T5 Validation.
     """
     
     
