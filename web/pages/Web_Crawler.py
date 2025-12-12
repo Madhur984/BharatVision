@@ -1776,8 +1776,68 @@ with tab1:
                                                     st.info("No fields extracted")
                                             else:
                                                 st.info("No validation details available")
-
-                                        # 4. Raw Data Expander
+                                        
+                                        # 4. LMPC Validation Details - Simple Present/Missing Display
+                                        with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
+                                            st.markdown("### Field Validation Results")
+                                            
+                                            # Get validation data
+                                            if hasattr(product, 'compliance_details') and product.compliance_details:
+                                                extracted_fields = product.compliance_details.get('extracted_fields', {})
+                                                validation_result = product.compliance_details.get('validation_result', {})
+                                                
+                                                # Define the 6 mandatory LMPC fields
+                                                mandatory_fields = [
+                                                    ("Manufacturer Name/Address", ["manufacturer_details", "packed_and_marketed_by", "manufacturer"]),
+                                                    ("Country of Origin", ["country_of_origin", "country"]),
+                                                    ("Net Quantity", ["net_quantity", "gross_content", "net"]),
+                                                    ("MRP (Max Retail Price)", ["mrp", "mrp_incl_taxes"]),
+                                                    ("Date of Manufacture", ["date_of_manufacture", "mfg_date", "best_before"]),
+                                                    ("Customer Care Details", ["customer_care_details", "customer_care"])
+                                                ]
+                                                
+                                                present_fields = []
+                                                missing_fields = []
+                                                
+                                                # Check each field
+                                                for field_name, possible_keys in mandatory_fields:
+                                                    found = False
+                                                    found_value = None
+                                                    for key in possible_keys:
+                                                        if key in extracted_fields and extracted_fields[key]:
+                                                            found = True
+                                                            found_value = extracted_fields[key]
+                                                            break
+                                                    
+                                                    if found:
+                                                        present_fields.append((field_name, found_value))
+                                                    else:
+                                                        missing_fields.append(field_name)
+                                                
+                                                # Display present fields
+                                                if present_fields:
+                                                    st.markdown("#### ✅ **Present Fields:**")
+                                                    for field_name, value in present_fields:
+                                                        # Format value nicely
+                                                        if isinstance(value, dict):
+                                                            value_str = str(value)
+                                                        else:
+                                                            value_str = str(value)[:100]  # Limit length
+                                                        st.success(f"**{field_name}**: {value_str}")
+                                                
+                                                # Display missing fields
+                                                if missing_fields:
+                                                    st.markdown("#### ❌ **Missing Fields:**")
+                                                    for field_name in missing_fields:
+                                                        st.error(f"**{field_name}**: Not found")
+                                                
+                                                # Show summary
+                                                st.markdown("---")
+                                                st.info(f"**Summary:** {len(present_fields)} out of {len(mandatory_fields)} mandatory fields found")
+                                            else:
+                                                st.warning("No validation data available for this product")
+                                        
+                                        # 5. Raw Data Expander
                                         with st.expander("📂 View Raw Data & Technical Details"):
                                             st.write(f"**Title:** {product.title}")
                                             st.write(f"**Brand:** {product.brand}")
