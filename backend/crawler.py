@@ -698,17 +698,80 @@ class EcommerceCrawler:
             
             from compliance import compute_compliance_score
             
-            # Prepare parsed data structure expected by compliance validator
+            # The compliance validator expects a parsed structure with specific fields
+            # We need to extract these from the raw text first using regex
             parsed_data = {
                 "raw_text": text,
-                "product_name": "",  # Will be extracted from text
+                "product_name": "",
+                "tagline": "",
+                "claims": [],
+                "best_before": None,
+                "mrp_incl_taxes": None,
                 "mrp": None,
+                "batch_no": None,
+                "gross_content": None,
                 "net_quantity": None,
-                "manufacturer": None,
-                "customer_care": {},
+                "net": None,
+                "gross": None,
                 "mfg_date": None,
+                "packed_and_marketed_by": None,
+                "customer_care": {},
+                "storage_instructions": None,
+                "allergen_information": None,
+                "codes_and_misc": None,
                 "country_of_origin": None,
+                "country": None,
             }
+            
+            # Pre-extract some fields using regex to help the validator
+            text_lower = text.lower()
+            
+            # Extract MRP
+            mrp_match = re.search(r'(?:MRP|M\.R\.P\.|price|Rs\.?|₹)[:\s]*(?:Rs\.?|₹)?\s*([0-9,]+(?:\.[0-9]{2})?)', text, flags=re.I)
+            if mrp_match:
+                parsed_data["mrp_incl_taxes"] = mrp_match.group(1).replace(',', '')
+                parsed_data["mrp"] = mrp_match.group(1).replace(',', '')
+            
+            # Extract Net Quantity
+            qty_match = re.search(r'(?:net|nett?)\s*(?:wt\.?|weight|qty|quantity|contents?|vol\.?|volume)[:\s]*([0-9]+(?:\.[0-9]+)?\s*(?:g|gm|gms|gram|kg|kgs|ml|mL|l|ltr|litre|liter|L)s?)', text, flags=re.I)
+            if qty_match:
+                parsed_data["gross_content"] = qty_match.group(1).strip()
+                parsed_data["net_quantity"] = qty_match.group(1).strip()
+                parsed_data["net"] = qty_match.group(1).strip()
+            
+            # Extract Manufacturer/Packer
+            mfr_match = re.search(r'(?:manufacturer|mfd\.?\s*by|manufactured\s*by|mfg\.?|packed\s*by|packer)[:\s]*([^\n]{10,200})', text, flags=re.I)
+            if mfr_match:
+                mfr_text = mfr_match.group(1).strip()
+                # Try to extract name and address
+                parsed_data["packed_and_marketed_by"] = {
+                    "name": mfr_text.split(',')[0].strip() if ',' in mfr_text else mfr_text[:50],
+                    "address_lines": [line.strip() for line in mfr_text.split(',')[1:]] if ',' in mfr_text else []
+                }
+            
+            # Extract Customer Care
+            contact_match = re.search(r'(?:consumer\s*care|customer\s*care|helpline|toll\s*free|contact)[:\s]*([^\n]{10,150})', text, flags=re.I)
+            phone_match = re.search(r'(\d{10})', text)
+            email_match = re.search(r'([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})', text_lower)
+            
+            if contact_match or phone_match or email_match:
+                parsed_data["customer_care"] = {
+                    "phone": phone_match.group(1) if phone_match else None,
+                    "email": email_match.group(1) if email_match else None,
+                    "website": None
+                }
+            
+            # Extract Date
+            date_match = re.search(r'(?:mfg|mfd|manufactured|best\s*before|expiry|exp\.?\s*date)[:\s]*([^\n]{5,40})', text, flags=re.I)
+            if date_match:
+                parsed_data["mfg_date"] = date_match.group(1).strip()
+                parsed_data["best_before"] = date_match.group(1).strip()
+            
+            # Extract Country
+            country_match = re.search(r'(?:country\s*of\s*origin|origin|made\s*in|product\s*of)[:\s]*([A-Za-z\s]+)', text, flags=re.I)
+            if country_match:
+                parsed_data["country_of_origin"] = country_match.group(1).strip()
+                parsed_data["country"] = country_match.group(1).strip()
             
             # Run compliance check
             compliance_result = compute_compliance_score(parsed_data)
@@ -717,7 +780,7 @@ class EcommerceCrawler:
             extracted = {}
             passed_rules = compliance_result.get("passed_rules", {})
             
-            # Map passed rules to extracted fields
+            # Map passed rules to extracted fields (use the info which contains actual values)
             if "mrp" in passed_rules:
                 info = passed_rules["mrp"].get("info")
                 if info:
@@ -731,28 +794,38 @@ class EcommerceCrawler:
             if "manufacturer" in passed_rules:
                 info = passed_rules["manufacturer"].get("info")
                 if info:
-                    extracted["manufacturer"] = info
+                    # info might be "address_present" or similar, use the actual data
+                    if parsed_data.get("packed_and_marketed_by"):
+                        mfr_data = parsed_data["packed_and_marketed_by"]
+                        mfr_str = mfr_data.get("name", "")
+                        if mfr_data.get("address_lines"):
+                            mfr_str += ", " + ", ".join(mfr_data["address_lines"])
+                        extracted["manufacturer"] = mfr_str
             
             if "consumer_care" in passed_rules:
                 info = passed_rules["consumer_care"].get("info")
-                if info:
-                    extracted["consumer_care"] = info
+                if info and parsed_data.get("customer_care"):
+                    cc = parsed_data["customer_care"]
+                    cc_str = " | ".join(filter(None, [cc.get("phone"), cc.get("email")]))
+                    extracted["consumer_care"] = cc_str if cc_str else info
             
             if "mfg_date" in passed_rules:
                 info = passed_rules["mfg_date"].get("info")
                 if info:
-                    extracted["best_before"] = info
+                    extracted["best_before"] = parsed_data.get("mfg_date") or parsed_data.get("best_before") or info
             
             if "country_of_origin" in passed_rules:
                 info = passed_rules["country_of_origin"].get("info")
                 if info:
                     extracted["country_of_origin"] = info
             
-            logger.info(f"Compliance validator extracted {len(extracted)} fields (score: {compliance_result.get('compliance_percentage', 0)}%)")
+            compliance_pct = compliance_result.get('compliance_percentage', 0)
+            logger.info(f"Compliance validator extracted {len(extracted)} fields (compliance: {compliance_pct}%)")
+            
             return extracted if extracted else self._regex_fallback(text)
             
         except Exception as e:
-            logger.debug(f"Compliance validator failed: {e}, using regex fallback")
+            logger.error(f"Compliance validator failed: {e}", exc_info=True)
             return self._regex_fallback(text)
     
     def _regex_fallback(self, text: str) -> Dict[str, Any]:
