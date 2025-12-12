@@ -684,84 +684,65 @@ class EcommerceCrawler:
         return result
 
     def _run_llm_extract(self, text: str) -> Dict[str, Any]:
-        """Extract ALL Legal Metrology compliance fields using Flan-T5"""
+        """Extract ALL Legal Metrology compliance fields using REGEX ONLY (No LLM)"""
         if not text:
             return {}
             
-        # Comprehensive regex fallback with multiple patterns
-        def regex_extract(text):
-            out = {}
-            # Net quantity - expanded patterns
-            m = re.search(r'(?:net|nett?)\s*(?:wt\.?|weight|qty|quantity|contents?|vol\.?|volume)[:\s]*([0-9]+(?:\.[0-9]+)?\s*(?:g|gm|gms|gram|kg|kgs|ml|mL|l|ltr|litre|liter|L)s?)', text, flags=re.I)
-            if m:
-                out['net_quantity'] = m.group(1).strip()
-            # MRP - multiple formats
-            m = re.search(r'(?:MRP|M\.R\.P\.|price|Rs\.?|₹)[:\s]*(?:Rs\.?|₹)?\s*([0-9,]+(?:\.[0-9]{2})?)', text, flags=re.I)
-            if m:
-                out['mrp'] = m.group(1).replace(',', '')
-            # Manufacturer - look for common patterns
-            m = re.search(r'(?:manufacturer|mfd\.?\s*by|manufactured\s*by|mfg\.?)[:\s]*([^\n]{10,150})', text, flags=re.I)
-            if m:
-                out['manufacturer'] = m.group(1).strip()
-            # Importer
-            m = re.search(r'(?:importer|imported\s*by|imp\.?\s*by)[:\s]*([^\n]{10,150})', text, flags=re.I)
-            if m:
-                out['importer'] = m.group(1).strip()
-            # FSSAI - handle spaces and variations
-            m = re.search(r'(?:FSSAI|fssai)[:\s#]*([0-9\s\-]{14,20})', text, flags=re.I)
-            if m:
-                # Clean to 14 digits
-                fssai = re.sub(r'[^\d]', '', m.group(1))
-                if len(fssai) == 14:
-                    out['fssai_license'] = fssai
-            # Best before - multiple patterns
-            m = re.search(r'(?:best\s*before|BB|expiry|exp\.?\s*date|use\s*by|use\s*before)[:\s]*([^\n]{5,40})', text, flags=re.I)
-            if m:
-                out['best_before'] = m.group(1).strip()
-            # Consumer care - phone/email patterns
-            m = re.search(r'(?:consumer\s*care|customer\s*care|helpline|toll\s*free|contact)[:\s]*([^\n]{10,150})', text, flags=re.I)
-            if m:
-                out['consumer_care'] = m.group(1).strip()
-            # Country of origin
-            m = re.search(r'(?:country\s*of\s*origin|origin|made\s*in|product\s*of)[:\s]*([A-Za-z\s]+)', text, flags=re.I)
-            if m:
-                out['country_of_origin'] = m.group(1).strip()
-            # Generic name - common food types
-            food_types = ['ghee', 'oil', 'milk', 'biscuit', 'butter', 'cheese', 'flour', 'rice', 'dal', 'sugar', 'salt', 'spice', 'masala', 'sauce', 'pickle', 'jam', 'honey']
-            for food in food_types:
-                if food in text.lower():
-                    out['generic_name'] = food.capitalize()
-                    break
-            return out
+        # Comprehensive regex patterns for all fields
+        out = {}
         
-        try:
-            # Use Flan-T5 validator for extraction
-            from backend.flan_t5_validator import FlanT5Validator
-            
-            validator = FlanT5Validator()
-            result = validator.validate(text, {})
-            
-            # Convert validator format to crawler format
-            extracted = {}
-            if result.get('manufacturer', {}).get('valid'):
-                extracted['manufacturer'] = result['manufacturer']['value']
-            if result.get('net_quantity', {}).get('valid'):
-                extracted['net_quantity'] = result['net_quantity']['value']
-            if result.get('mrp', {}).get('valid'):
-                extracted['mrp'] = result['mrp']['value']
-            if result.get('consumer_care', {}).get('valid'):
-                extracted['consumer_care'] = result['consumer_care']['value']
-            if result.get('date_of_manufacture', {}).get('valid'):
-                extracted['best_before'] = result['date_of_manufacture']['value']
-            if result.get('country_of_origin', {}).get('valid'):
-                extracted['country_of_origin'] = result['country_of_origin']['value']
-            
-            logger.info(f"Flan-T5 extracted {len(extracted)} fields")
-            return extracted if extracted else regex_extract(text)
-            
-        except Exception as e:
-            logger.debug(f"Flan-T5 extraction failed: {e}, using regex fallback")
-            return regex_extract(text)
+        # Net quantity - expanded patterns
+        m = re.search(r'(?:net|nett?)\s*(?:wt\.?|weight|qty|quantity|contents?|vol\.?|volume)[:\s]*([0-9]+(?:\.[0-9]+)?\s*(?:g|gm|gms|gram|kg|kgs|ml|mL|l|ltr|litre|liter|L)s?)', text, flags=re.I)
+        if m:
+            out['net_quantity'] = m.group(1).strip()
+        
+        # MRP - multiple formats
+        m = re.search(r'(?:MRP|M\.R\.P\.|price|Rs\.?|₹)[:\s]*(?:Rs\.?|₹)?\s*([0-9,]+(?:\.[0-9]{2})?)', text, flags=re.I)
+        if m:
+            out['mrp'] = m.group(1).replace(',', '')
+        
+        # Manufacturer - look for common patterns
+        m = re.search(r'(?:manufacturer|mfd\.?\s*by|manufactured\s*by|mfg\.?)[:\s]*([^\n]{10,150})', text, flags=re.I)
+        if m:
+            out['manufacturer'] = m.group(1).strip()
+        
+        # Importer
+        m = re.search(r'(?:importer|imported\s*by|imp\.?\s*by)[:\s]*([^\n]{10,150})', text, flags=re.I)
+        if m:
+            out['importer'] = m.group(1).strip()
+        
+        # FSSAI - handle spaces and variations
+        m = re.search(r'(?:FSSAI|fssai)[:\s#]*([0-9\s\-]{14,20})', text, flags=re.I)
+        if m:
+            # Clean to 14 digits
+            fssai = re.sub(r'[^\d]', '', m.group(1))
+            if len(fssai) == 14:
+                out['fssai_license'] = fssai
+        
+        # Best before - multiple patterns
+        m = re.search(r'(?:best\s*before|BB|expiry|exp\.?\s*date|use\s*by|use\s*before)[:\s]*([^\n]{5,40})', text, flags=re.I)
+        if m:
+            out['best_before'] = m.group(1).strip()
+        
+        # Consumer care - phone/email patterns
+        m = re.search(r'(?:consumer\s*care|customer\s*care|helpline|toll\s*free|contact)[:\s]*([^\n]{10,150})', text, flags=re.I)
+        if m:
+            out['consumer_care'] = m.group(1).strip()
+        
+        # Country of origin
+        m = re.search(r'(?:country\s*of\s*origin|origin|made\s*in|product\s*of)[:\s]*([A-Za-z\s]+)', text, flags=re.I)
+        if m:
+            out['country_of_origin'] = m.group(1).strip()
+        
+        # Generic name - common food types
+        food_types = ['ghee', 'oil', 'milk', 'biscuit', 'butter', 'cheese', 'flour', 'rice', 'dal', 'sugar', 'salt', 'spice', 'masala', 'sauce', 'pickle', 'jam', 'honey']
+        for food in food_types:
+            if food in text.lower():
+                out['generic_name'] = food.capitalize()
+                break
+        
+        logger.info(f"Regex extracted {len(out)} fields")
+        return out
 
         if not TRANSFORMERS_AVAILABLE:
             return regex_extract(text)
@@ -2356,7 +2337,7 @@ Text:
                 use_llm = True # Placeholder for faithful edit
                 batch_texts = [combined_text] # Placeholder for faithful edit
                 if use_llm:
-                    logger.info(f"Refining extraction with LLM (Flan-T5) for {len(batch_texts)} texts...")
+                    logger.info(f"Refining extraction with REGEX for {len(batch_texts)} texts...")
                     llm_fields = self._run_llm_extract(combined_text)
                     if llm_fields and isinstance(llm_fields, dict):
                         structured_data.update({k: v for k, v in llm_fields.items() if v})
