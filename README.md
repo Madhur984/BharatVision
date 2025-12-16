@@ -1,3 +1,32 @@
+<h1 align="center">
+🇮🇳 LEGAL METROLOGY OCR COMPLIANCE PIPELINE
+</h1>
+
+<h2 align="center">
+AI-Powered Automated Compliance Validation for Packaged Commodities
+</h2>
+
+<p align="center">
+<b>
+An end-to-end, production-ready system that uses Computer Vision, OCR,  
+and Large Language Models to automatically verify compliance with  
+Indian Legal Metrology (Packaged Commodities) Rules, 2011.
+</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8%2B-blue"/>
+  <img src="https://img.shields.io/badge/OCR-Surya%20v0.16.7-orange"/>
+  <img src="https://img.shields.io/badge/LLM-Gemma--2--9B-blue"/>
+  <img src="https://img.shields.io/badge/Status-Production%20Ready-success"/>
+  <img src="https://img.shields.io/badge/License-MIT-green"/>
+</p>
+
+<hr/>
+
+
+
+
 🇮🇳 Legal Metrology OCR Compliance Pipeline
 AI-Powered Automated Compliance Validation for Packaged Commodities
 
@@ -280,3 +309,4 @@ This project is built not just as a prototype, but as a deployable, scalable, go
 
 🇮🇳 Made in India — for India’s digital commerce ecosystem
 💡 Automating trust with AI
+
