@@ -107,9 +107,20 @@ def main():
     # Preprocessing
     if 'compliance_score' in df.columns:
         df['compliance_score'] = pd.to_numeric(df['compliance_score'], errors='coerce').fillna(0)
+        # Round to 2 decimal places for display
+        df['compliance_score'] = df['compliance_score'].round(2)
+    
+    # Normalize compliance_status values
+    if 'compliance_status' in df.columns:
+        # Replace None, empty strings, and normalize status values
+        df['compliance_status'] = df['compliance_status'].fillna('UNKNOWN')
+        df['compliance_status'] = df['compliance_status'].replace('', 'UNKNOWN')
+        # Normalize VIOLATION to NON_COMPLIANT
+        df['compliance_status'] = df['compliance_status'].replace('VIOLATION', 'NON_COMPLIANT')
     
     if 'checked_at' in df.columns:
         df['checked_at'] = pd.to_datetime(df['checked_at'])
+
 
 
     # 1. Summary Metrics
@@ -329,6 +340,11 @@ def main():
     display_df['Product Link / Source'] = display_df['Product Link / Source'].apply(
         lambda x: x[:50] + '...' if x and len(str(x)) > 50 else (x if x else 'N/A')
     )
+    
+    # Clean up display values
+    display_df = display_df.replace('None', 'N/A')
+    display_df = display_df.replace('', 'N/A')
+    display_df['Score'] = display_df['Score'].apply(lambda x: f"{float(x):.2f}" if pd.notna(x) and str(x) != 'N/A' else "0.00")
     
     # Style the dataframe
     def highlight_status(row):
