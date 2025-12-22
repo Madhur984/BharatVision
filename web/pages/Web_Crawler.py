@@ -834,7 +834,7 @@ with tab1:
                     # 2. LMPC Validation Details
                     with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
                         if hasattr(product, 'compliance_details') and product.compliance_details:
-                            validation_result = pxroduct.compliance_details.get('validation_result', {})
+                            validation_result = product.compliance_details.get('validation_result', {})
                             rule_results = validation_result.get('rule_results', [])
                             
                             if rule_results:
