@@ -1052,6 +1052,40 @@ with tab1:
                                 else:
                                     st.error(f"🔴 NON-COMPLIANT (Score: {comp_score})")
                             
+                            # Show product URL
+                            product_url = getattr(product, 'product_url', '')
+                            if product_url:
+                                st.markdown(f"🔗 **Product Link:** [{product_url}]({product_url})")
+                            
+                            # LMPC Validation Details
+                            with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
+                                if hasattr(product, 'compliance_details') and product.compliance_details:
+                                    validation_result = product.compliance_details.get('validation_result', {})
+                                    rule_results = validation_result.get('rule_results', [])
+                                    if rule_results:
+                                        for rule in rule_results:
+                                            if not rule.get('violated', True):
+                                                st.success(f"✅ **{rule.get('description', '')}**")
+                                            else:
+                                                st.error(f"❌ **{rule.get('description', '')}**")
+                                        passed = sum(1 for r in rule_results if not r.get('violated', True))
+                                        st.markdown("---")
+                                        st.info(f"**Summary:** {passed} out of {len(rule_results)} LMPC rules passed")
+                            
+                            # Raw Data
+                            with st.expander("📂 View Raw Data & Technical Details"):
+                                st.write(f"**Title:** {product.title}")
+                                st.write(f"**Brand:** {getattr(product, 'brand', 'N/A')}")
+                                st.write(f"**Price:** {getattr(product, 'price', 'N/A')}")
+                                if product_url:
+                                    st.write(f"**URL:** {product_url}")
+                                ocr_txt = getattr(product, 'ocr_text', '') or "No OCR Text"
+                                st.text_area("OCR Result", ocr_txt, height=200, key=f"ocr_comp_{idx}")
+                                try:
+                                    st.json(product.__dict__)
+                                except:
+                                    st.write(str(product))
+                            
                             # Save to database
                             try:
                                 user = st.session_state.get('user', {})
@@ -1187,6 +1221,40 @@ with tab1:
                                         st.warning(f"🟡 PARTIAL (Score: {comp_score})")
                                     else:
                                         st.error(f"🔴 NON-COMPLIANT (Score: {comp_score})")
+                                    
+                                    # Show product URL
+                                    product_url = getattr(product, 'product_url', '')
+                                    if product_url:
+                                        st.markdown(f"🔗 **Product Link:** [{product_url}]({product_url})")
+                                    
+                                    # LMPC Validation Details
+                                    with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
+                                        if hasattr(product, 'compliance_details') and product.compliance_details:
+                                            validation_result = product.compliance_details.get('validation_result', {})
+                                            rule_results = validation_result.get('rule_results', [])
+                                            if rule_results:
+                                                for rule in rule_results:
+                                                    if not rule.get('violated', True):
+                                                        st.success(f"✅ **{rule.get('description', '')}**")
+                                                    else:
+                                                        st.error(f"❌ **{rule.get('description', '')}**")
+                                                passed = sum(1 for r in rule_results if not r.get('violated', True))
+                                                st.markdown("---")
+                                                st.info(f"**Summary:** {passed} out of {len(rule_results)} LMPC rules passed")
+                                    
+                                    # Raw Data
+                                    with st.expander("📂 View Raw Data & Technical Details"):
+                                        st.write(f"**Title:** {product.title}")
+                                        st.write(f"**Brand:** {getattr(product, 'brand', 'N/A')}")
+                                        st.write(f"**Price:** {getattr(product, 'price', 'N/A')}")
+                                        if product_url:
+                                            st.write(f"**URL:** {product_url}")
+                                        ocr_txt = getattr(product, 'ocr_text', '') or "No OCR Text"
+                                        st.text_area("OCR Result", ocr_txt, height=200, key=f"ocr_cat_{idx}")
+                                        try:
+                                            st.json(product.__dict__)
+                                        except:
+                                            st.write(str(product))
                                     
                                     # Show violations if any
                                     issues = getattr(product, 'issues_found', [])
