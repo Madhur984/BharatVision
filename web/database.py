@@ -318,11 +318,27 @@ class DatabaseManager:
         
         try:
             cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO compliance_checks 
-                (user_id, username, product_title, product_url, platform, compliance_score, compliance_status, details)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, username, product_title, product_url, platform, score, status, details))
+            
+            # Check if product_url column exists
+            cursor.execute("PRAGMA table_info(compliance_checks)")
+            columns = [column[1] for column in cursor.fetchall()]
+            has_product_url = 'product_url' in columns
+            
+            # Use appropriate INSERT statement based on schema
+            if has_product_url:
+                cursor.execute('''
+                    INSERT INTO compliance_checks 
+                    (user_id, username, product_title, product_url, platform, compliance_score, compliance_status, details)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (user_id, username, product_title, product_url, platform, score, status, details))
+            else:
+                # Fallback for old schema without product_url
+                cursor.execute('''
+                    INSERT INTO compliance_checks 
+                    (user_id, username, product_title, platform, compliance_score, compliance_status, details)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (user_id, username, product_title, platform, score, status, details))
+                logger.warning("product_url column not found, saving without it. Please restart the app to run migrations.")
             
             conn.commit()
             logger.info(f"Compliance check saved for user: {username}")
