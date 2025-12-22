@@ -922,8 +922,11 @@ with tab1:
                         try:
                             st.json(product.__dict__)
                         except:
+                            st.write(str(product))
+                
                 else:
                     st.error("Failed to extract product info from the link.")
+                
                 
                 # Save to database
                 if product:
