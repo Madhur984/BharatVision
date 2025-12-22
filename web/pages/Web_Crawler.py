@@ -120,98 +120,11 @@ except ImportError:
         return None
 
 
-# Lightweight fallback crawler (defined at module level so it's always available)
+# Fallback crawler removed as per user request to avoid confusion.
+# We exclusively use the main EcommerceCrawler which has proper rate limiting.
 def _create_fallback_crawler():
-    """Create a minimal fallback crawler implementation that uses requests + BeautifulSoup
-    for very basic functionality so the UI remains usable even when the real crawler
-    cannot initialize in this environment."""
-    class FallbackCrawler:
-        def get_supported_platforms(self):
-            return {
-                'amazon': 'Amazon',
-                'flipkart': 'Flipkart',
-                'generic': 'Generic'
-            }
+    return None
 
-        def search_products(self, query, platform, max_results=10):
-            # Return a single lightweight sample product to keep the UI interactive
-            sample = types.SimpleNamespace(
-                title=f"Sample: {query}",
-                price='N/A',
-                brand='DemoBrand',
-                description=f"This is a placeholder product for query '{query}' on {platform}",
-                full_page_text='',
-                ocr_text='',
-                issues_found=[],
-                compliance_score=100,
-                product_url='',
-                platform=platform,
-                image_urls=[],
-                category='N/A',
-                rating=None
-            )
-            return [sample]
-
-        def extract_product_from_url(self, url):
-            # Try a simple fetch to extract page title and first image, fallback to placeholder
-            try:
-                resp = requests.get(url, timeout=6)
-                if resp.status_code == 200:
-                    from bs4 import BeautifulSoup
-                    soup = BeautifulSoup(resp.text, 'html.parser')
-                    title = (soup.title.string or url) if soup.title else url
-                    img = soup.find('img')
-                    img_url = img.get('src') if img and img.get('src') else ''
-                    return types.SimpleNamespace(
-                        title=title[:200],
-                        price=None,
-                        brand=None,
-                        description=(soup.get_text() or '')[:1000],
-                        full_page_text=(soup.get_text() or '')[:5000],
-                        ocr_text='',
-                        issues_found=[],
-                        compliance_score=None,
-                        product_url=url,
-                        platform='generic',
-                        image_urls=[img_url] if img_url else [],
-                        category=None,
-                        rating=None
-                    )
-            except Exception:
-                pass
-            return types.SimpleNamespace(
-                title=url,
-                price=None,
-                brand=None,
-                description='',
-                full_page_text='',
-                ocr_text='',
-                issues_found=[],
-                compliance_score=None,
-                product_url=url,
-                platform='generic',
-                image_urls=[],
-                category=None,
-                rating=None
-            )
-
-        def run_compliance_check(self, product):
-            # Simple no-op compliance check
-            return {'score': getattr(product, 'compliance_score', 100), 'violations': []}
-
-        def download_and_process_image(self, img_url, ocr_integrator=None):
-            # Minimal downloader: return the image URL as local_path so Streamlit can load it
-            try:
-                return {
-                    'download_status': 'success',
-                    'local_path': img_url,
-                    'metadata': {'size': 'unknown'},
-                    'ocr_text': ''
-                }
-            except Exception:
-                return {'download_status': 'failed', 'local_path': None, 'metadata': {}, 'ocr_text': ''}
-
-    return FallbackCrawler()
 
 # Determine whether Surya OCR is available or should be preferred.
 SURYA_PREFERRED = False
@@ -921,7 +834,7 @@ with tab1:
                     # 2. LMPC Validation Details
                     with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
                         if hasattr(product, 'compliance_details') and product.compliance_details:
-                            validation_result = product.compliance_details.get('validation_result', {})
+                            validation_result = pxroduct.compliance_details.get('validation_result', {})
                             rule_results = validation_result.get('rule_results', [])
                             
                             if rule_results:
@@ -980,6 +893,28 @@ with tab1:
 
                 else:
                     st.error("Failed to extract product info from the link.")
+                
+                # Save to database (Silent)
+                if product:
+                    try:
+                        user = st.session_state.get('user', {})
+                        if user:
+                            db.save_compliance_check(
+                                user_id=user.get('id', 1),
+                                username=user.get('username', 'unknown'),
+                                product_title=product.title or "Unknown Link Product",
+                                platform=crawler._identify_platform(url) or "Web Link",
+                                score=getattr(product, 'compliance_score', 0) or 0,
+                                status=getattr(product, 'compliance_status', "UNKNOWN"),
+                                details=json.dumps({
+                                    'mrp': getattr(product, 'mrp', ''),
+                                    'brand': getattr(product, 'brand', ''),
+                                    'issues': getattr(product, 'issues_found', [])
+                                })
+                            )
+                    except Exception as e:
+                        pass # Fail silently
+
 
     elif crawl_mode == "🔍 Search Products by Keyword":
         query = st.text_input("Enter keywords to search:", "organic food, beauty products, snacks")

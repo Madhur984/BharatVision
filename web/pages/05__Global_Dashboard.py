@@ -206,13 +206,14 @@ def main():
     
     # Display table
     st.dataframe(
-        filtered_df[['product_title', 'platform', 'compliance_status', 'compliance_score', 'checked_at']],
+        filtered_df[['product_title', 'platform', 'compliance_status', 'compliance_score', 'checked_at', 'details']],
         column_config={
             "product_title": "Product / File",
-            "platform": "Source",
+            "platform": "Method / Source",
             "compliance_status": st.column_config.TextColumn("Status"),
             "compliance_score": st.column_config.ProgressColumn("Score", format="%.2f", min_value=0, max_value=100),
-            "checked_at": st.column_config.DatetimeColumn("Date", format="D MMM YYYY, h:mm a")
+            "checked_at": st.column_config.DatetimeColumn("Date", format="D MMM YYYY, h:mm a"),
+            "details": st.column_config.TextColumn("Extracted Details (JSON)", help="Raw extracted data and violations")
         },
         use_container_width=True,
         hide_index=True

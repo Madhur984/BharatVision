@@ -2385,8 +2385,13 @@ class EcommerceCrawler:
                 product.validation_result = validation_result
                 product.compliance_status = validation_result.get('overall_status', 'UNKNOWN')
                 
-                # Use the validator's compliance percentage directly (don't recalculate!)
-                product.compliance_score = validation_result.get('compliance_percentage', 0)
+                # Calculate score dynamically based on rules validation
+                total_rules = validation_result.get('total_rules', 9)
+                violations = validation_result.get('violations_count', 0)
+                if total_rules > 0:
+                    product.compliance_score = round(max(0, 100 - (violations * (100 / total_rules))), 2)
+                else:
+                    product.compliance_score = 100.0 if violations == 0 else 0.0
                 
                 # Extract issues
                 product.issues_found = []
