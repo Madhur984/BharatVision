@@ -1541,22 +1541,66 @@ class EcommerceCrawler:
                 except ValueError:
                     pass
             
-            # Product details table
-            details = {}
-            detail_table = soup.find('table', {'id': 'productDetails_techSpec_section_1'})
-            if detail_table:
-                rows = detail_table.find_all('tr')
-                for row in rows:
-                    cells = row.find_all('td')
-                    if len(cells) >= 2:
-                        key = cells[0].get_text(strip=True).lower()
-                        value = cells[1].get_text(strip=True)
-                        details[key] = value
             
-            # Extract Legal Metrology fields from details
-            net_quantity = details.get('net quantity') or details.get('item weight') or details.get('package weight')
-            manufacturer = details.get('manufacturer') or details.get('brand')
-            country_of_origin = details.get('country of origin') or details.get('origin')
+            # Product details table - scan MULTIPLE tables to get complete information
+            details = {}
+            
+            # Try multiple table IDs that Amazon uses for product details
+            table_ids = [
+                'productDetails_techSpec_section_1',
+                'productDetails_detailBullets_sections1', 
+                'productDetails_db_sections',
+                'product-details-grid_feature_div'
+            ]
+            
+            for table_id in table_ids:
+                detail_table = soup.find('table', {'id': table_id})
+                if detail_table:
+                    rows = detail_table.find_all('tr')
+                    for row in rows:
+                        cells = row.find_all(['th', 'td'])
+                        if len(cells) >= 2:
+                            key = cells[0].get_text(strip=True).lower()
+                            value = cells[1].get_text(strip=True)
+                            if key and value:
+                                details[key] = value
+            
+            
+            # Extract Legal Metrology fields from details with MULTIPLE possible keywords
+            net_quantity = (details.get('net quantity') or 
+                          details.get('item weight') or 
+                          details.get('package weight') or
+                          details.get('weight') or
+                          details.get('net content') or
+                          details.get('quantity'))
+            
+            manufacturer = (details.get('manufacturer') or 
+                          details.get('brand') or
+                          details.get('packer') or
+                          details.get('importer') or
+                          details.get('mfr') or
+                          details.get('manufactured by'))
+            
+            # Separate manufacturer and importer details
+            manufacturer_details = (details.get('manufacturer') or 
+                                  details.get('packer') or
+                                  details.get('manufactured by'))
+            
+            importer_details = (details.get('importer') or
+                              details.get('imported by'))
+            
+            country_of_origin = (details.get('country of origin') or 
+                                details.get('origin') or
+                                details.get('country') or
+                                details.get('made in') or
+                                details.get('origin country'))
+            
+            # Generic name with multiple keywords
+            generic_name = (details.get('generic name') or 
+                          details.get('product type') or
+                          details.get('item type') or
+                          details.get('category') or
+                          details.get('type'))
             
             # Image URLs - extract from multiple possible attributes and fallbacks
             image_urls = []
@@ -1675,6 +1719,8 @@ class EcommerceCrawler:
                 description=description,
                 net_quantity=net_quantity,
                 manufacturer=manufacturer,
+                manufacturer_details=manufacturer_details,
+                importer_details=importer_details,
                 country_of_origin=country_of_origin,
                 platform='amazon',
                 product_url=url,
