@@ -1090,7 +1090,7 @@ with tab1:
                             try:
                                 user = st.session_state.get('user', {})
                                 if user:
-                                    db.save_compliance_check(
+                                    success = db.save_compliance_check(
                                         user_id=user.get('id', 1),
                                         username=user.get('username', 'unknown'),
                                         product_title=product.title or "Unknown",
@@ -1104,8 +1104,12 @@ with tab1:
                                             'issues': getattr(product, 'issues_found', [])
                                         })
                                     )
-                            except:
-                                pass
+                                    if success:
+                                        st.success(f"✅ Saved to dashboard: {product.title[:50]}")
+                                    else:
+                                        st.warning(f"⚠️ Failed to save: {product.title[:50]}")
+                            except Exception as e:
+                                st.error(f"❌ Database error: {str(e)}")
                     else:
                         st.warning(f"No products found for {company_name} on {platform}")
                         
@@ -1267,7 +1271,7 @@ with tab1:
                                 try:
                                     user = st.session_state.get('user', {})
                                     if user:
-                                        db.save_compliance_check(
+                                        success = db.save_compliance_check(
                                             user_id=user.get('id', 1),
                                             username=user.get('username', 'unknown'),
                                             product_title=product.title or "Unknown",
@@ -1281,8 +1285,12 @@ with tab1:
                                                 'issues': getattr(product, 'issues_found', [])
                                             })
                                         )
-                                except:
-                                    pass
+                                        if success:
+                                            st.success(f"✅ Saved to dashboard: {product.title[:50]}")
+                                        else:
+                                            st.warning(f"⚠️ Failed to save: {product.title[:50]}")
+                                except Exception as e:
+                                    st.error(f"❌ Database error: {str(e)}")
                     else:
                         st.warning(f"No products found in {selected_category} on {platform}")
                         
