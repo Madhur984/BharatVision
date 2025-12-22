@@ -933,9 +933,15 @@ with tab1:
                     try:
                         user = st.session_state.get('user', {})
                         if user:
+                            username = user.get('username', 'unknown')
+                            user_id = user.get('id', 1)
+                            
+                            # Debug info
+                            st.info(f"💾 Saving check for user: **{username}** (ID: {user_id})")
+                            
                             success = db.save_compliance_check(
-                                user_id=user.get('id', 1),
-                                username=user.get('username', 'unknown'),
+                                user_id=user_id,
+                                username=username,
                                 product_title=product.title or "Unknown Link Product",
                                 platform=crawler._identify_platform(url) or "Web Link",
                                 score=getattr(product, 'compliance_score', 0) or 0,
@@ -948,13 +954,15 @@ with tab1:
                                 })
                             )
                             if success:
-                                st.success("✅ Compliance check saved to dashboard!")
+                                st.success(f"✅ Compliance check saved to dashboard for user: {username}!")
                             else:
                                 st.warning("⚠️ Failed to save to database")
                         else:
                             st.warning("⚠️ No user session found. Please log in to save results.")
                     except Exception as e:
                         st.error(f"❌ Error saving to database: {str(e)}")
+                        import traceback
+                        st.code(traceback.format_exc())
 
 
     elif crawl_mode == "🏢 Search by Company Name":

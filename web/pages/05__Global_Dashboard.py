@@ -82,9 +82,16 @@ def main():
     current_time = datetime.now().strftime("%d %b %Y, %I:%M:%S %p")
     st.caption(f"Last updated: {current_time}")
     
+    # Debug info
+    st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+    
     # Ideally we'd have a method to get *all* for the user without limit, or a large limit
     # Using existing method with a large limit for now
     history = db.get_user_compliance_history(username, limit=1000)
+    
+    # Show record count
+    if history:
+        st.success(f"📊 Found **{len(history)}** compliance checks for user: {username}")
     
     if not history:
         st.info("No compliance checks found. Start by crawling products or uploading images!")
