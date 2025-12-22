@@ -143,6 +143,11 @@ class DatabaseManager:
             ''')
             
             conn.commit()
+            
+            # Run migrations to add new columns to existing tables
+            self._run_migrations(cursor)
+            conn.commit()
+            
             logger.info("Database tables created successfully")
             return True
             
@@ -151,6 +156,20 @@ class DatabaseManager:
             return False
         finally:
             conn.close()
+    
+    def _run_migrations(self, cursor):
+        """Run database migrations to add new columns to existing tables"""
+        try:
+            # Check if product_url column exists in compliance_checks table
+            cursor.execute("PRAGMA table_info(compliance_checks)")
+            columns = [column[1] for column in cursor.fetchall()]
+            
+            if 'product_url' not in columns:
+                logger.info("Adding product_url column to compliance_checks table")
+                cursor.execute("ALTER TABLE compliance_checks ADD COLUMN product_url TEXT")
+                logger.info("Migration completed: product_url column added")
+        except sqlite3.Error as e:
+            logger.error(f"Error running migrations: {e}")
     
     # ==================== USER MANAGEMENT ====================
     
