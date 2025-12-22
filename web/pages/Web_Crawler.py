@@ -1029,9 +1029,21 @@ with tab1:
                                 st.write(f"**Price:** ₹{getattr(product, 'price', 'N/A')}")
                                 st.write(f"**Platform:** {getattr(product, 'platform', platform).upper()}")
                                 
-                                # Compliance status
+                                # Compliance status - Recalculate score to ensure accuracy
                                 comp_score = getattr(product, 'compliance_score', 0) or 0
                                 comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                                
+                                # Recalculate score from rule_results to ensure it matches violations
+                                if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
+                                    validation_result = product.compliance_details.get('validation_result', {})
+                                    rule_results = validation_result.get('rule_results', [])
+                                    if rule_results:
+                                        violations_count = sum(1 for r in rule_results if r.get('violated', True))
+                                        total_rules = len(rule_results)
+                                        if total_rules > 0:
+                                            passed_rules = total_rules - violations_count
+                                            comp_score = round((passed_rules / total_rules) * 100, 2)
+                                            product.compliance_score = comp_score
                                 
                                 if comp_status == "COMPLIANT" or comp_score > 75:
                                     st.success(f"🟢 COMPLIANT (Score: {comp_score})")
@@ -1153,9 +1165,21 @@ with tab1:
                                     st.write(f"**Price:** ₹{getattr(product, 'price', 'N/A')}")
                                     st.write(f"**Platform:** {getattr(product, 'platform', platform).upper()}")
                                     
-                                    # Compliance status
+                                    # Compliance status - Recalculate score to ensure accuracy
                                     comp_score = getattr(product, 'compliance_score', 0) or 0
                                     comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                                    
+                                    # Recalculate score from rule_results to ensure it matches violations
+                                    if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
+                                        validation_result = product.compliance_details.get('validation_result', {})
+                                        rule_results = validation_result.get('rule_results', [])
+                                        if rule_results:
+                                            violations_count = sum(1 for r in rule_results if r.get('violated', True))
+                                            total_rules = len(rule_results)
+                                            if total_rules > 0:
+                                                passed_rules = total_rules - violations_count
+                                                comp_score = round((passed_rules / total_rules) * 100, 2)
+                                                product.compliance_score = comp_score
                                     
                                     if comp_status == "COMPLIANT" or comp_score > 75:
                                         st.success(f"🟢 COMPLIANT (Score: {comp_score})")
