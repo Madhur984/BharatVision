@@ -939,6 +939,7 @@ with tab1:
                                 platform=crawler._identify_platform(url) or "Web Link",
                                 score=getattr(product, 'compliance_score', 0) or 0,
                                 status=getattr(product, 'compliance_status', "UNKNOWN"),
+                                product_url=url,
                                 details=json.dumps({
                                     'mrp': getattr(product, 'mrp', ''),
                                     'brand': getattr(product, 'brand', ''),
@@ -1026,6 +1027,7 @@ with tab1:
                                         platform=getattr(product, 'platform', platform),
                                         score=comp_score,
                                         status=comp_status,
+                                        product_url=getattr(product, 'product_url', ''),
                                         details=json.dumps({
                                             'company': company_name,
                                             'brand': getattr(product, 'brand', ''),
@@ -1156,6 +1158,7 @@ with tab1:
                                             platform=getattr(product, 'platform', platform),
                                             score=comp_score,
                                             status=comp_status,
+                                            product_url=getattr(product, 'product_url', ''),
                                             details=json.dumps({
                                                 'category': selected_category,
                                                 'brand': getattr(product, 'brand', ''),

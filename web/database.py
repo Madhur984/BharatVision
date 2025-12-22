@@ -74,6 +74,7 @@ class DatabaseManager:
                     user_id INTEGER NOT NULL,
                     username TEXT NOT NULL,
                     product_title TEXT,
+                    product_url TEXT,
                     platform TEXT,
                     compliance_score FLOAT,
                     compliance_status TEXT,
@@ -290,7 +291,7 @@ class DatabaseManager:
     # ==================== COMPLIANCE CHECKS ====================
     
     def save_compliance_check(self, user_id: int, username: str, product_title: str, 
-                            platform: str, score: float, status: str, details: str = None) -> bool:
+                            platform: str, score: float, status: str, details: str = None, product_url: str = None) -> bool:
         """Save compliance check result"""
         conn = self.get_connection()
         if not conn:
@@ -300,9 +301,9 @@ class DatabaseManager:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO compliance_checks 
-                (user_id, username, product_title, platform, compliance_score, compliance_status, details)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, username, product_title, platform, score, status, details))
+                (user_id, username, product_title, product_url, platform, compliance_score, compliance_status, details)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, username, product_title, product_url, platform, score, status, details))
             
             conn.commit()
             logger.info(f"Compliance check saved for user: {username}")

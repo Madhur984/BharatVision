@@ -265,6 +265,7 @@ def main():
     # Display comprehensive table
     display_df = filtered_df[[
         'product_title', 
+        'product_url',
         'platform', 
         'compliance_score', 
         'compliance_status',
@@ -278,6 +279,7 @@ def main():
     # Rename columns for better display
     display_df.columns = [
         'Product / File Name',
+        'Product Link / Source',
         'Platform / Source',
         'Score',
         'Status',
@@ -287,6 +289,11 @@ def main():
         'Total Issues',
         'Checked At'
     ]
+    
+    # Truncate long URLs for display
+    display_df['Product Link / Source'] = display_df['Product Link / Source'].apply(
+        lambda x: x[:50] + '...' if x and len(str(x)) > 50 else (x if x else 'N/A')
+    )
     
     # Style the dataframe
     def highlight_status(row):
@@ -319,6 +326,11 @@ def main():
             with col1:
                 st.markdown("**Basic Information:**")
                 st.write(f"🏷️ **Product:** {row['product_title']}")
+                
+                # Display clickable product URL if available
+                if row.get('product_url') and row['product_url'] != 'None' and row['product_url']:
+                    st.markdown(f"🔗 **Link:** [{row['product_url'][:60]}...]({row['product_url']})")
+                
                 st.write(f"🛒 **Platform:** {row['platform']}")
                 st.write(f"🏢 **Brand:** {row['brand']}")
                 st.write(f"💰 **MRP:** {row['mrp']}")
