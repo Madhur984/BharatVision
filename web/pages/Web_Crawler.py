@@ -939,11 +939,20 @@ with tab1:
                             # Debug info
                             st.info(f"💾 Saving check for user: **{username}** (ID: {user_id})")
                             
+                            # Identify platform from URL
+                            platform = "Web Link"
+                            if 'amazon' in url.lower():
+                                platform = "Amazon"
+                            elif 'flipkart' in url.lower():
+                                platform = "Flipkart"
+                            elif 'myntra' in url.lower():
+                                platform = "Myntra"
+                            
                             success = db.save_compliance_check(
                                 user_id=user_id,
                                 username=username,
                                 product_title=product.title or "Unknown Link Product",
-                                platform=crawler._identify_platform(url) or "Web Link",
+                                platform=platform,
                                 score=getattr(product, 'compliance_score', 0) or 0,
                                 status=getattr(product, 'compliance_status', "UNKNOWN"),
                                 product_url=url,
