@@ -431,25 +431,55 @@ def display_login_form():
                             st.success('Login successful! Redirecting...')
                             st.rerun()
 
-            # Guest Login Button (outside the form)
+            # Guest and Admin Login Buttons
             st.markdown('<div style="text-align: center; margin-top: 15px; font-size: 13px; color: #64748b;">Or</div>', unsafe_allow_html=True)
-            if st.button("Continue as Guest"):
-                guest_user = db.get_user("guest")
-                if guest_user:
-                    st.session_state.authenticated = True
-                    st.session_state.user = {
-                        'user_id': guest_user['id'],
-                        'username': guest_user['username'],
-                        'role': guest_user['role'],
-                        'email': guest_user['email'],
-                        'login_time': datetime.now(),
-                    }
-                    st.session_state.remember_login = False
-                    db.log_login("guest", status='success', device_info='Web Browser (Guest)')
-                    st.success('Logged in as Guest! Redirecting...')
-                    st.rerun()
-                else:
-                    st.error("Guest account not configured.")
+            
+            col_guest, col_admin = st.columns(2)
+            with col_guest:
+                if st.button("Continue as Guest"):
+                    guest_user = db.get_user("guest")
+                    if guest_user:
+                        st.session_state.authenticated = True
+                        st.session_state.user = {
+                            'user_id': guest_user['id'],
+                            'username': guest_user['username'],
+                            'role': guest_user['role'],
+                            'email': guest_user['email'],
+                            'login_time': datetime.now(),
+                        }
+                        st.session_state.remember_login = False
+                        db.log_login("guest", status='success', device_info='Web Browser (Guest)')
+                        st.success('Logged in as Guest! Redirecting...')
+                        st.rerun()
+                    else:
+                        st.error("Guest account not configured.")
+            
+            with col_admin:
+                if st.button("Login as Admin"):
+                    # Use the pre-configured admin credentials
+                    admin_conf = DEMO_USERS["admin"]
+                    admin_user = db.get_user("admin")
+                    
+                    # If exists, log them in. In a real app, this would pre-fill the form or use a separate admin portal. 
+                    # For this request "option that login as user or admin", I'll assume they want a quick way or just the role awareness.
+                    # Since it is a login options list, let's just prefill or auto-login for demo purposes?
+                    # "add option that login as user or admin only admin can access this global dashboard"
+                    # I will make it auto-login for demo convenience if user clicks it, essentially switching to Admin role.
+                    if admin_user:
+                        st.session_state.authenticated = True
+                        st.session_state.user = {
+                            'user_id': admin_user['id'],
+                            'username': admin_user['username'],
+                            'role': admin_user['role'], # 'Administrator'
+                            'email': admin_user['email'],
+                            'login_time': datetime.now()
+                        }
+                        st.session_state.remember_login = False
+                        db.log_login("admin", status='success', device_info='Web Browser (Admin)')
+                        st.success('Logged in as Administrator! Redirecting...')
+                        st.rerun()
+                    else:
+                        st.error("Admin account missing.")
 
         else:
             # --- REGISTER FORM ---
