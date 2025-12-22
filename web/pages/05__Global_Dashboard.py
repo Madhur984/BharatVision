@@ -65,9 +65,9 @@ def main():
     username = user.get("username")
     role = user.get("role", "User")
     
-    # Access Control: Only Administrator can access
-    if role != "Administrator":
-        st.error("⛔ Access Denied: This dashboard is restricted to Administrators only.")
+    # Access Control: Guests should not access; Authenticated users (Admin/Inspector) can.
+    if role == "Guest":
+        st.error("⛔ Access Denied: Please login with your ID and password to access the Global Dashboard.")
         st.stop()
     
     # Ideally we'd have a method to get *all* for the user without limit, or a large limit
