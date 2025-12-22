@@ -1907,8 +1907,26 @@ class EcommerceCrawler:
                 logger.warning(f"Unknown platform for URL: {product_url}")
                 return None
             
-            html = self._make_request(product_url, platform, use_selenium=False)
+            # Try with retries to improve success rate
+            html = None
+            max_retries = 2
+            
+            # Attempt regular request with retries
+            for attempt in range(max_retries):
+                html = self._make_request(product_url, platform, use_selenium=False)
+                if html:
+                    logger.info(f"Successfully fetched HTML for {product_url} on attempt {attempt + 1}")
+                    break
+                logger.warning(f"Request attempt {attempt + 1} failed for {product_url}, retrying...")
+                time.sleep(1)  # Wait 1 second before retry
+            
+            # If still no HTML, try with Selenium as last resort
             if not html:
+                logger.info(f"Trying Selenium fallback for {product_url}")
+                html = self._make_request(product_url, platform, use_selenium=True)
+            
+            if not html:
+                logger.error(f"Failed to fetch HTML after all retries for {product_url}")
                 return None
             
             soup = BeautifulSoup(html, 'html.parser')
@@ -1925,6 +1943,8 @@ class EcommerceCrawler:
             if product:
                 self._perform_compliance_check(product)
                 return product
+            else:
+                logger.warning(f"Product extraction returned None for {product_url} - page structure may have changed")
             
         except Exception as e:
             logger.error(f"Failed to extract product from URL {product_url}: {e}")
