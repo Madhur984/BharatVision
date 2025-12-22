@@ -83,12 +83,17 @@ def main():
     # Convert to DataFrame
     df = pd.DataFrame(history)
     
+    # Add product_url column if it doesn't exist (for backward compatibility with old records)
+    if 'product_url' not in df.columns:
+        df['product_url'] = ''
+    
     # Preprocessing
     if 'compliance_score' in df.columns:
         df['compliance_score'] = pd.to_numeric(df['compliance_score'], errors='coerce').fillna(0)
     
     if 'checked_at' in df.columns:
         df['checked_at'] = pd.to_datetime(df['checked_at'])
+
 
     # 1. Summary Metrics
     total_checks = len(df)
@@ -259,6 +264,10 @@ def main():
     # Format the datetime column
     if 'checked_at' in filtered_df.columns:
         filtered_df['check_time'] = filtered_df['checked_at'].dt.strftime('%d %b %Y, %I:%M %p')
+    
+    # Add product_url column if it doesn't exist (for backward compatibility)
+    if 'product_url' not in filtered_df.columns:
+        filtered_df['product_url'] = ''
     
     st.markdown(f"**Showing {len(filtered_df)} of {len(df)} total records**")
     
