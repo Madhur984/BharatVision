@@ -219,5 +219,6 @@ def main():
         hide_index=True
     )
 
-if __name__ == "__main__":
-    main()
+
+# Call main function
+main()

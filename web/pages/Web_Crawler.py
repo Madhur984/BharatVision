@@ -804,10 +804,12 @@ with tab1:
         st.error("⚠️ Web crawler is not available. Please check the logs for initialization errors.")
         st.stop()
 
-    # Crawl mode selection - Simplified to just Link Extraction as per user request
-    # crawl_mode = st.radio("Select Crawling Mode:", ["🔍 Search Products by Keyword", "🔗 Extract from Product Link", "🏢 Search by Company Name"], horizontal=True)
-    crawl_mode = "🔗 Extract from Product Link"
-    st.markdown("### 🔗 Extract from Product Link")
+    # Crawl mode selection with three options
+    crawl_mode = st.radio(
+        "Select Crawling Mode:", 
+        ["🔗 Extract from Product Link", "🏢 Search by Company Name", "📦 Search by Category"], 
+        horizontal=True
+    )
 
     if crawl_mode == "🔗 Extract from Product Link":
         url = st.text_input("Enter product page URL:", "")
@@ -832,12 +834,19 @@ with tab1:
                     elif comp_status == "ERROR":
                         st.error(f"🔴 **ERROR** (Score: {comp_score})")
                     else:
-                        # Try to get violation details for better context
+                        # Calculate violation details directly from rule_results to ensure accuracy
                         violations_count = 0
                         total_rules = 9
                         if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
-                            violations_count = product.compliance_details.get('violations_count', 0)
-                            total_rules = product.compliance_details.get('total_rules', 9)
+                            validation_result = product.compliance_details.get('validation_result', {})
+                            rule_results = validation_result.get('rule_results', [])
+                            if rule_results:
+                                violations_count = sum(1 for r in rule_results if r.get('violated', True))
+                                total_rules = len(rule_results)
+                            else:
+                                # Fallback to stored counts
+                                violations_count = product.compliance_details.get('violations_count', 0)
+                                total_rules = product.compliance_details.get('total_rules', 9)
                         
                         st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score}) - Found {violations_count} violations out of {total_rules} rules.")
 
@@ -926,7 +935,228 @@ with tab1:
                         pass # Fail silently
 
 
-    elif crawl_mode == "🔍 Search Products by Keyword":
+    elif crawl_mode == "🏢 Search by Company Name":
+        st.markdown("### 🏢 Search Products by Company Name")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            company_name = st.text_input(
+                "Enter Company/Brand Name:",
+                placeholder="e.g., Nestle, Amul, Britannia, Patanjali",
+                help="Enter the name of the company or brand to search for their products"
+            )
+        
+        with col2:
+            platform = st.selectbox(
+                "Select Platform:",
+                list(crawler.get_supported_platforms().keys()),
+                format_func=lambda x: crawler.get_supported_platforms()[x]
+            )
+        
+        max_results = st.slider(
+            "Maximum products to fetch:",
+            min_value=5,
+            max_value=50,
+            value=20,
+            step=5,
+            help="Limit the number of products to crawl"
+        )
+        
+        if st.button("🔍 Search Company Products", type="primary") and company_name:
+            with st.spinner(f"Searching for {company_name} products on {platform}..."):
+                try:
+                    # Search for products using company name as query
+                    products = crawler.search_products(company_name, platform, max_results=max_results)
+                    
+                    if products:
+                        st.success(f"✅ Found {len(products)} products for {company_name}!")
+                        
+                        # Display each product with compliance check
+                        for idx, product in enumerate(products, 1):
+                            st.markdown(f"---\n#### Product {idx}: {product.title[:80]}")
+                            
+                            col_img, col_info = st.columns([1, 2])
+                            
+                            with col_img:
+                                if hasattr(product, 'image_urls') and product.image_urls:
+                                    try:
+                                        st.image(product.image_urls[0], width=200)
+                                    except:
+                                        st.info("📷 Image unavailable")
+                            
+                            with col_info:
+                                st.write(f"**Brand:** {getattr(product, 'brand', 'N/A')}")
+                                st.write(f"**Price:** ₹{getattr(product, 'price', 'N/A')}")
+                                st.write(f"**Platform:** {getattr(product, 'platform', platform).upper()}")
+                                
+                                # Compliance status
+                                comp_score = getattr(product, 'compliance_score', 0) or 0
+                                comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                                
+                                if comp_status == "COMPLIANT" or comp_score > 75:
+                                    st.success(f"🟢 COMPLIANT (Score: {comp_score})")
+                                elif comp_status == "PARTIAL" or 50 <= comp_score <= 75:
+                                    st.warning(f"🟡 PARTIAL (Score: {comp_score})")
+                                else:
+                                    st.error(f"🔴 NON-COMPLIANT (Score: {comp_score})")
+                            
+                            # Save to database
+                            try:
+                                user = st.session_state.get('user', {})
+                                if user:
+                                    db.save_compliance_check(
+                                        user_id=user.get('id', 1),
+                                        username=user.get('username', 'unknown'),
+                                        product_title=product.title or "Unknown",
+                                        platform=getattr(product, 'platform', platform),
+                                        score=comp_score,
+                                        status=comp_status,
+                                        details=json.dumps({
+                                            'company': company_name,
+                                            'brand': getattr(product, 'brand', ''),
+                                            'issues': getattr(product, 'issues_found', [])
+                                        })
+                                    )
+                            except:
+                                pass
+                    else:
+                        st.warning(f"No products found for {company_name} on {platform}")
+                        
+                except Exception as e:
+                    st.error(f"Error searching for company products: {str(e)}")
+
+    elif crawl_mode == "📦 Search by Category":
+        st.markdown("### 📦 Search Products by Category")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            # Common product categories for Legal Metrology compliance
+            categories = [
+                "Food & Beverages",
+                "Packaged Foods",
+                "Dairy Products",
+                "Snacks & Confectionery",
+                "Beauty & Personal Care",
+                "Cosmetics",
+                "Health & Wellness",
+                "Baby Care Products",
+                "Household Items",
+                "Cleaning Products",
+                "Textiles & Garments",
+                "Electronics & Appliances"
+            ]
+            
+            selected_category = st.selectbox(
+                "Select Product Category:",
+                categories,
+                help="Choose a category to search for products that require LMPC compliance"
+            )
+        
+        with col2:
+            platform = st.selectbox(
+                "Select Platform:",
+                list(crawler.get_supported_platforms().keys()),
+                format_func=lambda x: crawler.get_supported_platforms()[x],
+                key="category_platform"
+            )
+        
+        max_results = st.slider(
+            "Maximum products to fetch:",
+            min_value=5,
+            max_value=50,
+            value=15,
+            step=5,
+            help="Limit the number of products to crawl",
+            key="category_max_results"
+        )
+        
+        if st.button("🔍 Search Category Products", type="primary"):
+            with st.spinner(f"Searching for {selected_category} products on {platform}..."):
+                try:
+                    # Search for products using category as query
+                    products = crawler.search_products(selected_category, platform, max_results=max_results)
+                    
+                    if products:
+                        st.success(f"✅ Found {len(products)} products in {selected_category}!")
+                        
+                        # Summary metrics
+                        compliant_count = sum(1 for p in products if getattr(p, 'compliance_score', 0) > 75)
+                        non_compliant_count = sum(1 for p in products if getattr(p, 'compliance_score', 0) <= 50)
+                        
+                        col_m1, col_m2, col_m3 = st.columns(3)
+                        with col_m1:
+                            st.metric("Total Products", len(products))
+                        with col_m2:
+                            st.metric("Compliant", compliant_count, delta=f"{(compliant_count/len(products)*100):.1f}%")
+                        with col_m3:
+                            st.metric("Non-Compliant", non_compliant_count, delta=f"-{(non_compliant_count/len(products)*100):.1f}%", delta_color="inverse")
+                        
+                        st.markdown("---")
+                        
+                        # Display each product
+                        for idx, product in enumerate(products, 1):
+                            with st.expander(f"📦 Product {idx}: {product.title[:60]}...", expanded=(idx <= 3)):
+                                col_img, col_info = st.columns([1, 2])
+                                
+                                with col_img:
+                                    if hasattr(product, 'image_urls') and product.image_urls:
+                                        try:
+                                            st.image(product.image_urls[0], width=200)
+                                        except:
+                                            st.info("📷 Image unavailable")
+                                
+                                with col_info:
+                                    st.write(f"**Title:** {product.title}")
+                                    st.write(f"**Brand:** {getattr(product, 'brand', 'N/A')}")
+                                    st.write(f"**Price:** ₹{getattr(product, 'price', 'N/A')}")
+                                    st.write(f"**Platform:** {getattr(product, 'platform', platform).upper()}")
+                                    
+                                    # Compliance status
+                                    comp_score = getattr(product, 'compliance_score', 0) or 0
+                                    comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                                    
+                                    if comp_status == "COMPLIANT" or comp_score > 75:
+                                        st.success(f"🟢 COMPLIANT (Score: {comp_score})")
+                                    elif comp_status == "PARTIAL" or 50 <= comp_score <= 75:
+                                        st.warning(f"🟡 PARTIAL (Score: {comp_score})")
+                                    else:
+                                        st.error(f"🔴 NON-COMPLIANT (Score: {comp_score})")
+                                    
+                                    # Show violations if any
+                                    issues = getattr(product, 'issues_found', [])
+                                    if issues:
+                                        st.markdown("**Violations:**")
+                                        for issue in issues[:5]:  # Show first 5
+                                            st.warning(f"• {issue}")
+                                
+                                # Save to database
+                                try:
+                                    user = st.session_state.get('user', {})
+                                    if user:
+                                        db.save_compliance_check(
+                                            user_id=user.get('id', 1),
+                                            username=user.get('username', 'unknown'),
+                                            product_title=product.title or "Unknown",
+                                            platform=getattr(product, 'platform', platform),
+                                            score=comp_score,
+                                            status=comp_status,
+                                            details=json.dumps({
+                                                'category': selected_category,
+                                                'brand': getattr(product, 'brand', ''),
+                                                'issues': getattr(product, 'issues_found', [])
+                                            })
+                                        )
+                                except:
+                                    pass
+                    else:
+                        st.warning(f"No products found in {selected_category} on {platform}")
+                        
+                except Exception as e:
+                    st.error(f"Error searching for category products: {str(e)}")
+
+
         query = st.text_input("Enter keywords to search:", "organic food, beauty products, snacks")
         platform = st.selectbox("Select platform:", list(crawler.get_supported_platforms().keys()))
 
@@ -1378,359 +1608,7 @@ with tab1:
 
 
     # Sub-tabs for different crawling modes
-    crawl_mode = st.radio("Select Crawling Mode:", ["🔍 Search Products", "🔗 Extract from URL"], horizontal=True)
-    
-    if crawl_mode == "🔍 Search Products":
-        col1, col2 = st.columns([1, 2])
-        
-        with col1:
-            st.markdown("### 📱 Select Platforms")
-            
-            supported_platforms = crawler.get_supported_platforms()
-            selected_platforms = []
-            
-            for platform_id, platform_name in supported_platforms.items():
-                selected = st.checkbox(
-                    f"{platform_name}",
-                    key=f"platform_{platform_id}",
-                    help=f"Crawl products from {platform_name}"
-                )
-                if selected:
-                    selected_platforms.append(platform_id)
-            
-            if not selected_platforms:
-                st.warning("Please select at least one platform to crawl.")
-        
-        with col2:
-            st.markdown("### 🔍 Search Configuration")
-            
-            query_text = st.text_area(
-                "Enter product search terms:",
-                value="organic food products\npackaged snacks\nbeauty products\nhousehold items",
-                height=120,
-                help="Enter search terms for products that need compliance checking"
-            )
-            
-            queries = [q.strip() for q in query_text.split('\n') if q.strip()]
-            
-            col2a, col2b = st.columns(2)
-            
-            with col2a:
-                # Default value comes from the global session setting so users have a single place to control scan size
-                max_results = st.slider(
-                    "Max Results per Query",
-                    min_value=5,
-                    max_value=1000,
-                    value=int(st.session_state.get('max_products_to_scan', 20)),
-                    step=1
-                )
-            
-            with col2b:
-                delay_between = st.slider(
-                    "Delay Between Requests (seconds)",
-                    min_value=0.5,
-                    max_value=5.0,
-                    value=1.5,
-                    step=0.5
-                )
-        
-        # Compliance options
-        with st.expander("⚖️ Compliance & OCR Options"):
-            col3a, col3b = st.columns(2)
-            
-            with col3a:
-                enable_ocr = st.checkbox(
-                    "Enable OCR on Product Images",
-                    value=True,
-                    help="Extract text from product images using OCR"
-                )
-                
-                enable_compliance = st.checkbox(
-                    "Enable Compliance Checking",
-                    value=True,
-                    help="Automatically check each product for Legal Metrology compliance"
-                )
-            
-            with col3b:
-                compliance_threshold = st.slider(
-                    "Compliance Score Threshold",
-                    min_value=0,
-                    max_value=100,
-                    value=80
-                )
-        
-        st.markdown("---")
-        
-        if st.button("🚀 Start Crawling with Compliance Check", type="primary", disabled=not selected_platforms or not queries):
-            if selected_platforms and queries:
-                progress_placeholder = st.empty()
-                results_placeholder = st.empty()
-            with progress_placeholder.container():
-                st.info(f"🕷️ Starting crawl for {len(queries)} queries across {len(selected_platforms)} platforms...")
-                
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                total_operations = len(queries) * len(selected_platforms)
-                current_operation = 0
-                all_products = []
-                products_display = st.empty()
-                
-                for query in queries:
-                    for platform in selected_platforms:
-                        try:
-                            current_operation += 1
-                            progress = current_operation / total_operations
-                            progress_bar.progress(progress)
-                            status_text.text(f"Crawling '{query}' on {supported_platforms[platform]}...")
-                            
-                            # Perform crawling
-                            products = crawler.search_products(query, platform, max_results)
-                            
-                            # Log search to database for heatmap analytics
-                            try:
-                                user = st.session_state.get('user', {})
-                                db.log_search(
-                                    user_id=user.get('id', 1),
-                                    username=user.get('username', 'unknown'),
-                                    search_query=query,
-                                    platform=platform
-                                )
-                            except Exception as log_err:
-                                pass  # Silently fail on logging to not interrupt crawl
-                            
-                            # OCR processing
-                            if enable_ocr and OCR_AVAILABLE and st.session_state.get('ocr_integrator'):
-                                ocr = st.session_state.ocr_integrator
-                                for product in products:
-                                    if product.image_urls and len(product.image_urls) > 0:
-                                        try:
-                                            ocr_result = ocr.extract_text_from_image_url(product.image_urls[0])
-                                            if ocr_result:
-                                                product.description = (product.description or '') + f" [OCR: {ocr_result['text'][:100]}...]"
-                                        except Exception as e:
-                                            pass  # Silent fail on OCR
-                            
-                            all_products.extend(products)
-                            
-                            # Display real-time results
-                            with products_display.container():
-                                st.markdown("### 📦 Products Found So Far:")
-                                if all_products:
-                                    recent_products = all_products[-6:]
-                                    
-                                    for i, product in enumerate(recent_products):
-                                        st.markdown(f"#### Product {i+1}: {product.title[:60]}")
-                                        
-                                        # ---------------------------------------------------------
-                                        # New Simplified UI (Matches Upload Page)
-                                        # ---------------------------------------------------------
-                                        
-                                        # 1. Header & Status
-                                        comp_score = getattr(product, 'compliance_score', 0) or 0
-                                        comp_status = getattr(product, 'compliance_status', "UNKNOWN")
-                                        
-                                        if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 90):
-                                            st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
-                                        elif comp_status == "PARTIAL" or (isinstance(comp_score, (int, float)) and comp_score > 50):
-                                            st.warning(f"🟡 **PARTIAL** (Score: {comp_score})")
-                                        elif comp_status == "ERROR":
-                                            st.error(f"🔴 **ERROR** (Score: {comp_score})")
-                                        else:
-                                            st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
 
-                                        # 2. LMPC Validation Details - What's Present & What's Missing
-                                        with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
-                                            if hasattr(product, 'compliance_details') and product.compliance_details:
-                                                validation_result = product.compliance_details.get('validation_result', {})
-                                                rule_results = validation_result.get('rule_results', [])
-                                                extracted_fields = product.compliance_details.get('extracted_fields', {})
-                                                
-                                                if rule_results:
-                                                    # Show each LMPC rule result
-                                                    for rule in rule_results:
-                                                        rule_id = rule.get('rule_id', '')
-                                                        description = rule.get('description', '')
-                                                        violated = rule.get('violated', True)
-                                                        
-                                                        # Extract field name from description
-                                                        if not violated:
-                                                            st.success(f"✅ **{description}**")
-                                                        else:
-                                                            st.error(f"❌ **{description}**")
-                                                    
-                                                    # Show summary
-                                                    passed_count = sum(1 for r in rule_results if not r.get('violated', True))
-                                                    total_count = len(rule_results)
-                                                    st.markdown("---")
-                                                    st.info(f"**Summary:** {passed_count} out of {total_count} LMPC rules passed")
-                                                else:
-                                                    st.warning("No LMPC validation results available")
-                                            else:
-                                                st.warning("No validation data available for this product")
-                                        
-                                        # 3. Raw Data Expander
-                                        with st.expander("📂 View Raw Data & Technical Details"):
-                                            st.write(f"**Title:** {product.title}")
-                                            st.write(f"**Brand:** {product.brand}")
-                                            st.write(f"**Price:** {product.price}")
-                                            st.markdown("---")
-                                            st.markdown("**OCR Text:**")
-                                            ocr_txt = getattr(product, 'ocr_text', '') or "No OCR Text"
-                                            st.text_area("OCR Result", ocr_txt, height=150)
-                                            st.download_button("Download OCR Text", ocr_txt, file_name=f"ocr_{i}.txt")
-                                            
-                                            st.markdown("**Full Product Object:**")
-                                            # Convert SimpleNamespace or object to dict for display
-                                            try:
-                                                st.json(product.__dict__)
-                                            except:
-                                                st.write(str(product))
-                                                
-
-                                        # Save to database (Silent)
-                                        try:
-                                            user = st.session_state.get('user', {})
-                                            if user:
-                                                db.save_compliance_check(
-                                                    user_id=user.get('id', 1),
-                                                    username=user.get('username', 'unknown'),
-                                                    product_title=product.title or "Unknown",
-                                                    platform=product.platform or "Generic",
-                                                    score=comp_score,
-                                                    status=comp_status,
-                                                    details=json.dumps({
-                                                        'mrp': getattr(product, 'mrp', ''),
-                                                        'brand': getattr(product, 'brand', ''),
-                                                        'issues': getattr(product, 'issues_found', [])
-                                                    })
-                                                )
-                                        except Exception:
-                                            pass
-                                        
-                                        st.markdown("---")
-                            
-                            time.sleep(delay_between)
-                            
-                        except Exception as e:
-                            st.error(f"Error crawling {platform} for '{query}': {str(e)}")
-                            continue
-                
-                progress_bar.progress(1.0)
-                status_text.text("✅ Crawling completed!")
-                
-                # Generate compliance summary
-                if CRAWLER_AVAILABLE:
-                    compliance_summary = crawler.get_compliance_summary(all_products)
-                else:
-                    compliance_summary = {}
-                
-                # Save crawler session to database
-                try:
-                    user = st.session_state.user
-                    platforms_str = ", ".join(selected_platforms)
-                    queries_str = ", ".join(queries)
-                    
-                    db.save_crawler_session(
-                        user_id=user.get('user_id'),
-                        username=user.get('username'),
-                        query=queries_str,
-                        platform=platforms_str,
-                        products_found=len(all_products),
-                        summary=json.dumps(compliance_summary)
-                    )
-                except Exception as db_err:
-                    st.warning(f"Could not save crawler session: {str(db_err)}")
-                
-                # Store in session
-                st.session_state['last_crawl_results'] = all_products
-                st.session_state['last_compliance_summary'] = compliance_summary
-                st.session_state['last_crawl_timestamp'] = datetime.now()
-                
-                st.success(f"✅ Crawling complete! Found {len(all_products)} products.")
-    
-    else:  # URL Extraction Mode
-        st.markdown("### 🔗 Extract Product from URL")
-        
-        product_url = st.text_input(
-            "Enter Product URL:",
-            placeholder="https://www.amazon.in/dp/... or https://www.flipkart.com/p/...",
-            help="Paste a direct product link from Amazon, Flipkart, or Myntra"
-        )
-        
-        col_url_a, col_url_b = st.columns(2)
-        
-        with col_url_a:
-            extract_images = st.checkbox("Download Images", value=True)
-        
-        with col_url_b:
-            run_ocr = st.checkbox("Run OCR on Images", value=True)
-        
-        if st.button("🔍 Extract Product Details", type="primary", disabled=not product_url):
-            if product_url:
-                with st.spinner("🔄 Extracting product details..."):
-                    product = crawler.extract_product_from_url(product_url)
-                    
-                    if product:
-                        # Display product details
-                        col_prod_img, col_prod_info = st.columns([2, 3])
-                        
-                        with col_prod_img:
-                            if product.image_urls:
-                                st.image(product.image_urls[0], width='stretch', caption="Product Image")
-                        
-                        with col_prod_info:
-                            st.markdown(f"### {product.title}")
-                            st.write(f"**Platform:** {product.platform.upper()}")
-                            st.write(f"**Price:** ₹{product.price}" if product.price else "**Price:** N/A")
-                            st.write(f"**Category:** {product.category or 'N/A'}")
-                            st.write(f"**Images Found:** {len(product.image_urls)}")
-                        
-                        st.markdown("---")
-                        
-                        # Process images if enabled
-                        if extract_images and product.image_urls:
-                            st.markdown("### 🖼️ Product Images")
-                            
-                            for idx, img_url in enumerate(product.image_urls[:3], 1):
-                                with st.spinner(f"Processing image {idx}..."):
-                                    img_result = crawler.download_and_process_image(
-                                        img_url,
-                                        ocr_integrator=st.session_state.get('ocr_integrator') if run_ocr else None
-                                    )
-                                    
-                                    col_img, col_ocr = st.columns([1, 2])
-                                    
-                                    with col_img:
-                                        if img_result['download_status'] == 'success':
-                                            st.image(img_result['local_path'], width='stretch')
-                                            st.caption(f"📸 {img_result['metadata'].get('size', 'Unknown size')}")
-                                        else:
-                                            st.warning(f"Failed to download image {idx}")
-                                    
-                                    with col_ocr:
-                                        st.markdown(f"#### Image {idx} Analysis")
-                                        if img_result.get('ocr_text'):
-                                            st.markdown("**Extracted Text (OCR):**")
-                                            st.text_area(
-                                                f"ocr_text_{idx}",
-                                                value=img_result['ocr_text'][:500],
-                                                height=150,
-                                                disabled=True,
-                                                label_visibility="collapsed"
-                                            )
-                                        else:
-                                            st.info("No text extracted from this image")
-                                        
-                                        if img_result.get('metadata'):
-                                            st.write("**Metadata:**")
-                                            st.json(img_result['metadata'])
-                        
-                        # Store results
-                        st.session_state['last_extracted_product'] = product
-                    
-                    else:
-                        st.error("❌ Failed to extract product from URL. Please check the URL and try again.")
 
 with tab2:
     st.markdown('<div class="section-title">📊 Compliance Dashboard</div>', unsafe_allow_html=True)
