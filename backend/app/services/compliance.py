@@ -30,10 +30,17 @@ class ComplianceService:
                 # Re-run validation with corrected data
                 result = self.validator.validate(data)
 
+            # Calculate score dynamically based on total rules (usually 9)
+            total_rules = result.get("total_rules", 9)
+            if total_rules > 0:
+                score_val = max(0, 100 - (result["violations_count"] * (100 / total_rules)))
+            else:
+                score_val = 100.0 if result["violations_count"] == 0 else 0.0
+
             return ComplianceResponse(
                 success=True,
                 compliant=result["overall_status"] == "COMPLIANT",
-                score=round(100 - (result["violations_count"] * 16.6), 2),
+                score=round(score_val, 2),
                 violations=[r for r in result["rule_results"] if r["violated"]],
                 fields_checked=[r["field"] for r in result["rule_results"]],
                 full_report=result,

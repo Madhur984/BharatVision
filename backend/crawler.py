@@ -537,7 +537,7 @@ class EcommerceCrawler:
                 product.compliance_status = validation_result.get('overall_status', 'UNKNOWN')
                 total_rules = validation_result.get('total_rules', 12)
                 violations = validation_result.get('violations_count', 0)
-                product.compliance_score = max(0, 100 - (violations * (100 / total_rules)))
+                product.compliance_score = round(max(0, 100 - (violations * (100 / total_rules))), 2)
                 product.issues_found = []
                 for rule_result in validation_result.get('rule_results', []):
                     if rule_result.get('violated'):
