@@ -189,35 +189,175 @@ def main():
     
     from plotly.subplots import make_subplots
 
-    # 4. Detailed Data Table
-    st.subheader("📋 Detailed Records")
+    # 4. Detailed Data Table with Enhanced Information
+    st.subheader("📋 Detailed Compliance Records")
     
     # Filter Controls
-    f_col1, f_col2 = st.columns(2)
+    f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
         status_filter = st.multiselect("Filter by Status", options=df['compliance_status'].unique(), default=df['compliance_status'].unique())
     with f_col2:
         platform_filter = st.multiselect("Filter by Platform", options=df['platform'].unique(), default=df['platform'].unique())
+    with f_col3:
+        score_range = st.slider("Score Range", 0, 100, (0, 100))
         
     filtered_df = df[
         (df['compliance_status'].isin(status_filter)) &
-        (df['platform'].isin(platform_filter))
+        (df['platform'].isin(platform_filter)) &
+        (df['compliance_score'] >= score_range[0]) &
+        (df['compliance_score'] <= score_range[1])
+    ].copy()
+    
+    # Parse details JSON to extract missing fields and other information
+    import json
+    
+    def parse_details(details_str):
+        """Parse the details JSON and extract key information"""
+        if not details_str or details_str == 'null':
+            return {
+                'missing_fields': 'N/A',
+                'brand': 'N/A',
+                'mrp': 'N/A',
+                'issues_count': 0
+            }
+        
+        try:
+            details = json.loads(details_str)
+            issues = details.get('issues', [])
+            
+            # Extract missing fields from issues
+            missing_fields = []
+            for issue in issues:
+                if 'missing' in issue.lower():
+                    # Extract field name from issue text
+                    field = issue.split(':')[1].strip() if ':' in issue else issue
+                    missing_fields.append(field)
+            
+            return {
+                'missing_fields': ', '.join(missing_fields) if missing_fields else 'None',
+                'brand': details.get('brand', 'N/A'),
+                'mrp': details.get('mrp', 'N/A'),
+                'issues_count': len(issues),
+                'company': details.get('company', ''),
+                'category': details.get('category', '')
+            }
+        except:
+            return {
+                'missing_fields': 'Error parsing',
+                'brand': 'N/A',
+                'mrp': 'N/A',
+                'issues_count': 0
+            }
+    
+    # Apply parsing to create new columns
+    parsed_data = filtered_df['details'].apply(parse_details)
+    filtered_df['missing_fields'] = parsed_data.apply(lambda x: x['missing_fields'])
+    filtered_df['brand'] = parsed_data.apply(lambda x: x['brand'])
+    filtered_df['mrp'] = parsed_data.apply(lambda x: x['mrp'])
+    filtered_df['issues_count'] = parsed_data.apply(lambda x: x['issues_count'])
+    filtered_df['search_info'] = parsed_data.apply(lambda x: x.get('company') or x.get('category') or '')
+    
+    # Format the datetime column
+    if 'checked_at' in filtered_df.columns:
+        filtered_df['check_time'] = filtered_df['checked_at'].dt.strftime('%d %b %Y, %I:%M %p')
+    
+    st.markdown(f"**Showing {len(filtered_df)} of {len(df)} total records**")
+    
+    # Display comprehensive table
+    display_df = filtered_df[[
+        'product_title', 
+        'platform', 
+        'compliance_score', 
+        'compliance_status',
+        'missing_fields',
+        'brand',
+        'mrp',
+        'issues_count',
+        'check_time'
+    ]].copy()
+    
+    # Rename columns for better display
+    display_df.columns = [
+        'Product / File Name',
+        'Platform / Source',
+        'Score',
+        'Status',
+        'Missing LMPC Fields',
+        'Brand',
+        'MRP',
+        'Total Issues',
+        'Checked At'
     ]
     
-    # Display table
+    # Style the dataframe
+    def highlight_status(row):
+        if row['Status'] == 'COMPLIANT':
+            return ['background-color: #d4edda'] * len(row)
+        elif row['Status'] == 'NON_COMPLIANT':
+            return ['background-color: #f8d7da'] * len(row)
+        elif row['Status'] == 'PARTIAL':
+            return ['background-color: #fff3cd'] * len(row)
+        else:
+            return [''] * len(row)
+    
+    # Display the styled dataframe
     st.dataframe(
-        filtered_df[['product_title', 'platform', 'compliance_status', 'compliance_score', 'checked_at', 'details']],
-        column_config={
-            "product_title": "Product / File",
-            "platform": "Method / Source",
-            "compliance_status": st.column_config.TextColumn("Status"),
-            "compliance_score": st.column_config.ProgressColumn("Score", format="%.2f", min_value=0, max_value=100),
-            "checked_at": st.column_config.DatetimeColumn("Date", format="D MMM YYYY, h:mm a"),
-            "details": st.column_config.TextColumn("Extracted Details (JSON)", help="Raw extracted data and violations")
-        },
+        display_df.style.apply(highlight_status, axis=1),
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        height=600
     )
+    
+    # Add expandable sections for detailed view
+    st.markdown("---")
+    st.subheader("🔍 Detailed Product Information")
+    
+    # Show detailed information for each product in expandable sections
+    for idx, row in filtered_df.head(20).iterrows():  # Show top 20 for performance
+        with st.expander(f"📦 {row['product_title'][:80]}... (Score: {row['compliance_score']})"):
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("**Basic Information:**")
+                st.write(f"🏷️ **Product:** {row['product_title']}")
+                st.write(f"🛒 **Platform:** {row['platform']}")
+                st.write(f"🏢 **Brand:** {row['brand']}")
+                st.write(f"💰 **MRP:** {row['mrp']}")
+                if row['search_info']:
+                    st.write(f"🔍 **Search:** {row['search_info']}")
+            
+            with col2:
+                st.markdown("**Compliance Information:**")
+                score = row['compliance_score']
+                status = row['compliance_status']
+                
+                if status == 'COMPLIANT':
+                    st.success(f"✅ **Status:** COMPLIANT")
+                elif status == 'NON_COMPLIANT':
+                    st.error(f"❌ **Status:** NON-COMPLIANT")
+                else:
+                    st.warning(f"⚠️ **Status:** {status}")
+                
+                st.write(f"📊 **Score:** {score}%")
+                st.write(f"⚠️ **Total Issues:** {row['issues_count']}")
+                st.write(f"🕐 **Checked:** {row['check_time']}")
+            
+            # Show missing fields
+            if row['missing_fields'] and row['missing_fields'] != 'None':
+                st.markdown("**❌ Missing LMPC Fields:**")
+                st.error(row['missing_fields'])
+            else:
+                st.success("✅ All required LMPC fields are present")
+            
+            # Show raw details
+            if row['details'] and row['details'] != 'null':
+                with st.expander("📄 View Raw JSON Data"):
+                    try:
+                        details_json = json.loads(row['details'])
+                        st.json(details_json)
+                    except:
+                        st.text(row['details'])
+
 
 
 # Call main function
