@@ -72,6 +72,16 @@ def main():
         st.error("⛔ Access Denied: Please login with your ID and password to access the Global Dashboard.")
         st.stop()
     
+    # Add refresh button and last update time
+    col_title, col_refresh = st.columns([3, 1])
+    with col_refresh:
+        if st.button("🔄 Refresh Data", type="primary"):
+            st.rerun()
+    
+    # Show last update time
+    current_time = datetime.now().strftime("%d %b %Y, %I:%M:%S %p")
+    st.caption(f"Last updated: {current_time}")
+    
     # Ideally we'd have a method to get *all* for the user without limit, or a large limit
     # Using existing method with a large limit for now
     history = db.get_user_compliance_history(username, limit=1000)

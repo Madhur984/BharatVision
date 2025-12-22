@@ -922,17 +922,15 @@ with tab1:
                         try:
                             st.json(product.__dict__)
                         except:
-                            st.write(str(product))
-
                 else:
                     st.error("Failed to extract product info from the link.")
                 
-                # Save to database (Silent)
+                # Save to database
                 if product:
                     try:
                         user = st.session_state.get('user', {})
                         if user:
-                            db.save_compliance_check(
+                            success = db.save_compliance_check(
                                 user_id=user.get('id', 1),
                                 username=user.get('username', 'unknown'),
                                 product_title=product.title or "Unknown Link Product",
@@ -946,8 +944,14 @@ with tab1:
                                     'issues': getattr(product, 'issues_found', [])
                                 })
                             )
+                            if success:
+                                st.success("✅ Compliance check saved to dashboard!")
+                            else:
+                                st.warning("⚠️ Failed to save to database")
+                        else:
+                            st.warning("⚠️ No user session found. Please log in to save results.")
                     except Exception as e:
-                        pass # Fail silently
+                        st.error(f"❌ Error saving to database: {str(e)}")
 
 
     elif crawl_mode == "🏢 Search by Company Name":
