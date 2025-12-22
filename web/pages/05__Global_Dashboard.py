@@ -115,10 +115,11 @@ def main():
     # 1. Summary Metrics
     total_checks = len(df)
     compliant_count = len(df[df['compliance_status'] == 'COMPLIANT'])
-    non_compliant_count = len(df[df['compliance_status'] != 'COMPLIANT'])
+    partial_count = len(df[df['compliance_status'] == 'PARTIAL'])
+    non_compliant_count = len(df[df['compliance_status'] == 'NON_COMPLIANT'])
     avg_score = df['compliance_score'].mean()
     
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
         st.markdown(f"""
         <div class="metric-card">
@@ -129,24 +130,32 @@ def main():
     with c2:
         st.markdown(f"""
         <div class="metric-card">
-            <h3 style="color: green;">Compliant</h3>
+            <h3 style="color: green;">✅ Compliant</h3>
             <p style="color: green;">{compliant_count}</p>
         </div>
         """, unsafe_allow_html=True)
     with c3:
         st.markdown(f"""
         <div class="metric-card">
-            <h3 style="color: red;">Non-Compliant</h3>
-            <p style="color: red;">{non_compliant_count}</p>
+            <h3 style="color: orange;">⚠️ Partial</h3>
+            <p style="color: orange;">{partial_count}</p>
         </div>
         """, unsafe_allow_html=True)
     with c4:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3 style="color: red;">❌ Non-Compliant</h3>
+            <p style="color: red;">{non_compliant_count}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with c5:
         st.markdown(f"""
         <div class="metric-card">
             <h3>Average Score</h3>
             <p>{avg_score:.1f}</p>
         </div>
         """, unsafe_allow_html=True)
+
 
     st.markdown("---")
 
