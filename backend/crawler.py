@@ -2386,16 +2386,21 @@ class EcommerceCrawler:
                 product.compliance_status = validation_result.get('overall_status', 'UNKNOWN')
                 
                 # Calculate score dynamically based on rules validation
-                total_rules = validation_result.get('total_rules', 9)
-                violations = validation_result.get('violations_count', 0)
+                # Recalculate violations explicitly to ensure accuracy
+                rule_results = validation_result.get('rule_results', [])
+                violations = sum(1 for r in rule_results if r.get('violated'))
+                total_rules = len(rule_results) if rule_results else validation_result.get('total_rules', 9)
+                
                 if total_rules > 0:
-                    product.compliance_score = round(max(0, 100 - (violations * (100 / total_rules))), 2)
+                    deduction_per_violation = 100.0 / total_rules
+                    score = 100.0 - (violations * deduction_per_violation)
+                    product.compliance_score = round(max(0.0, score), 2)
                 else:
                     product.compliance_score = 100.0 if violations == 0 else 0.0
                 
                 # Extract issues
                 product.issues_found = []
-                for rule_result in validation_result.get('rule_results', []):
+                for rule_result in rule_results:
                     if rule_result.get('violated'):
                         issue_msg = f"{rule_result.get('rule_id')}: {rule_result.get('details', rule_result.get('description'))}"
                         product.issues_found.append(issue_msg)
@@ -2405,10 +2410,12 @@ class EcommerceCrawler:
                     'extracted_fields': structured_data,
                     'validation_result': validation_result,
                     'ocr_performed': bool(product.ocr_text),
-                    'text_sources': len(all_text_parts)
+                    'text_sources': len(all_text_parts),
+                    'violations_count': violations,
+                    'total_rules': total_rules
                 }
                 
-                logger.info(f"Compliance check for '{product.title[:30]}': {product.compliance_status} (Score: {product.compliance_score:.1f})")
+                logger.info(f"Compliance check for '{product.title[:30]}': {product.compliance_status} (Score: {product.compliance_score:.1f}, {violations}/{total_rules} violations)")
             else:
                 # Fallback if no validator
                 product.compliance_score = 50.0

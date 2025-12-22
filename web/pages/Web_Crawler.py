@@ -804,7 +804,10 @@ with tab1:
         st.error("⚠️ Web crawler is not available. Please check the logs for initialization errors.")
         st.stop()
 
-    crawl_mode = st.radio("Select Crawling Mode:", ["🔍 Search Products by Keyword", "🔗 Extract from Product Link", "🏢 Search by Company Name"], horizontal=True)
+    # Crawl mode selection - Simplified to just Link Extraction as per user request
+    # crawl_mode = st.radio("Select Crawling Mode:", ["🔍 Search Products by Keyword", "🔗 Extract from Product Link", "🏢 Search by Company Name"], horizontal=True)
+    crawl_mode = "🔗 Extract from Product Link"
+    st.markdown("### 🔗 Extract from Product Link")
 
     if crawl_mode == "🔗 Extract from Product Link":
         url = st.text_input("Enter product page URL:", "")
@@ -829,7 +832,14 @@ with tab1:
                     elif comp_status == "ERROR":
                         st.error(f"🔴 **ERROR** (Score: {comp_score})")
                     else:
-                        st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score})")
+                        # Try to get violation details for better context
+                        violations_count = 0
+                        total_rules = 9
+                        if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
+                            violations_count = product.compliance_details.get('violations_count', 0)
+                            total_rules = product.compliance_details.get('total_rules', 9)
+                        
+                        st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score}) - Found {violations_count} violations out of {total_rules} rules.")
 
                     # 2. LMPC Validation Details
                     with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):
