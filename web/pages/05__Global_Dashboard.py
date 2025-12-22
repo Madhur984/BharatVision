@@ -2,9 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import sys
 import pathlib
+import json
 
 # Add project root to path
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
@@ -187,8 +189,6 @@ def main():
         
         st.plotly_chart(fig_line, use_container_width=True)
     
-    from plotly.subplots import make_subplots
-
     # 4. Detailed Data Table with Enhanced Information
     st.subheader("📋 Detailed Compliance Records")
     
@@ -209,7 +209,6 @@ def main():
     ].copy()
     
     # Parse details JSON to extract missing fields and other information
-    import json
     
     def parse_details(details_str):
         """Parse the details JSON and extract key information"""
