@@ -1,17 +1,11 @@
 """
-Build RAG Index - Script to build FAISS vector index from knowledge base
+Build RAG Index - Simplified version without backend imports
 Run this script to initialize the RAG system
 """
 
 import sys
 import logging
 from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-from backend.rag.rag_manager import RAGManager
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +23,13 @@ def main():
     print("="*60)
     
     try:
+        # Add backend/rag to path directly
+        rag_path = Path(__file__).parent / "backend" / "rag"
+        sys.path.insert(0, str(rag_path.parent))
+        
+        # Import RAG components directly
+        from rag.rag_manager import RAGManager
+        
         # Initialize RAG Manager
         logger.info("Initializing RAG Manager...")
         rag = RAGManager(
@@ -85,10 +86,17 @@ def main():
         print(f"Fields Found: {result['summary']['fields_found']}")
         
         print("\n✅ Test Passed!")
+        print("\n" + "="*60)
+        print("RAG System is ready for production use!")
+        print("="*60)
         
     except Exception as e:
         logger.error(f"Failed to build RAG index: {e}", exc_info=True)
         print(f"\n❌ Error: {e}")
+        print("\nPlease ensure:")
+        print("  1. faiss-cpu is installed: pip install faiss-cpu")
+        print("  2. sentence-transformers is installed: pip install sentence-transformers")
+        print("  3. Knowledge base files exist in knowledge_base/")
         sys.exit(1)
 
 if __name__ == "__main__":

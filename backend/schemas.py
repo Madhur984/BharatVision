@@ -50,7 +50,7 @@ class ComplianceCheckRequest(BaseModel):
 class ProductSearchRequest(BaseModel):
     """Request model for product search"""
     query: str = Field(..., min_length=1, max_length=200, description="Search query")
-    platform: str = Field("amazon", regex="^(amazon|flipkart|jiomart)$", description="E-commerce platform")
+    platform: str = Field("amazon", pattern="^(amazon|flipkart|jiomart)$", description="E-commerce platform")
     limit: int = Field(10, ge=1, le=100, description="Number of results (1-100)")
     
     @validator('query')
@@ -101,8 +101,8 @@ class ImageUploadRequest(BaseModel):
 class ComplianceCheckResponse(BaseModel):
     """Response model for compliance check"""
     score: int = Field(..., ge=0, le=100, description="Compliance score (0-100)")
-    status: str = Field(..., regex="^(Compliant|Partial|Non-Compliant)$", description="Compliance status")
-    color: str = Field(..., regex="^(green|yellow|red)$", description="Status color indicator")
+    status: str = Field(..., pattern="^(Compliant|Partial|Non-Compliant)$", description="Compliance status")
+    color: str = Field(..., pattern="^(green|yellow|red)$", description="Status color indicator")
     details: dict = Field(..., description="Detailed compliance information")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Check timestamp")
     
@@ -159,7 +159,7 @@ class ErrorResponse(BaseModel):
 
 class HealthCheckResponse(BaseModel):
     """Health check response model"""
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$")
     service: str
     version: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
