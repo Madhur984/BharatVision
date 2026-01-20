@@ -480,52 +480,46 @@ def process_single_image(uploaded_file, file_index: int, total_files: int, use_n
             image = image.convert('RGB')
             
         start_time = time.time()
-        st.info(f"Processing {uploaded_file.name} with Tesseract OCR...")
+        st.info(f"🔍 Processing {uploaded_file.name} with Surya OCR...")
         
-        # Preprocess image for better OCR results
+        # Use official Surya OCR from datalab-to/surya
         try:
-            import cv2
-            import numpy as np
+            # Import Surya OCR module
+            import sys
+            from pathlib import Path
+            project_root = Path(__file__).resolve().parent.parent.parent
+            backend_path = project_root / "backend"
+            if str(backend_path) not in sys.path:
+                sys.path.insert(0, str(backend_path))
             
-            # Convert PIL Image to numpy array
-            img_array = np.array(image)
+            from surya_ocr import get_surya_ocr
             
-            # Convert to grayscale
-            if len(img_array.shape) == 3:
-                gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+            # Initialize Surya OCR (models load on first call)
+            st.info("📚 Loading Surya OCR models (this may take a moment)...")
+            surya = get_surya_ocr()
+            
+            # Extract text using official Surya OCR API
+            st.info("🔎 Analyzing image with Surya OCR...")
+            ocr_result = surya.extract_text_from_pil_image(image)
+            
+            if ocr_result.get("success"):
+                ocr_text = ocr_result.get('text', '')
+                confidence = ocr_result.get('confidence', 0.0)
+                line_count = ocr_result.get('line_count', 0)
+                st.success(f"✅ Surya OCR extracted {line_count} text lines (confidence: {confidence:.2f})")
             else:
-                gray = img_array
+                raise Exception(f"Surya OCR failed: {ocr_result.get('error', 'Unknown error')}")
             
-            # Apply adaptive thresholding to improve text clarity
-            binary = cv2.adaptiveThreshold(
-                gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                cv2.THRESH_BINARY, 11, 2
-            )
-            
-            # Denoise
-            denoised = cv2.fastNlMeansDenoising(binary, None, 10, 7, 21)
-            
-            # Convert back to PIL Image for Tesseract
-            processed_image = Image.fromarray(denoised)
-            
-            st.success("✅ Image preprocessed for better OCR")
-            
-        except Exception as prep_err:
-            # If preprocessing fails, use original image
-            st.warning(f"Image preprocessing failed, using original: {prep_err}")
-            processed_image = image
-        
-        # Use Tesseract OCR directly
-        try:
-            import pytesseract
-            
-            # Extract text using Tesseract with custom config for better accuracy
-            custom_config = r'--oem 3 --psm 6'  # OEM 3 = Default, PSM 6 = Assume uniform block of text
-            ocr_text = pytesseract.image_to_string(processed_image, config=custom_config)
-            st.success("✅ OCR extraction successful")
-            
-        except Exception as ocr_err:
-            raise Exception(f"Tesseract OCR failed: {ocr_err}")
+        except Exception as surya_err:
+            # Fallback to Tesseract if Surya fails
+            st.warning(f"⚠️ Surya OCR failed ({surya_err}), falling back to Tesseract...")
+            try:
+                import pytesseract
+                custom_config = r'--oem 3 --psm 6'
+                ocr_text = pytesseract.image_to_string(image, config=custom_config)
+                st.success("✅ Tesseract OCR extraction successful (fallback)")
+            except Exception as ocr_err:
+                raise Exception(f"Both Surya and Tesseract OCR failed: {ocr_err}")
         
         # Validate using ComplianceValidator (same as Web Crawler)
         try:
