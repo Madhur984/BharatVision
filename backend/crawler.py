@@ -382,7 +382,9 @@ class EcommerceCrawler:
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    response = self.session.get(url, headers=headers, timeout=15, allow_redirects=True)
+                    # Longer timeout for Flipkart (30s) to handle slow responses
+                    timeout = 30 if platform == 'flipkart' else 15
+                    response = self.session.get(url, headers=headers, timeout=timeout, allow_redirects=True)
                     if response.status_code == 200:
                         return response.text
 
@@ -414,8 +416,9 @@ class EcommerceCrawler:
 
                 except requests.exceptions.Timeout:
                     if attempt < max_retries - 1:
-                        logger.warning(f"Timeout on attempt {attempt + 1}/{max_retries}, retrying...")
-                        time.sleep(2)
+                        wait_time = 2 ** (attempt + 1)  # Exponential: 2s, 4s, 8s
+                        logger.warning(f"Timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
+                        time.sleep(wait_time)
                         continue
                     else:
                         logger.error(f"Timeout after {max_retries} attempts for {url}")
