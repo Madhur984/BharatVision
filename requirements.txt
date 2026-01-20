@@ -11,7 +11,7 @@ scikit-image==0.21.0
 
 # =============== OCR (NO OpenCV) ===============
 # Primary OCR: Surya (needs torch/torchvision)
-surya
+surya-ocr>=0.4.0
 torch==2.1.2
 torchvision==0.16.2
 torchaudio==2.1.2
