@@ -10,10 +10,13 @@ from .vector_store import VectorStore
 from .knowledge_base_builder import KnowledgeBaseBuilder
 from .ocr_corrector import OCRCorrector
 from .field_extractor import SemanticFieldExtractor
+from .rag_manager import RAGManager
 
 __all__ = [
     'VectorStore',
     'KnowledgeBaseBuilder',
     'OCRCorrector',
-    'SemanticFieldExtractor'
+    'SemanticFieldExtractor',
+    'RAGManager'
 ]
+
