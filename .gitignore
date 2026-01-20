@@ -10,7 +10,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-# lib/
+lib/
 lib64/
 parts/
 sdist/
@@ -19,16 +19,21 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual Environment
 venv/
-env/
 ENV/
-.venv/
-.env/
+env/
+.venv
 
-# IDE and Editor
+# Environment Variables - CRITICAL: Never commit these!
+.env
+.env.local
+.env.cloud
+.env.production
+*.env
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -39,55 +44,60 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Models and Cache
-models/
-.cache/
-.transformers_cache/
-.huggingface/
-
-# Test Images and Output
-images/captured/*.jpg
-images/captured/*.png
-images/processed/*.jpg  
-images/processed/*.png
-test_images/
-output/
-results/
+# Database
+*.db
+*.sqlite
+*.sqlite3
+app_data.db
+bharatvision.db
+scraper_test.db
 
 # Logs
 *.log
 logs/
+*.out
+
+# Models (large files)
+models/
+*.pt
+*.pth
+*.onnx
+*.h5
+*.pkl
+yolov8n.pt
+
+# Data
+data/
+scraped_data/
+images/captured/
+images/processed/
+runs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+tmp_*.jpg
+tmp_*.png
 
 # OS
 Thumbs.db
-desktop.ini
+.DS_Store
 
-# Temporary files
-temp/
-tmp/
-*.tmp
-*.temp
+# Streamlit
+.streamlit/secrets.toml
 
-# Debug files
-debug_*.py
-test_*.py
-*_debug.py
-*_test.py
+# Docker
+.dockerignore
 
-# Documentation (keep only README.md)
-*.md
-!README.md
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
 
-# Config overrides
-config_local.py
-.env.local
-bharatvision_flutter/jdk-*
-
-# Large Binaries
-*.exe
-*.pt
-*.bin
-.ollama/
-manual_debug_surya.py
-*.zip
-bharatvision_flutter/jdk*
+# Secrets and credentials
+secrets/
+credentials/
+*.pem
+*.key
+*.crt

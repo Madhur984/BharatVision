@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import sys
 from pathlib import Path
+import os
 
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -17,9 +18,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from crawler import crawl_amazon, crawl_flipkart, ProductData
 from ocr_integration import OCRIntegrator
 from compliance_validator import validate_compliance_score
+from middleware import RateLimitMiddleware, SecurityHeadersMiddleware, RequestLoggingMiddleware
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI
@@ -29,14 +34,23 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS
+# Enable CORS with secure configuration
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8501").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,  # Restrict to specific origins
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],  # Specific methods only
     allow_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
+
+# Add security middleware
+rate_limit = int(os.getenv("API_RATE_LIMIT", "60"))  # Default: 60 requests/minute
+app.add_middleware(RateLimitMiddleware, requests_per_minute=rate_limit)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 
 # ===== REQUEST/RESPONSE MODELS =====
 class ComplianceCheckRequest(BaseModel):

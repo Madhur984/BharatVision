@@ -1,97 +1,181 @@
+"""
+Input validation schemas for BharatVision API
+Uses Pydantic for robust validation and automatic documentation
+"""
 
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, Field, validator, HttpUrl
+from typing import Optional, List
 from datetime import datetime
+import re
 
-class ExtractedFields(BaseModel):
-    # Core Legal Metrology fields
-    mrp_raw: Optional[str] = None
-    mrp_value: Optional[float] = None
-    net_quantity_raw: Optional[str] = None
-    net_quantity_value: Optional[float] = None
-    unit: Optional[str] = None
-    manufacturer_name: Optional[str] = None
-    mfg_date: Optional[str] = None
-    expiry_date: Optional[str] = None
-    country_of_origin: Optional[str] = None
-    
-    # Additional extracted fields
-    batch_number: Optional[str] = None
-    fssai_number: Optional[str] = None
-    contact_number: Optional[str] = None
-    
-    # Legal Metrology compliance fields - Rules 2011
-    manufacturer_address: Optional[str] = None
-    consumer_care: Optional[str] = None
-    pin_code: Optional[str] = None
-    
-    # Metadata
-    extraction_confidence: Optional[float] = None
-    extraction_timestamp: Optional[datetime] = Field(default_factory=datetime.now)
-    source_file: Optional[str] = None
-    
-    # Flexible storage for any additional data
-    extra: Dict[str, Any] = Field(default_factory=dict)
-    
-    def calculate_confidence(self) -> float:
-        """Calculate extraction confidence based on core fields found"""
-        # Core Legal Metrology compliance fields
-        core_fields = [
-            self.mrp_raw, self.net_quantity_raw, self.unit,
-            self.manufacturer_name, self.country_of_origin, self.mfg_date
-        ]
-        
-        # Additional compliance fields for comprehensive assessment
-        compliance_fields = [
-            self.manufacturer_address, self.consumer_care, self.pin_code
-        ]
-        
-        found_core = sum(1 for field in core_fields if field is not None)
-        found_compliance = sum(1 for field in compliance_fields if field is not None)
-        
-        # Weight core fields more heavily (70%) and compliance fields (30%)
-        core_score = (found_core / len(core_fields)) * 70
-        compliance_score = (found_compliance / len(compliance_fields)) * 30
-        
-        return core_score + compliance_score
 
-class ValidationIssue(BaseModel):
-    field: str
-    level: str  # INFO/WARN/ERROR
-    message: str
-    rule_id: Optional[str] = None
-    suggested_fix: Optional[str] = None
-    severity_score: Optional[int] = None  # 1-10 scale
+class ComplianceCheckRequest(BaseModel):
+    """Enhanced request model for compliance checking with validation"""
+    title: str = Field(..., min_length=1, max_length=500, description="Product title")
+    brand: str = Field(..., min_length=1, max_length=200, description="Brand name")
+    price: float = Field(..., gt=0, description="Current selling price (must be positive)")
+    mrp: float = Field(..., gt=0, description="Maximum Retail Price (must be positive)")
+    image: Optional[HttpUrl] = Field(None, description="Product image URL")
+    category: Optional[str] = Field(None, max_length=100, description="Product category")
+    description: Optional[str] = Field(None, max_length=5000, description="Product description")
+    
+    @validator('price', 'mrp')
+    def validate_price_format(cls, v):
+        """Ensure prices are reasonable (not too large)"""
+        if v > 10000000:  # 1 crore max
+            raise ValueError('Price seems unreasonably high')
+        return round(v, 2)
+    
+    @validator('title', 'brand')
+    def validate_no_special_chars(cls, v):
+        """Prevent injection attacks via special characters"""
+        if re.search(r'[<>{}]', v):
+            raise ValueError('Special characters not allowed')
+        return v.strip()
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "Tata Salt 1kg",
+                "brand": "Tata",
+                "price": 25.00,
+                "mrp": 30.00,
+                "image": "https://example.com/image.jpg",
+                "category": "Food & Beverages",
+                "description": "Premium quality iodized salt"
+            }
+        }
 
-class ValidationResult(BaseModel):
-    is_compliant: bool
-    issues: List[ValidationIssue] = Field(default_factory=list)
-    score: float = 0.0
-    
-    # Enhanced metadata
-    validation_timestamp: Optional[datetime] = Field(default_factory=datetime.now)
-    validator_version: Optional[str] = "1.0"
-    processing_time_ms: Optional[float] = None
-    
-    # Compliance breakdown
-    error_count: int = 0
-    warning_count: int = 0
-    info_count: int = 0
-    
-    def calculate_counts(self):
-        """Calculate issue counts by severity"""
-        self.error_count = sum(1 for issue in self.issues if issue.level == "ERROR")
-        self.warning_count = sum(1 for issue in self.issues if issue.level == "WARN")
-        self.info_count = sum(1 for issue in self.issues if issue.level == "INFO")
 
-class SystemHealth(BaseModel):
-    """System health and performance metrics"""
-    status: str  # HEALTHY/WARNING/CRITICAL
-    uptime_seconds: float
-    memory_usage_mb: float
-    cpu_usage_percent: float
-    active_users: int
-    total_validations: int
-    last_validation: Optional[datetime] = None
-    error_rate: float = 0.0
-    response_time_avg_ms: float = 0.0
+class ProductSearchRequest(BaseModel):
+    """Request model for product search"""
+    query: str = Field(..., min_length=1, max_length=200, description="Search query")
+    platform: str = Field("amazon", regex="^(amazon|flipkart|jiomart)$", description="E-commerce platform")
+    limit: int = Field(10, ge=1, le=100, description="Number of results (1-100)")
+    
+    @validator('query')
+    def validate_query(cls, v):
+        """Sanitize search query"""
+        # Remove potentially dangerous characters
+        sanitized = re.sub(r'[<>{}]', '', v)
+        return sanitized.strip()
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "query": "packaged food",
+                "platform": "amazon",
+                "limit": 10
+            }
+        }
+
+
+class ImageUploadRequest(BaseModel):
+    """Request model for image upload and analysis"""
+    image_url: Optional[HttpUrl] = Field(None, description="URL of the image to analyze")
+    image_base64: Optional[str] = Field(None, description="Base64 encoded image data")
+    
+    @validator('image_base64')
+    def validate_base64(cls, v):
+        """Validate base64 image data"""
+        if v:
+            # Check if it's valid base64
+            import base64
+            try:
+                # Limit size to 10MB
+                if len(v) > 10 * 1024 * 1024:
+                    raise ValueError('Image too large (max 10MB)')
+                base64.b64decode(v)
+            except Exception:
+                raise ValueError('Invalid base64 image data')
+        return v
+    
+    @validator('image_url', 'image_base64')
+    def validate_at_least_one(cls, v, values):
+        """Ensure at least one image source is provided"""
+        if not v and not values.get('image_url') and not values.get('image_base64'):
+            raise ValueError('Either image_url or image_base64 must be provided')
+        return v
+
+
+class ComplianceCheckResponse(BaseModel):
+    """Response model for compliance check"""
+    score: int = Field(..., ge=0, le=100, description="Compliance score (0-100)")
+    status: str = Field(..., regex="^(Compliant|Partial|Non-Compliant)$", description="Compliance status")
+    color: str = Field(..., regex="^(green|yellow|red)$", description="Status color indicator")
+    details: dict = Field(..., description="Detailed compliance information")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Check timestamp")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "score": 95,
+                "status": "Compliant",
+                "color": "green",
+                "details": {
+                    "mrp_check": True,
+                    "brand_check": True,
+                    "category_check": True,
+                    "issues": []
+                },
+                "timestamp": "2026-01-20T15:00:00Z"
+            }
+        }
+
+
+class ProductResponse(BaseModel):
+    """Product response model with validation"""
+    id: int = Field(..., ge=1, description="Product ID")
+    title: str = Field(..., min_length=1, max_length=500)
+    brand: str = Field(..., min_length=1, max_length=200)
+    price: float = Field(..., gt=0)
+    mrp: float = Field(..., gt=0)
+    image: HttpUrl
+    category: str = Field(..., max_length=100)
+    
+    @validator('price', 'mrp')
+    def round_prices(cls, v):
+        """Round prices to 2 decimal places"""
+        return round(v, 2)
+
+
+class ErrorResponse(BaseModel):
+    """Standard error response model"""
+    error: str = Field(..., description="Error type")
+    message: str = Field(..., description="Error message")
+    details: Optional[dict] = Field(None, description="Additional error details")
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "error": "ValidationError",
+                "message": "Invalid input data",
+                "details": {"field": "price", "issue": "must be positive"},
+                "timestamp": "2026-01-20T15:00:00Z"
+            }
+        }
+
+
+class HealthCheckResponse(BaseModel):
+    """Health check response model"""
+    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$")
+    service: str
+    version: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    checks: Optional[dict] = Field(None, description="Individual component health")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "status": "healthy",
+                "service": "BharatVision API",
+                "version": "1.0.0",
+                "timestamp": "2026-01-20T15:00:00Z",
+                "checks": {
+                    "database": "healthy",
+                    "ocr_service": "healthy",
+                    "ml_models": "healthy"
+                }
+            }
+        }
