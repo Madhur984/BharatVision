@@ -23,9 +23,9 @@ transformers>=4.40.0
 bitsandbytes>=0.43.0
 accelerate>=0.29.0
 
-# ================= SURYA OCR - DISABLED =================
-# Surya OCR disabled - requires ~1.5GB RAM which exceeds Streamlit Cloud free tier
-# surya-ocr>=0.5.0
+# ================= SURYA OCR (Primary OCR - Best Quality) =================
+# Surya OCR enabled for better accuracy
+surya-ocr>=0.4.0
 
 # ================= YOLO MODEL - DISABLED =================
 # YOLO disabled to save memory - using Tesseract for OCR instead

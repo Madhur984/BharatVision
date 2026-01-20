@@ -8,3 +8,4 @@ python-dotenv==1.0.0
 selenium==4.13.0
 lxml==4.9.3
 numpy==1.24.3
+surya-ocr>=0.4.0

@@ -12,5 +12,8 @@ huggingface-hub==0.20.3
 Pillow==10.2.0
 numpy==1.26.3
 
+# OCR
+surya-ocr>=0.4.0
+
 # Optional: For better performance
 aiofiles==23.2.1
