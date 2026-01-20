@@ -1,0 +1,210 @@
+{
+    "field_patterns": {
+        "mrp": {
+            "semantic_queries": [
+                "What is the maximum retail price?",
+                "Find MRP on the product label",
+                "Extract price information including taxes",
+                "What is the selling price?"
+            ],
+            "regex_patterns": [
+                "(?:MRP|M\\.R\\.P|Max\\.?\\s*Retail\\s*Price)[:\\s]*[₹Rs.]*\\s*([\\d,]+(?:\\.\\d{2})?)",
+                "₹\\s*([\\d,]+\\.\\d{2})\\s*(?:Incl|inclusive|including)",
+                "Rs\\.?\\s*([\\d,]+(?:\\.\\d{2})?)\\s*(?:Incl|inclusive)"
+            ],
+            "keywords": [
+                "MRP",
+                "M.R.P",
+                "Price",
+                "Retail",
+                "Rs",
+                "₹"
+            ],
+            "validation": {
+                "min_value": 1.0,
+                "max_value": 100000.0,
+                "must_have_decimal": true,
+                "must_mention_taxes": true
+            }
+        },
+        "manufacturer_details": {
+            "semantic_queries": [
+                "Who is the manufacturer?",
+                "Find manufacturer name and address",
+                "Extract packer details",
+                "Who made this product?",
+                "Find company name and location"
+            ],
+            "keywords": [
+                "Manufactured by",
+                "Mfd by",
+                "Marketed by",
+                "Packed by",
+                "Packer",
+                "Brand Owner",
+                "Mkt by"
+            ],
+            "regex_patterns": [
+                "(?:Manufactured|Mfd|Marketed|Packed)\\s+by[:\\s]*([^\\n]{20,200})",
+                "(?:Manufacturer|Packer)[:\\s]*([^\\n]{20,200})"
+            ],
+            "validation": {
+                "must_have_name": true,
+                "must_have_address": true,
+                "must_have_pincode": true,
+                "min_length": 20,
+                "pincode_pattern": "\\d{6}"
+            }
+        },
+        "net_quantity": {
+            "semantic_queries": [
+                "What is the net quantity?",
+                "Find net weight or volume",
+                "Extract contents information",
+                "How much product is in the package?"
+            ],
+            "regex_patterns": [
+                "(?:Net\\s*(?:Qty|Quantity|Wt|Weight|Contents))[:\\s]*([\\d.]+\\s*(?:kg|g|gm|ml|l|ltr))",
+                "Contents?[:\\s]*([\\d.]+\\s*(?:kg|g|ml|l))",
+                "([\\d.]+)\\s*(kg|g|gm|ml|l|ltr|litre)"
+            ],
+            "keywords": [
+                "Net",
+                "Qty",
+                "Weight",
+                "Contents",
+                "Volume"
+            ],
+            "units": [
+                "kg",
+                "g",
+                "gm",
+                "gram",
+                "ml",
+                "l",
+                "ltr",
+                "litre"
+            ],
+            "validation": {
+                "must_have_number": true,
+                "must_have_unit": true,
+                "min_value": 0.1,
+                "max_value": 100000.0
+            }
+        },
+        "generic_name": {
+            "semantic_queries": [
+                "What is the product name?",
+                "What type of product is this?",
+                "Find the generic name",
+                "What is this product?"
+            ],
+            "keywords": [
+                "Product",
+                "Name",
+                "Description"
+            ],
+            "validation": {
+                "min_length": 3,
+                "max_length": 100,
+                "not_just_brand": true
+            }
+        },
+        "country_of_origin": {
+            "semantic_queries": [
+                "Where was this product made?",
+                "What is the country of origin?",
+                "Find manufacturing country",
+                "Where is this from?"
+            ],
+            "regex_patterns": [
+                "(?:Country\\s*of\\s*Origin|Made\\s*in|Product\\s*of)[:\\s]*([A-Za-z\\s]+)",
+                "(?:Manufactured\\s*in|Origin)[:\\s]*([A-Za-z\\s]+)"
+            ],
+            "keywords": [
+                "Country",
+                "Origin",
+                "Made in",
+                "Product of"
+            ],
+            "common_values": [
+                "India",
+                "China",
+                "USA",
+                "Thailand",
+                "Vietnam"
+            ],
+            "validation": {
+                "must_be_valid_country": true
+            }
+        },
+        "best_before_date": {
+            "semantic_queries": [
+                "When does this product expire?",
+                "What is the best before date?",
+                "Find expiry information",
+                "How long is this product good for?"
+            ],
+            "regex_patterns": [
+                "(?:Best\\s*Before|Use\\s*by|Expiry|BB)[:\\s]*([^\\n]{5,50})",
+                "(?:Exp|BB)[:\\s]*([\\d]{1,2}\\s*months?)",
+                "([\\d]{1,2})\\s*months?\\s*from\\s*(?:mfg|manufacture)"
+            ],
+            "keywords": [
+                "Best Before",
+                "Use by",
+                "Expiry",
+                "BB",
+                "Exp"
+            ],
+            "validation": {
+                "must_specify_duration_or_date": true
+            }
+        },
+        "date_of_manufacture": {
+            "semantic_queries": [
+                "When was this product manufactured?",
+                "What is the manufacturing date?",
+                "Find production date",
+                "When was this made?"
+            ],
+            "regex_patterns": [
+                "(?:Mfg|Mfd|Manufacturing)\\s*Date[:\\s]*([^\\n]{5,30})",
+                "(?:DOM|Date\\s*of\\s*Manufacture)[:\\s]*([^\\n]{5,30})",
+                "Mfg[:\\s]*([\\d]{2}/[\\d]{4})"
+            ],
+            "keywords": [
+                "Mfg",
+                "Mfd",
+                "Manufacturing Date",
+                "DOM"
+            ],
+            "validation": {
+                "must_have_month_year": true
+            }
+        },
+        "customer_care_details": {
+            "semantic_queries": [
+                "How to contact customer care?",
+                "Find customer service details",
+                "What is the helpline number?",
+                "How to file a complaint?"
+            ],
+            "regex_patterns": [
+                "(?:Customer|Consumer)\\s*Care[:\\s]*([^\\n]{10,100})",
+                "(?:Helpline|Contact)[:\\s]*([^\\n]{10,100})",
+                "(\\d{10}|1800[\\d\\s-]+)"
+            ],
+            "keywords": [
+                "Customer Care",
+                "Consumer Care",
+                "Helpline",
+                "Contact"
+            ],
+            "validation": {
+                "must_have_phone_or_email": true,
+                "phone_pattern": "\\d{10}|1800[\\d-]+"
+            }
+        }
+    }
+}

@@ -1,0 +1,176 @@
+# Legal Metrology Packaged Commodities Rules - Mandatory Fields
+# Based on Legal Metrology (Packaged Commodities) Rules, 2011
+
+rules:
+  - rule_id: "LM_RULE_01"
+    field: "manufacturer_details"
+    description: "Name and complete address of manufacturer/importer/packer/brand owner"
+    mandatory: true
+    severity: "critical"
+    patterns:
+      - "Manufactured by"
+      - "Mfd. by"
+      - "Mfd by"
+      - "Marketed by"
+      - "Mkt. by"
+      - "Packed by"
+      - "Packer"
+      - "Brand Owner"
+    examples:
+      - "Manufactured by: ABC Foods Pvt Ltd, Plot No. 123, Sector 5, Industrial Area, Delhi-110001"
+      - "Mfd by ABC Foods Pvt Ltd, Delhi-110001, India"
+      - "Marketed by: XYZ Company, Mumbai-400001"
+    validation_rules:
+      - "Must include company name"
+      - "Must include complete address"
+      - "Must include pincode (6 digits)"
+      - "Address must be in India for domestic products"
+    
+  - rule_id: "LM_RULE_02"
+    field: "mrp"
+    description: "Maximum Retail Price inclusive of all taxes"
+    mandatory: true
+    severity: "critical"
+    patterns:
+      - "MRP"
+      - "M.R.P"
+      - "M.R.P."
+      - "Max. Retail Price"
+      - "Maximum Retail Price"
+      - "Max Retail Price"
+    format: "₹XX.XX or Rs. XX.XX (Incl. of all taxes)"
+    examples:
+      - "MRP: ₹50.00 (Incl. of all taxes)"
+      - "M.R.P Rs. 100.00 (Inclusive of all taxes)"
+      - "Maximum Retail Price: ₹25.50 Incl. of all taxes"
+    validation_rules:
+      - "Must include currency symbol (₹ or Rs.)"
+      - "Must mention 'Incl. of all taxes' or 'Inclusive of all taxes'"
+      - "Must be numeric with 2 decimal places"
+      - "Must be greater than 0"
+    
+  - rule_id: "LM_RULE_03"
+    field: "net_quantity"
+    description: "Net quantity or net contents in standard units"
+    mandatory: true
+    severity: "critical"
+    patterns:
+      - "Net Qty"
+      - "Net Quantity"
+      - "Net Wt"
+      - "Net Weight"
+      - "Net Contents"
+      - "Contents"
+      - "Net"
+    units: ["kg", "g", "gm", "gram", "ml", "l", "ltr", "litre"]
+    examples:
+      - "Net Qty: 100g"
+      - "Net Weight: 1 kg"
+      - "Contents: 500 ml"
+      - "Net: 250 gm"
+    validation_rules:
+      - "Must include numeric value"
+      - "Must include standard unit (kg, g, ml, l)"
+      - "Must be greater than 0"
+    
+  - rule_id: "LM_RULE_04"
+    field: "generic_name"
+    description: "Common or generic name of the commodity"
+    mandatory: true
+    severity: "critical"
+    patterns:
+      - "Product Name"
+      - "Name"
+      - "Description"
+    examples:
+      - "Biscuits"
+      - "Packaged Drinking Water"
+      - "Wheat Flour"
+      - "Cooking Oil"
+    validation_rules:
+      - "Must be descriptive"
+      - "Must not be brand name only"
+      - "Minimum 3 characters"
+    
+  - rule_id: "LM_RULE_05"
+    field: "country_of_origin"
+    description: "Country of origin or manufacture (mandatory for imported goods)"
+    mandatory: "conditional"
+    condition: "Required if product is imported"
+    severity: "high"
+    patterns:
+      - "Country of Origin"
+      - "Made in"
+      - "Product of"
+      - "Manufactured in"
+      - "Origin"
+    examples:
+      - "Country of Origin: India"
+      - "Made in India"
+      - "Product of India"
+      - "Made in China (for imported)"
+    validation_rules:
+      - "Must be valid country name"
+      - "Mandatory for imported products"
+    
+  - rule_id: "LM_RULE_06"
+    field: "best_before_date"
+    description: "Best before or use by date (for time-sensitive products)"
+    mandatory: "conditional"
+    condition: "Required for perishable/time-sensitive items (food, cosmetics, medicines)"
+    severity: "high"
+    patterns:
+      - "Best Before"
+      - "Best before"
+      - "Use by"
+      - "Use By"
+      - "Expiry"
+      - "Exp"
+      - "BB"
+    examples:
+      - "Best Before: 6 months from mfg"
+      - "Use by: 12 months from date of manufacture"
+      - "BB: See bottom of pack"
+      - "Expiry: 24 months from mfg date"
+    validation_rules:
+      - "Must specify duration or date"
+      - "Required for food, cosmetics, medicines"
+    
+  - rule_id: "LM_RULE_07"
+    field: "date_of_manufacture"
+    description: "Date of manufacture or import"
+    mandatory: true
+    severity: "high"
+    patterns:
+      - "Mfg Date"
+      - "Mfd Date"
+      - "Date of Manufacture"
+      - "Manufacturing Date"
+      - "Mfg"
+      - "DOM"
+    examples:
+      - "Mfg Date: 01/2024"
+      - "Date of Manufacture: January 2024"
+      - "Mfd: 15-01-2024"
+    validation_rules:
+      - "Must include month and year at minimum"
+      - "Not required if date of import is provided"
+    
+  - rule_id: "LM_RULE_08"
+    field: "customer_care_details"
+    description: "Customer care contact details"
+    mandatory: true
+    severity: "medium"
+    patterns:
+      - "Customer Care"
+      - "Consumer Care"
+      - "Helpline"
+      - "Contact"
+      - "For complaints"
+    examples:
+      - "Customer Care: 1800-XXX-XXXX"
+      - "Consumer Care: care@company.com"
+      - "Helpline: +91-11-XXXXXXXX"
+    validation_rules:
+      - "Must include phone number or email"
+      - "Phone should be 10 digits or toll-free"

@@ -18,6 +18,12 @@ torchaudio==2.1.2
 ultralytics
 easyocr
 
+# =============== RAG SYSTEM (Government-Grade Accuracy) ===============
+# Offline semantic search and knowledge retrieval
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.0
+
+
 # Fallback OCR
 pytesseract==0.3.13
 # NOTE: you still need the OS Tesseract binary, e.g.:

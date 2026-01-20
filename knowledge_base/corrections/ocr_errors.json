@@ -1,0 +1,124 @@
+{
+    "common_ocr_errors": {
+        "field_names": {
+            "M8P": "MRP",
+            "MBP": "MRP",
+            "M.8.P": "M.R.P",
+            "M.B.P": "M.R.P",
+            "MFP": "MRP",
+            "Mfd": "Mfd",
+            "Mfg": "Mfg",
+            "Mkt": "Mkt",
+            "Net Qty": "Net Qty",
+            "Net 0ty": "Net Qty",
+            "Net Qly": "Net Qty",
+            "Nei Qty": "Net Qty",
+            "Counlry": "Country",
+            "Couniry": "Country",
+            "Manufaclured": "Manufactured",
+            "Manufaciured": "Manufactured",
+            "Besi Before": "Best Before",
+            "Besl Before": "Best Before",
+            "Cuslomer": "Customer",
+            "Cusiomer": "Customer"
+        },
+        "numbers": {
+            "O": "0",
+            "o": "0",
+            "l": "1",
+            "I": "1",
+            "S": "5",
+            "s": "5",
+            "B": "8",
+            "Z": "2",
+            "z": "2"
+        },
+        "currency": {
+            "Rs": "Rs.",
+            "₹": "₹",
+            "INR": "₹",
+            "Rupees": "₹"
+        },
+        "units": {
+            "gm": "g",
+            "gms": "g",
+            "gram": "g",
+            "grams": "g",
+            "kgs": "kg",
+            "kilogram": "kg",
+            "kilograms": "kg",
+            "ltr": "l",
+            "ltrs": "l",
+            "litre": "l",
+            "litres": "l",
+            "mls": "ml",
+            "millilitre": "ml",
+            "millilitres": "ml"
+        }
+    },
+    "context_corrections": [
+        {
+            "pattern": "M[8B]P",
+            "context": "price|retail|tax",
+            "correction": "MRP",
+            "confidence": 0.95
+        },
+        {
+            "pattern": "Net [O0]ty",
+            "context": "weight|quantity|contents",
+            "correction": "Net Qty",
+            "confidence": 0.9
+        },
+        {
+            "pattern": "Mf[dg]",
+            "context": "date|manufacture",
+            "correction": "Mfg",
+            "confidence": 0.85
+        },
+        {
+            "pattern": "Counlry|Couniry",
+            "context": "origin|made",
+            "correction": "Country",
+            "confidence": 0.9
+        },
+        {
+            "pattern": "Besi|Besl",
+            "context": "before|expiry",
+            "correction": "Best",
+            "confidence": 0.85
+        }
+    ],
+    "price_corrections": {
+        "patterns": [
+            {
+                "wrong": "Rs 5O.OO",
+                "correct": "Rs. 50.00",
+                "reason": "O instead of 0"
+            },
+            {
+                "wrong": "₹ lOO",
+                "correct": "₹ 100",
+                "reason": "l instead of 1"
+            },
+            {
+                "wrong": "MRP Rs 50",
+                "correct": "MRP Rs. 50.00",
+                "reason": "Missing decimal"
+            }
+        ]
+    },
+    "date_corrections": {
+        "patterns": [
+            {
+                "wrong": "Mfg: Ol/2024",
+                "correct": "Mfg: 01/2024",
+                "reason": "O instead of 0"
+            },
+            {
+                "wrong": "BB: l2 months",
+                "correct": "BB: 12 months",
+                "reason": "l instead of 1"
+            }
+        ]
+    }
+}
