@@ -1,0 +1,72 @@
+# Files to Delete - Repository Cleanup
+
+## Unnecessary Log/Summary Files (DELETE)
+- BACKEND_FIXED.txt
+- CHANGES_SUMMARY.txt
+- CLOUD_OCR_FIX.txt
+- DEPLOYMENT_SUMMARY.txt
+- FINAL_REPORT.txt
+- FIXES_APPLIED.txt
+- JIO_CLOUD_DEPLOYMENT.txt
+- QUICK_START_GUIDE.txt
+- QUICK_START_JIO_CLOUD.txt
+- STREAMLIT_CONFIG.txt
+- STREAMLIT_UPDATES.txt
+- commit_history.txt
+- HGH67Rw!WnRBTzS.txt
+
+## Duplicate/Unused Requirements Files (DELETE)
+- requirements_surya.txt (only has "surya-ocr", already in main requirements.txt)
+- requirements.full.txt (duplicate)
+
+## Test/Temporary Databases (DELETE)
+- app_data.db
+- bharatvision.db (root level - backend has the real one)
+- scraper_test.db
+
+## Temporary Files (DELETE)
+- tmp_run_img.jpg
+- tmp_streamlit_root.html
+- objects.txt (2MB file, likely debug output)
+
+## Unused/Duplicate Scripts (DELETE)
+- backend_server.py (duplicate of api_server.py)
+- frontend_server.py (duplicate of serve_frontend.py)
+- simple_api.py (superseded by public_api.py)
+- simple_tesseract_ocr.py (superseded by surya_ocr.py)
+- check_surya.py (diagnostic script, not needed)
+- diagnose_surya.py (diagnostic script, not needed)
+- manual_test_scraper.py (test script)
+- verify_api_scraper.py (test script)
+- verify_fix.py (test script)
+- run_simple_ocr.bat (old script)
+
+## Duplicate Dockerfiles (KEEP ONE)
+- Dockerfile (keep)
+- Dockerfile.cloud (delete - same as Dockerfile)
+
+## Duplicate Deployment Scripts (CONSOLIDATE)
+- deploy_to_cloud.bat (old)
+- setup_complete.bat (old)
+- setup_dev.bat (old)
+- setup_dev.sh (old)
+
+## Empty/Unused Directories to Check
+- app_data (check if empty)
+- runs (check if empty)
+- scraped_data (check if empty)
+
+## Files to KEEP
+- README.md
+- SECURITY_SETUP.md
+- requirements.txt
+- requirements-dev.txt
+- requirements_api.txt
+- requirements_space.txt
+- build_rag_index.py
+- launch_bharatvision.bat
+- launch_web.py
+- All backend/ files
+- All web/ files
+- All knowledge_base/ files
+- All rag_index/ files
