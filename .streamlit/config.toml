@@ -10,3 +10,7 @@ showErrorDetails = true
 
 [browser]
 gatherUsageStats = false
+
+# Force cache clear - version 2
+[global]
+developmentMode = false
