@@ -535,14 +535,9 @@ def get_crawler():
         st.error(f"Failed to initialize crawler: {e}")
         st.error("Initialization traceback:")
         st.code(tb)
-        # Log to file
-        try:
-            logs_dir = os.path.join(BASE_DIR, 'logs')
-            os.makedirs(logs_dir, exist_ok=True)
-            with open(os.path.join(logs_dir, 'crawler_init_failure.txt'), 'w', encoding='utf-8') as fh:
-                fh.write(tb)
-        except:
-            pass
+        # Force print to standard output/logs as well
+        print(f"CRITIAL CRAWLER INIT FAILURE: {e}")
+        print(tb)
         return None
 
 crawler = None
