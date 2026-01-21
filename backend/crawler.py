@@ -2113,11 +2113,54 @@ class EcommerceCrawler:
         """Return supported platforms"""
         return {platform: config['name'] for platform, config in self.platforms.items()}
     
+    
     def extract_product_from_url(self, product_url: str) -> Optional[ProductData]:
+        """
+        Extract product details from a direct product URL
+        Uses platform-specific strategies:
+        - Flipkart: JSON API (mobile endpoint) - BYPASSES HTML SCRAPING
+        - Amazon: HTML scraping
+        - Others: HTML scraping
+        """
+        try:
+            # Determine platform from URL
+            platform = None
+            if 'amazon.in' in product_url or 'amazon.com' in product_url:
+                platform = 'amazon'
+            elif 'flipkart.com' in product_url:
+                platform = 'flipkart'
+            elif 'myntra.com' in product_url:
+                platform = 'myntra'
+            
+            if not platform:
                 logger.warning(f"Unknown platform for URL: {product_url}")
                 return None
             
-            # Try with retries to improve success rate
+            logger.info(f"🎯 Detected platform: {platform} for URL: {product_url[:100]}")
+            
+            # FLIPKART: Use JSON API FIRST (NO HTML SCRAPING!)
+            if platform == 'flipkart':
+                logger.info("🚀 Using Flipkart JSON API (mobile endpoint) - BYPASSING HTML SCRAPING")
+                json_data = self._fetch_flipkart_json(product_url)
+                if json_data:
+                    product = self._extract_flipkart_from_json(json_data, product_url)
+                    if product:
+                        logger.info(f"✅ Flipkart JSON API SUCCESS: {product.title[:50]}")
+                        # Enrich with OCR and compliance
+                        self._enrich_product(product, platform)
+                        # Save to DB
+                        self._download_and_save_images(product)
+                        self._save_to_db(product)
+                        return product
+                    else:
+                        logger.warning("⚠️ Flipkart JSON data received but extraction failed")
+                else:
+                    logger.warning("⚠️ Flipkart JSON API failed to fetch data")
+                
+                # Only fall back to HTML if JSON completely fails
+                logger.warning("⚠️ Falling back to HTML scraping (will likely timeout)")
+            
+            # AMAZON & OTHERS: HTML scraping (or Flipkart fallback)
             html = None
             max_retries = 2
             
@@ -2128,7 +2171,7 @@ class EcommerceCrawler:
                     logger.info(f"Successfully fetched HTML for {product_url} on attempt {attempt + 1}")
                     break
                 logger.warning(f"Request attempt {attempt + 1} failed for {product_url}, retrying...")
-                time.sleep(1)  # Wait 1 second before retry
+                time.sleep(1)
             
             # If still no HTML, try with Selenium as last resort
             if not html:
@@ -2149,17 +2192,20 @@ class EcommerceCrawler:
                 product = self._extract_flipkart_details(soup, product_url)
             elif platform == 'myntra':
                 product = self._extract_myntra_details(soup, product_url)
+            elif platform == 'nyka':
+                product = self._extract_nyka_details(soup, product_url)
             
             if product:
                 self._perform_compliance_check(product)
                 return product
             else:
-                logger.warning(f"Product extraction returned None for {product_url} - page structure may have changed")
+                logger.warning(f"Product extraction returned None for {product_url}")
             
         except Exception as e:
             logger.error(f"Failed to extract product from URL {product_url}: {e}")
         
         return None
+    
     
     def download_and_process_image(self, image_url: str, ocr_integrator=None) -> Dict[str, Any]:
         """Download image and optionally extract text with OCR"""
