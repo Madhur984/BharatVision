@@ -1,6 +1,12 @@
-[theme]
-base = "light"
-primaryColor = "#3866D5"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#3866D5"
-textColor = "#000000"
+[server]
+runOnSave = true
+fileWatcherType = "auto"
+
+[runner]
+fastReruns = false
+
+[client]
+showErrorDetails = true
+
+[browser]
+gatherUsageStats = false
