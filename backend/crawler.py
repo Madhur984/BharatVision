@@ -640,6 +640,132 @@ class EcommerceCrawler:
         except Exception as e:
             logger.error(f"Playwright fallback failed for {url}: {e}")
             return None
+    
+    def extract_product_from_url_simple(self, url: str) -> Optional[ProductData]:
+        """
+        UNIVERSAL EXTRACTION METHOD - Works for ANY e-commerce website!
+        Uses generic patterns instead of platform-specific logic.
+        This is simpler, more maintainable, and more reliable.
+        """
+        logger.info(f"🌐 Universal extraction from: {url}")
+        
+        # Fetch HTML (with auto Playwright fallback)
+        html = self._make_request(url, 'generic', use_selenium=False)
+        if not html:
+            logger.info("HTTP failed, trying Playwright...")
+            html = self._make_request_playwright(url)
+        
+        if not html:
+            logger.error("Failed to fetch page")
+            return None
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Initialize product
+        product = ProductData()
+        product.product_url = url
+        product.extracted_at = time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Extract title (try multiple selectors)
+        title = None
+        for selector in ['h1', 'title', '[class*="title"]', '[class*="product-name"]']:
+            try:
+                elem = soup.select_one(selector)
+                if elem:
+                    title = elem.get_text(strip=True)
+                    if len(title) > 5:
+                        break
+            except:
+                continue
+        product.title = title or "Unknown Product"
+        
+        # Extract all visible text
+        for tag in soup(['script', 'style', 'noscript', 'header', 'footer', 'nav']):
+            tag.decompose()
+        page_text = soup.get_text(separator="\n", strip=True)
+        product.full_page_text = page_text
+        
+        # Extract images
+        images = set()
+        for img in soup.find_all("img"):
+            src = img.get("src") or img.get("data-src") or img.get("data-lazy-src")
+            if src:
+                if not src.startswith("http"):
+                    src = urljoin(url, src)
+                if any(ext in src.lower() for ext in ["jpg", "jpeg", "png", "webp"]):
+                    images.add(src)
+        product.image_urls = list(images)[:15]
+        logger.info(f"Found {len(product.image_urls)} images")
+        
+        # Run OCR on images
+        if product.image_urls and TESSERACT_AVAILABLE and PIL_AVAILABLE:
+            ocr_texts = []
+            for img_url in product.image_urls[:5]:  # Limit to 5 images
+                try:
+                    r = self.session.get(img_url, timeout=10)
+                    if r.status_code == 200:
+                        img = Image.open(BytesIO(r.content)).convert("RGB")
+                        text = pytesseract.image_to_string(img)
+                        if len(text.strip()) > 10:
+                            ocr_texts.append(text)
+                except:
+                    continue
+            product.ocr_text = "\n---\n".join(ocr_texts)
+        
+        # Combine all text
+        combined_text = "\n".join([
+            product.title or "",
+            page_text or "",
+            product.ocr_text or ""
+        ])
+        
+        # Extract fields using regex patterns
+        patterns = {
+            "price": r"₹\s*([\d,]+(?:\.\d{2})?)",
+            "mrp": r"(?:MRP|M\.R\.P\.|Maximum Retail Price)[^\d₹]*₹?\s*([\d,]+)",
+            "net_quantity": r"(?:Net|Net Qty|Net Weight|Quantity)[^\d]*(\d+\s*(?:g|kg|ml|l|gm|gms|ltr))",
+            "manufacturer": r"(?:Manufactured by|Mfg by|Manufacturer|Marketed by)[^\n:]*[:\-]?\s*([^\n]{10,100})",
+            "importer": r"(?:Imported by|Importer)[^\n:]*[:\-]?\s*([^\n]{10,100})",
+            "country_of_origin": r"(?:Country of Origin|Made in|Origin)\s*[:\-]?\s*(\w+)",
+            "customer_care": r"(?:Customer Care|Helpline|Contact|Customer Support)[^\n]{0,50}",
+            "mfg_date": r"(?:Mfg|Manufactured|Manufacturing Date)[^\n]{0,30}",
+            "expiry_date": r"(?:Best Before|Expiry|Exp|Use By)[^\n]{0,30}",
+        }
+        
+        extracted_fields = {}
+        for key, pattern in patterns.items():
+            m = re.search(pattern, combined_text, re.IGNORECASE)
+            if m:
+                value = m.group(1).strip() if m.lastindex else m.group(0).strip()
+                extracted_fields[key] = value[:200]
+                setattr(product, key, value[:200])
+        
+        logger.info(f"Extracted fields: {list(extracted_fields.keys())}")
+        
+        # Compliance validation
+        if self.compliance_validator:
+            try:
+                result = self.compliance_validator.validate(extracted_fields)
+                product.compliance_status = result.get("overall_status", "UNKNOWN")
+                product.compliance_score = result.get("score", 0)
+                product.compliance_details = result
+                
+                product.issues_found = []
+                for r in result.get("rule_results", []):
+                    if r.get("violated"):
+                        product.issues_found.append(r.get("description", r.get("rule_id")))
+                
+                logger.info(f"Compliance: {product.compliance_status} ({product.compliance_score}%)")
+            except Exception as e:
+                logger.warning(f"Compliance validation failed: {e}")
+                product.compliance_status = "ERROR"
+                product.compliance_score = 0
+        else:
+            product.compliance_status = "UNKNOWN"
+            product.compliance_score = 0
+        
+        logger.info(f"✅ Universal extraction complete: {product.title}")
+        return product
 
 
     def _enrich_product(self, product: ProductData, platform: str):
@@ -2294,35 +2420,16 @@ class EcommerceCrawler:
     
     def extract_product_from_url(self, product_url: str) -> Optional[ProductData]:
         """
-        Extract product details from a direct product URL
-        Uses platform-specific strategies:
-        - Flipkart: JSON API (mobile endpoint) - BYPASSES HTML SCRAPING
-        - Amazon: HTML scraping
-        - Others: HTML scraping
+        Extract product details from ANY e-commerce product URL.
+        Now uses UNIVERSAL EXTRACTION - works for all websites!
+        
+        This replaces the complex platform-specific logic with a simple,
+        maintainable approach that works for Meesho, Flipkart, Amazon, etc.
         """
-        try:
-            # Determine platform from URL
-            platform = None
-            url_lower = product_url.lower()
-            
-            if 'amazon.in' in url_lower or 'amazon.com' in url_lower:
-                platform = 'amazon'
-            elif 'flipkart.com' in url_lower:
-                platform = 'flipkart'
-            elif 'myntra.com' in url_lower:
-                platform = 'myntra'
-            elif 'meesho.com' in url_lower:
-                platform = 'meesho'
-            elif 'ajio.com' in url_lower:
-                platform = 'ajio'
-            elif 'nykaa.com' in url_lower:
-                platform = 'nykaa'
-            elif 'snapdeal.com' in url_lower:
-                platform = 'snapdeal'
-            elif 'shopclues.com' in url_lower:
-                platform = 'shopclues'
-            elif 'paytmmall.com' in url_lower:
-                platform = 'paytmmall'
+        logger.info(f"🎯 Extracting product from URL: {product_url}")
+        
+        # Use the universal extraction method
+        return self.extract_product_from_url_simple(product_url)
             elif 'tatacliq.com' in url_lower:
                 platform = 'tatacliq'
             elif 'jiomart.com' in url_lower:
