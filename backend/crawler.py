@@ -1507,14 +1507,155 @@ class EcommerceCrawler:
         """NYKA platform removed - use Amazon, Flipkart, or Myntra instead"""
         return []
     
+    def _fetch_flipkart_json(self, product_url: str) -> Optional[dict]:
+        """
+        Fetch Flipkart product data from mobile JSON API
+        This bypasses anti-bot protection by using the official API
+        """
+        try:
+            # Extract PID from URL
+            parsed = urlparse(product_url)
+            params = parse_qs(parsed.query)
+            pid = params.get("pid", [None])[0]
+            
+            if not pid:
+                # Try to extract from URL path if not in query
+                # Format: /product-name/p/itm123?pid=PROD123
+                logger.warning(f"No PID found in URL: {product_url}")
+                return None
+            
+            # Flipkart mobile API endpoint
+            api_url = "https://1.rome.api.flipkart.com/api/3/page/dynamic/product"
+            api_params = {"pid": pid}
+            
+            # Mobile app headers
+            headers = {
+                "User-Agent": "FKUA/website/42/website/Desktop",
+                "Accept": "application/json",
+                "Referer": "https://www.flipkart.com/",
+                "X-User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+            
+            logger.info(f"Fetching Flipkart JSON API for PID: {pid}")
+            response = self.session.get(
+                api_url, 
+                headers=headers, 
+                params=api_params, 
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                logger.info(f"✅ Successfully fetched Flipkart JSON data")
+                return data
+            else:
+                logger.warning(f"Flipkart API returned status {response.status_code}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Flipkart JSON fetch failed: {e}")
+            return None
+    
+    def _extract_flipkart_from_json(self, data: dict, url: str) -> Optional[ProductData]:
+        """
+        Extract product data from Flipkart JSON API response
+        """
+        try:
+            if not data or "data" not in data:
+                return None
+            
+            product_data = data["data"].get("product", {}).get("value", {})
+            
+            if not product_data:
+                logger.warning("No product data in Flipkart JSON response")
+                return None
+            
+            # Extract basic info
+            title = product_data.get("title", "")
+            
+            # Extract pricing
+            price_info = product_data.get("price", {})
+            price = price_info.get("sellingPrice", {}).get("value")
+            mrp = price_info.get("mrp", {}).get("value")
+            
+            # Extract images
+            images = []
+            media = product_data.get("media", {})
+            for img in media.get("images", []):
+                img_url = img.get("url")
+                if img_url:
+                    images.append(img_url)
+            
+            # Extract specifications
+            specs = {}
+            for spec_group in product_data.get("specifications", []):
+                for attr in spec_group.get("attributes", []):
+                    name = attr.get("name")
+                    value = attr.get("value")
+                    if name and value:
+                        specs[name] = value
+            
+            # Extract description
+            description = product_data.get("description", "")
+            
+            # Extract rating
+            rating = None
+            rating_info = product_data.get("rating", {})
+            if rating_info:
+                rating = rating_info.get("average")
+            
+            # Create ProductData
+            product = ProductData(
+                title=title,
+                price=price,
+                mrp=mrp,
+                description=description,
+                specs=specs,
+                image_urls=images,
+                platform="flipkart",
+                product_url=url,
+                rating=rating,
+                extracted_at=time.strftime("%Y-%m-%d %H:%M:%S")
+            )
+            
+            logger.info(f"✅ Extracted Flipkart product: {title[:50]}")
+            return product
+            
+        except Exception as e:
+            logger.error(f"Failed to extract Flipkart JSON data: {e}")
+            return None
+    
     def get_product_details(self, product_url: str, platform: str) -> Optional[ProductData]:
-        """Get detailed product information from product page"""
-        
+        """
+        Get detailed product information from product page
+        Uses platform-specific strategies:
+        - Flipkart: JSON API (mobile app endpoint)
+        - Amazon: HTML scraping
+        - Others: HTML scraping
+        """
         if platform not in self.platforms:
             raise ValueError(f"Unsupported platform: {platform}")
+
+        logger.info(f"Fetching product details from {platform}: {product_url}")
         
-        logger.info(f"Getting product details from {product_url}")
+        # FLIPKART: Use JSON API (no HTML scraping needed!)
+        if platform == 'flipkart':
+            logger.info("Using Flipkart JSON API (mobile endpoint)")
+            json_data = self._fetch_flipkart_json(product_url)
+            if json_data:
+                product = self._extract_flipkart_from_json(json_data, product_url)
+                if product:
+                    # Enrich with OCR and compliance
+                    self._enrich_product(product, platform)
+                    # Save enriched product data and images to DB
+                    self._download_and_save_images(product)
+                    self._save_to_db(product)
+                    return product
+            
+            # Fallback to HTML scraping if JSON fails
+            logger.warning("Flipkart JSON API failed, falling back to HTML scraping")
         
+        # AMAZON & OTHERS: HTML scraping
         try:
             html = self._make_request(product_url, platform, use_selenium=True)
             if not html:
