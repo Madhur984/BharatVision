@@ -307,7 +307,6 @@ class EcommerceCrawler:
                     'Referer': 'https://www.myntra.com/'
                 }
             },
-            },
             'meesho': {
                 'name': 'Meesho',
                 'base_url': 'https://www.meesho.com',
