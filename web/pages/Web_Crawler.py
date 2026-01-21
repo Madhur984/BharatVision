@@ -134,6 +134,7 @@ except ImportError:
 # Fallback crawler removed as per user request to avoid confusion.
 # We exclusively use the main EcommerceCrawler which has proper rate limiting.
 def _create_fallback_crawler():
+    """Fallback disabled - always returns None to prevent fake data"""
     return None
 
 
@@ -699,26 +700,9 @@ def annotate_image_fallback(img_url, product=None, ocr_integrator=None):
     # Optionally overlay OCR snippet
     if product and getattr(product, 'image_urls', None):
         try:
-            ocr_text = ''
-            if isinstance(product.image_urls, (list, tuple)) and len(product.image_urls) > 0:
-                # Prefer Surya subprocess if enabled
-                first_img = product.image_urls[0]
-                try:
-                    resp = requests.get(first_img, timeout=8)
-                    if SURYA_PREFERRED and resp and resp.content:
-                        try:
-                            ocr_text = run_surya_ocr_from_bytes(resp.content)
-                        except Exception:
-                            ocr_text = ''
-                    # Fallback to integrator if Surya not available or empty
-                    if not ocr_text and ocr_integrator and hasattr(ocr_integrator, 'extract_text_from_image_url'):
-                        ocr_res = ocr_integrator.extract_text_from_image_url(first_img)
-                        if isinstance(ocr_res, dict):
-                            ocr_text = ocr_res.get('text', '')
-                        else:
-                            ocr_text = str(ocr_res)
-                except Exception:
-                    ocr_text = ''
+            # FIX 4 & 8: Use cached OCR text instead of re-running OCR
+            ocr_text = getattr(product, 'ocr_text', '') or ''
+            
             if ocr_text:
                 # draw semi-transparent box at bottom
                 tb_h = 80
@@ -815,6 +799,10 @@ with tab1:
                     # 1. Header & Status - Use backend compliance values directly
                     comp_score = getattr(product, 'compliance_score', 0) or 0
                     comp_status = getattr(product, 'compliance_status', "UNKNOWN")
+                    
+                    # FIX 6: Handle UNVERIFIED status
+                    if comp_status == "UNVERIFIED":
+                        st.warning("⚠️ Compliance not verified (fallback mode - data may be incomplete)")
                     
                     if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 75):
                         st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
@@ -1291,15 +1279,12 @@ with tab1:
                             st.write(f"Platform: {product.platform} | Price: ₹{product.price if product.price else 'N/A'}")
                             if getattr(product, 'product_url', None):
                                 st.markdown(f"[Open product]({product.product_url})")
-                            ocr_texts = []
-                            if hasattr(product, 'image_urls') and product.image_urls:
-                                for img_url in product.image_urls:
-                                    ocr_text = extract_text_with_ocr(img_url, st.session_state.get('ocr_integrator'))
-                                    if ocr_text:
-                                        ocr_texts.append(ocr_text)
-                            if ocr_texts:
+                            
+                            # FIX 4: Use cached OCR text instead of re-running OCR
+                            ocr_txt = getattr(product, 'ocr_text', '') or ""
+                            if ocr_txt:
                                 st.markdown("**OCR Extracted Text from Images:**")
-                                st.text("\n---\n".join(ocr_texts))
+                                st.text(ocr_txt)
                 else:
                     st.error("No products found for the given keywords.")
 
