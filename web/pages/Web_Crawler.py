@@ -88,6 +88,7 @@ try:
 except Exception:
     EXPECTED_FIELDS = []
 
+
 try:
     from backend.crawler import EcommerceCrawler, ProductData
     CRAWLER_AVAILABLE = True
@@ -108,7 +109,16 @@ except Exception as e:
         # If writing log fails, silently continue (we already showed the traceback in UI)
         pass
     CRAWLER_AVAILABLE = False
-    # Keep going but disable crawler features
+    # Define dummy classes to prevent NameError
+    class EcommerceCrawler:
+        """Dummy placeholder when real crawler fails to import"""
+        def __init__(self, *args, **kwargs):
+            raise ImportError(f"EcommerceCrawler import failed: {e}")
+    
+    class ProductData:
+        """Dummy placeholder"""
+        pass
+
 
 # Try to import OCR integrator
 try:
