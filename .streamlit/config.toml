@@ -8,9 +8,7 @@ fastReruns = false
 [client]
 showErrorDetails = true
 
-[browser]
-gatherUsageStats = false
-
-# Force cache clear - version 2
 [global]
 developmentMode = false
+
+# Force reload bump - v3
