@@ -2369,13 +2369,14 @@ class EcommerceCrawler:
                 logger.warning(f"Request attempt {attempt + 1} failed for {product_url}, retrying...")
                 time.sleep(1)
             
-            # If still no HTML, try with Selenium as last resort
+            
+            # If still no HTML, try with Playwright as last resort
             if not html:
-                logger.info(f"Trying Selenium fallback for {product_url}")
-                html = self._make_request(product_url, platform, use_selenium=True)
+                logger.info(f"🎭 Trying Playwright fallback for {product_url}")
+                html = self._make_request_playwright(product_url)
             
             if not html:
-                logger.error(f"Failed to fetch HTML after all retries for {product_url}")
+                logger.error(f"Failed to fetch HTML after all retries (including Playwright) for {product_url}")
                 return None
             
             soup = BeautifulSoup(html, 'html.parser')
