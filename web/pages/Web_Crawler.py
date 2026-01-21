@@ -96,6 +96,7 @@ except Exception as e:
     # Catch any exception during import (not only ImportError) and surface full traceback
     import traceback as _tb
     tb = _tb.format_exc()
+    error_msg = str(e)  # Capture error message before it goes out of scope
     st.warning("⚠️ Web crawler module not available during import. See details below:")
     st.text(tb)
     # Persist the import traceback to a log file for offline inspection
@@ -113,7 +114,7 @@ except Exception as e:
     class EcommerceCrawler:
         """Dummy placeholder when real crawler fails to import"""
         def __init__(self, *args, **kwargs):
-            raise ImportError(f"EcommerceCrawler import failed: {e}")
+            raise ImportError(f"EcommerceCrawler import failed: {error_msg}")
     
     class ProductData:
         """Dummy placeholder"""
