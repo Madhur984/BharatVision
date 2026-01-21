@@ -2114,18 +2114,6 @@ class EcommerceCrawler:
         return {platform: config['name'] for platform, config in self.platforms.items()}
     
     def extract_product_from_url(self, product_url: str) -> Optional[ProductData]:
-        """Extract product details from a direct product URL"""
-        try:
-            # Determine platform from URL
-            platform = None
-            if 'amazon.in' in product_url:
-                platform = 'amazon'
-            elif 'flipkart.com' in product_url:
-                platform = 'flipkart'
-            elif 'myntra.com' in product_url:
-                platform = 'myntra'
-            
-            if not platform:
                 logger.warning(f"Unknown platform for URL: {product_url}")
                 return None
             
