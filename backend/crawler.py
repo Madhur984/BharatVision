@@ -1520,20 +1520,27 @@ class EcommerceCrawler:
             
             if not pid:
                 # Try to extract from URL path if not in query
-                # Format: /product-name/p/itm123?pid=PROD123
                 logger.warning(f"No PID found in URL: {product_url}")
                 return None
             
-            # Flipkart mobile API endpoint
-            api_url = "https://1.rome.api.flipkart.com/api/3/page/dynamic/product"
-            api_params = {"pid": pid}
+            # Flipkart mobile API endpoint (updated)
+            api_url = f"https://www.flipkart.com/api/3/page/dynamic/product"
+            api_params = {
+                "pid": pid,
+                "marketplace": "FLIPKART"
+            }
             
-            # Mobile app headers
+            # Mobile app headers (updated to match real mobile app)
             headers = {
-                "User-Agent": "FKUA/website/42/website/Desktop",
-                "Accept": "application/json",
-                "Referer": "https://www.flipkart.com/",
-                "X-User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": product_url,
+                "Origin": "https://www.flipkart.com",
+                "X-User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 FKUA/website/42/website/Mobile",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
             }
             
             logger.info(f"Fetching Flipkart JSON API for PID: {pid}")
@@ -1541,7 +1548,7 @@ class EcommerceCrawler:
                 api_url, 
                 headers=headers, 
                 params=api_params, 
-                timeout=15
+                timeout=30  # Increased timeout
             )
             
             if response.status_code == 200:
