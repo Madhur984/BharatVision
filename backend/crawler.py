@@ -549,6 +549,10 @@ class EcommerceCrawler:
                     try:
                         response.raise_for_status()
                     except requests.exceptions.HTTPError as he:
+                        # If we get 403 Forbidden, try Playwright fallback
+                        if response.status_code == 403:
+                            logger.warning(f"HTTP 403 Forbidden for {url}, trying Playwright fallback...")
+                            return self._make_request_playwright(url)
                         logger.warning(f"HTTP error {response.status_code} for {url}: {he}")
                         return None
 
@@ -559,8 +563,8 @@ class EcommerceCrawler:
                         time.sleep(wait_time)
                         continue
                     else:
-                        logger.error(f"Timeout after {max_retries} attempts for {url}")
-                        return None
+                        logger.error(f"Timeout after {max_retries} attempts for {url}, trying Playwright fallback...")
+                        return self._make_request_playwright(url)
                 except requests.exceptions.ConnectionError:
                     if attempt < max_retries - 1:
                         logger.warning(f"Connection error on attempt {attempt + 1}/{max_retries}, retrying...")
@@ -578,6 +582,65 @@ class EcommerceCrawler:
         except Exception as e:
             logger.error(f"Request error for {url}: {e}")
             return None
+    
+    def _make_request_playwright(self, url: str) -> Optional[str]:
+        """
+        Fallback scraping using Playwright when regular requests fail.
+        Uses a real browser to bypass anti-bot protection.
+        Works for Meesho, Flipkart, and any JavaScript-heavy site.
+        """
+        try:
+            # Check if playwright is available
+            try:
+                from playwright.sync_api import sync_playwright
+            except ImportError:
+                logger.warning("Playwright not installed. Install with: pip install playwright && playwright install chromium")
+                return None
+            
+            logger.info(f"🎭 Using Playwright fallback for {url}")
+            
+            with sync_playwright() as p:
+                # Launch browser
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=[
+                        '--disable-blink-features=AutomationControlled',
+                        '--disable-dev-shm-usage',
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox'
+                    ]
+                )
+                
+                # Create context with realistic settings
+                context = browser.new_context(
+                    viewport={'width': 1920, 'height': 1080},
+                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    locale='en-IN',
+                    timezone_id='Asia/Kolkata'
+                )
+                
+                page = context.new_page()
+                
+                try:
+                    # Navigate with timeout
+                    page.goto(url, wait_until='networkidle', timeout=30000)
+                    
+                    # Wait for content to load
+                    page.wait_for_timeout(2000)
+                    
+                    # Get HTML content
+                    html = page.content()
+                    
+                    logger.info(f"✅ Playwright successfully fetched {len(html)} bytes")
+                    return html
+                    
+                finally:
+                    browser.close()
+                    
+        except Exception as e:
+            logger.error(f"Playwright fallback failed for {url}: {e}")
+            return None
+
 
     def _enrich_product(self, product: ProductData, platform: str):
         """Run image OCR (Tesseract), combine text sources, run LLM (Flan-T5) extraction and compliance validation.
