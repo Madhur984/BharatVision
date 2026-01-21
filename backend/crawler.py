@@ -2132,16 +2132,34 @@ class EcommerceCrawler:
         try:
             # Determine platform from URL
             platform = None
-            if 'amazon.in' in product_url or 'amazon.com' in product_url:
-                platform = 'amazon'
-            elif 'flipkart.com' in product_url:
-                platform = 'flipkart'
-            elif 'myntra.com' in product_url:
-                platform = 'myntra'
+            url_lower = product_url.lower()
             
-            if not platform:
-                logger.warning(f"Unknown platform for URL: {product_url}")
-                return None
+            if 'amazon.in' in url_lower or 'amazon.com' in url_lower:
+                platform = 'amazon'
+            elif 'flipkart.com' in url_lower:
+                platform = 'flipkart'
+            elif 'myntra.com' in url_lower:
+                platform = 'myntra'
+            elif 'meesho.com' in url_lower:
+                platform = 'meesho'
+            elif 'ajio.com' in url_lower:
+                platform = 'ajio'
+            elif 'nykaa.com' in url_lower:
+                platform = 'nykaa'
+            elif 'snapdeal.com' in url_lower:
+                platform = 'snapdeal'
+            elif 'shopclues.com' in url_lower:
+                platform = 'shopclues'
+            elif 'paytmmall.com' in url_lower:
+                platform = 'paytmmall'
+            elif 'tatacliq.com' in url_lower:
+                platform = 'tatacliq'
+            elif 'jiomart.com' in url_lower:
+                platform = 'jiomart'
+            else:
+                # Generic fallback for unknown platforms
+                platform = 'generic'
+                logger.info(f"Using generic platform handler for: {product_url[:100]}")
             
             logger.info(f"🎯 Detected platform: {platform} for URL: {product_url[:100]}")
             
