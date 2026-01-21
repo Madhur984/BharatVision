@@ -535,12 +535,8 @@ def get_crawler():
         import logging as _logging
         logger = _logging.getLogger(__name__)
         
-        # Initialize directly without monkeypatching
-        return EcommerceCrawler(
-            base_url='https://www.amazon.in',  # Default
-            platform='amazon',                 # Default
-            logger=logger
-        )
+        # Initialize without platform lock - allows dynamic switching
+        return EcommerceCrawler()
     except Exception as e:
         tb = traceback.format_exc()
         st.error(f"Failed to initialize crawler: {e}")
@@ -816,23 +812,9 @@ with tab1:
                     # New Simplified UI (Matches Upload Page)
                     # ---------------------------------------------------------
                     
-                    # 1. Header & Status - Recalculate score to ensure accuracy
+                    # 1. Header & Status - Use backend compliance values directly
                     comp_score = getattr(product, 'compliance_score', 0) or 0
                     comp_status = getattr(product, 'compliance_status', "UNKNOWN")
-                    
-                    # Recalculate score from rule_results to ensure it matches violations
-                    if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
-                        validation_result = product.compliance_details.get('validation_result', {})
-                        rule_results = validation_result.get('rule_results', [])
-                        if rule_results:
-                            violations_count = sum(1 for r in rule_results if r.get('violated', True))
-                            total_rules = len(rule_results)
-                            if total_rules > 0:
-                                # Recalculate score: (passed_rules / total_rules) * 100
-                                passed_rules = total_rules - violations_count
-                                comp_score = round((passed_rules / total_rules) * 100, 2)
-                                # Update the product object with corrected score
-                                product.compliance_score = comp_score
                     
                     if comp_status == "COMPLIANT" or (isinstance(comp_score, (int, float)) and comp_score > 75):
                         st.success(f"🟢 **COMPLIANT** (Score: {comp_score})")
@@ -841,21 +823,9 @@ with tab1:
                     elif comp_status == "ERROR":
                         st.error(f"🔴 **ERROR** (Score: {comp_score})")
                     else:
-                        # Calculate violation details directly from rule_results to ensure accuracy
-                        violations_count = 0
-                        total_rules = 9
-                        if hasattr(product, 'compliance_details') and isinstance(product.compliance_details, dict):
-                            validation_result = product.compliance_details.get('validation_result', {})
-                            rule_results = validation_result.get('rule_results', [])
-                            if rule_results:
-                                violations_count = sum(1 for r in rule_results if r.get('violated', True))
-                                total_rules = len(rule_results)
-                            else:
-                                # Fallback to stored counts
-                                violations_count = product.compliance_details.get('violations_count', 0)
-                                total_rules = product.compliance_details.get('total_rules', 9)
-                        
-                        st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score}) - Found {violations_count} violations out of {total_rules} rules.")
+                        # Show non-compliant status with issues count
+                        issues_count = len(product.issues_found) if product.issues_found else 0
+                        st.error(f"🔴 **NON-COMPLIANT** (Score: {comp_score}) - Found {issues_count} issues.")
 
                     # 2. LMPC Validation Details
                     with st.expander("📋 LMPC Validation Details - What's Present & What's Missing"):

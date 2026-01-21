@@ -764,6 +764,23 @@ class EcommerceCrawler:
             product.compliance_status = "UNKNOWN"
             product.compliance_score = 0
         
+        # --- GUARANTEE COMPLIANCE FIELDS (UI SAFETY) ---
+        if product.compliance_details is None:
+            product.compliance_details = {}
+        
+        if product.issues_found is None:
+            product.issues_found = []
+        
+        if product.compliance_score is None:
+            product.compliance_score = 0
+        
+        if not product.compliance_status:
+            product.compliance_status = "UNKNOWN"
+        
+        # Ensure platform field is always present
+        if not hasattr(product, 'platform') or not product.platform:
+            product.platform = "generic"
+        
         logger.info(f"✅ Universal extraction complete: {product.title}")
         return product
 
