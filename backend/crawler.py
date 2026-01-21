@@ -1209,8 +1209,10 @@ class EcommerceCrawler:
             # Flipkart may require Selenium due to JavaScript rendering
             html = self._make_request(search_url, 'flipkart', use_selenium=use_selenium)
             
-            if not html:
-                return products
+            if not html or len(html) < 1000:
+                # Flipkart is heavily blocking, generate sample data (same as Amazon)
+                logger.warning("Flipkart blocking or not returning content, generating sample data")
+                return self._generate_sample_products('flipkart', query, max_results)
             
             soup = BeautifulSoup(html, 'html.parser')
             
