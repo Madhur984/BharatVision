@@ -789,10 +789,10 @@ with tab1:
         if st.button("Extract Product Info") and url:
             if not crawler:
                 st.error("Crawler is not initialized. Please try refreshing the page.")
-                # Attempt lazy re-init
                 crawler = try_reinit_crawler()
-                
+            
             if crawler:
+                product = None
                 with st.spinner("Extracting product info..."):
                     try:
                         product = crawler.extract_product_from_url(url)
@@ -803,7 +803,9 @@ with tab1:
                     except Exception as e:
                         st.error(f"Extraction failed: {e}")
                         product = None
-                    
+                
+                # Logic continues if product was found
+                if product:
                     # ---------------------------------------------------------
                     # New Simplified UI (Matches Upload Page)
                     # ---------------------------------------------------------
@@ -891,15 +893,6 @@ with tab1:
                         st.markdown("---")
                         st.markdown("**OCR Text:**")
                         
-                        # Gather OCR texts
-                        ocr_texts = []
-                        if hasattr(product, 'image_urls') and product.image_urls:
-                            for img_url in product.image_urls:
-                                # We might re-run OCR or use cached if available. 
-                                # Ideally crawler already populated product.ocr_text or similar.
-                                # But per legacy code it ran it here. We will preserve extraction if needed or check existing.
-                                pass 
-                                
                         ocr_txt = getattr(product, 'ocr_text', '') or getattr(product, 'full_page_text', '') or "No OCR Text"
                         st.text_area("OCR Result", ocr_txt, height=200)
                         
@@ -909,12 +902,7 @@ with tab1:
                         except:
                             st.write(str(product))
                 
-                else:
-                    st.error("Failed to extract product info from the link.")
-                
-                
-                # Save to database
-                if product:
+                    # Save to database
                     try:
                         user = st.session_state.get('user', {})
                         if user:
