@@ -514,46 +514,35 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize crawler with error handling
+# Initialize crawler with error handling
 @st.cache_resource
 def get_crawler():
-    # Try no-arg init first, then fall back to explicit args for compatibility
-    # Defensive: monkeypatch EcommerceCrawler.__init__ to accept varying signatures
+    """
+    Initialize the EcommerceCrawler singleton.
+    """
     try:
         import logging as _logging
-        orig_init = getattr(EcommerceCrawler, '__init__', None)
-
-        def _safe_init(self, *args, **kwargs):
-            # Ensure logger in kwargs
-            if 'logger' not in kwargs or kwargs.get('logger') is None:
-                kwargs['logger'] = _logging.getLogger(__name__)
-            try:
-                if orig_init:
-                    return orig_init(self, *args, **kwargs)
-                return None
-            except TypeError as te:
-                # Try with explicit defaults if signature changed
-                try:
-                    return orig_init(self, base_url='https://www.amazon.in', platform='amazon', product_extractor=None, **kwargs)
-                except Exception:
-                    raise
-
-        EcommerceCrawler.__init__ = _safe_init
-
-        return EcommerceCrawler()
-    except TypeError:
-        try:
-            return EcommerceCrawler(base_url='https://www.amazon.in', platform='amazon', product_extractor=None)
-        except Exception as e:
-            tb = traceback.format_exc()
-            st.error(f"Failed to initialize crawler (fallback): {e}")
-            st.error("Initialization traceback (fallback):")
-            st.code(tb)
-            return None
+        logger = _logging.getLogger(__name__)
+        
+        # Initialize directly without monkeypatching
+        return EcommerceCrawler(
+            base_url='https://www.amazon.in',  # Default
+            platform='amazon',                 # Default
+            logger=logger
+        )
     except Exception as e:
         tb = traceback.format_exc()
         st.error(f"Failed to initialize crawler: {e}")
         st.error("Initialization traceback:")
         st.code(tb)
+        # Log to file
+        try:
+            logs_dir = os.path.join(BASE_DIR, 'logs')
+            os.makedirs(logs_dir, exist_ok=True)
+            with open(os.path.join(logs_dir, 'crawler_init_failure.txt'), 'w', encoding='utf-8') as fh:
+                fh.write(tb)
+        except:
+            pass
         return None
 
 crawler = None
@@ -561,22 +550,15 @@ if CRAWLER_AVAILABLE:
     try:
         crawler = get_crawler()
     except Exception as e:
-        tb = traceback.format_exc()
-        st.error(f"Crawler initialization error: {e}")
-        st.code(tb)
-        # persist to log file for easier inspection
-        try:
-            logs_dir = os.path.join(BASE_DIR, 'logs')
-            os.makedirs(logs_dir, exist_ok=True)
-            with open(os.path.join(logs_dir, 'crawler_init_traceback.txt'), 'w', encoding='utf-8') as fh:
-                fh.write(tb)
-        except Exception:
-            pass
         crawler = None
+        st.error(f"Crawler init error: {e}")
 
 # Provide a manual re-initialize button so users can attempt to recover without restarting Streamlit
 def try_reinit_crawler():
     st.info('Attempting to initialize crawler...')
+    # Clear cache to force re-creation
+    get_crawler.clear()
+    
     try:
         new_c = get_crawler()
         if new_c:
@@ -586,16 +568,7 @@ def try_reinit_crawler():
             st.error('Crawler initialization returned None.')
             return None
     except Exception as ex:
-        tb2 = traceback.format_exc()
-        st.error('Re-initialization failed. See traceback:')
-        st.code(tb2)
-        try:
-            logs_dir = os.path.join(BASE_DIR, 'logs')
-            os.makedirs(logs_dir, exist_ok=True)
-            with open(os.path.join(logs_dir, 'crawler_reinit_traceback.txt'), 'w', encoding='utf-8') as fh:
-                fh.write(tb2)
-        except Exception:
-            pass
+        st.error(f'Re-initialization failed: {ex}')
         return None
 
 if crawler is None:
@@ -814,10 +787,22 @@ with tab1:
     if crawl_mode == "🔗 Extract from Product Link":
         url = st.text_input("Enter product page URL:", "")
         if st.button("Extract Product Info") and url:
-            with st.spinner("Extracting product info..."):
-                product = crawler.extract_product_from_url(url)
-                if product:
-                    st.success("Product extracted!")
+            if not crawler:
+                st.error("Crawler is not initialized. Please try refreshing the page.")
+                # Attempt lazy re-init
+                crawler = try_reinit_crawler()
+                
+            if crawler:
+                with st.spinner("Extracting product info..."):
+                    try:
+                        product = crawler.extract_product_from_url(url)
+                        if product:
+                            st.success("Product extracted!")
+                        else:
+                            st.warning("Failed to extract product. Please check the URL.")
+                    except Exception as e:
+                        st.error(f"Extraction failed: {e}")
+                        product = None
                     
                     # ---------------------------------------------------------
                     # New Simplified UI (Matches Upload Page)
