@@ -307,68 +307,114 @@ class EcommerceCrawler:
                     'Referer': 'https://www.myntra.com/'
                 }
             },
+            },
             'meesho': {
                 'name': 'Meesho',
                 'base_url': 'https://www.meesho.com',
                 'search_url': 'https://www.meesho.com/search?q={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'ajio': {
                 'name': 'Ajio',
                 'base_url': 'https://www.ajio.com',
                 'search_url': 'https://www.ajio.com/search/?text={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'nykaa': {
                 'name': 'Nykaa',
                 'base_url': 'https://www.nykaa.com',
                 'search_url': 'https://www.nykaa.com/search/result/?q={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'snapdeal': {
                 'name': 'Snapdeal',
                 'base_url': 'https://www.snapdeal.com',
                 'search_url': 'https://www.snapdeal.com/search?keyword={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'shopclues': {
                 'name': 'ShopClues',
                 'base_url': 'https://www.shopclues.com',
                 'search_url': 'https://www.shopclues.com/search?q={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'paytmmall': {
                 'name': 'Paytm Mall',
                 'base_url': 'https://www.paytmmall.com',
                 'search_url': 'https://www.paytmmall.com/shop/search?q={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'tatacliq': {
                 'name': 'Tata CLiQ',
                 'base_url': 'https://www.tatacliq.com',
                 'search_url': 'https://www.tatacliq.com/search/?searchText={query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'jiomart': {
                 'name': 'JioMart',
                 'base_url': 'https://www.jiomart.com',
                 'search_url': 'https://www.jiomart.com/search/{query}',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             },
             'generic': {
                 'name': 'Generic',
                 'base_url': '',
                 'search_url': '',
                 'rate_limit': 2.0,
-                'timeout': 15
+                'timeout': 15,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                }
             }
         }
 
