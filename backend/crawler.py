@@ -274,14 +274,23 @@ class EcommerceCrawler:
                 'name': 'Flipkart',
                 'base_url': 'https://www.flipkart.com',
                 'search_url': 'https://www.flipkart.com/search?q={query}',
-                'rate_limit': 2.0,
+                'rate_limit': 3.0,  # Increased from 2.0 to 3.0 seconds
                 'headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept-Encoding': 'gzip, deflate',
+                    'Accept-Encoding': 'gzip, deflate, br',
                     'Connection': 'keep-alive',
-                    'Upgrade-Insecure-Requests': '1'
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                    'Sec-Ch-Ua-Mobile': '?0',
+                    'Sec-Ch-Ua-Platform': '"Windows"',
+                    'Cache-Control': 'max-age=0',
+                    'DNT': '1'
                 }
             },
             'myntra': {
@@ -372,18 +381,39 @@ class EcommerceCrawler:
             self._respect_rate_limit(platform)
 
             headers = self.platforms[platform]['headers'].copy()
-            # Add anti-bot headers to bypass simple detection
-            headers.update({
-                'Referer': self.platforms[platform]['base_url'],
-                'DNT': '1',
-                'X-Requested-With': 'XMLHttpRequest',
-            })
+            
+            # Enhanced headers for Flipkart with session cookies
+            if platform == 'flipkart':
+                headers.update({
+                    'Referer': 'https://www.flipkart.com/',
+                    'Origin': 'https://www.flipkart.com',
+                })
+                # Add session cookies if available
+                if not hasattr(self, '_flipkart_cookies'):
+                    # Initialize session by visiting homepage first
+                    try:
+                        homepage_response = self.session.get(
+                            'https://www.flipkart.com',
+                            headers=headers,
+                            timeout=10
+                        )
+                        self._flipkart_cookies = self.session.cookies
+                        logger.info("✅ Flipkart session initialized")
+                    except:
+                        self._flipkart_cookies = None
+            else:
+                # Add anti-bot headers for other platforms
+                headers.update({
+                    'Referer': self.platforms[platform]['base_url'],
+                    'DNT': '1',
+                    'X-Requested-With': 'XMLHttpRequest',
+                })
 
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    # Longer timeout for Flipkart (30s) to handle slow responses
-                    timeout = 30 if platform == 'flipkart' else 15
+                    # Much longer timeout for Flipkart (45s vs 15s)
+                    timeout = 45 if platform == 'flipkart' else 15
                     response = self.session.get(url, headers=headers, timeout=timeout, allow_redirects=True)
                     if response.status_code == 200:
                         return response.text
