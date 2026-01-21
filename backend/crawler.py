@@ -306,6 +306,69 @@ class EcommerceCrawler:
                     'Connection': 'keep-alive',
                     'Referer': 'https://www.myntra.com/'
                 }
+            },
+            'meesho': {
+                'name': 'Meesho',
+                'base_url': 'https://www.meesho.com',
+                'search_url': 'https://www.meesho.com/search?q={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'ajio': {
+                'name': 'Ajio',
+                'base_url': 'https://www.ajio.com',
+                'search_url': 'https://www.ajio.com/search/?text={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'nykaa': {
+                'name': 'Nykaa',
+                'base_url': 'https://www.nykaa.com',
+                'search_url': 'https://www.nykaa.com/search/result/?q={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'snapdeal': {
+                'name': 'Snapdeal',
+                'base_url': 'https://www.snapdeal.com',
+                'search_url': 'https://www.snapdeal.com/search?keyword={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'shopclues': {
+                'name': 'ShopClues',
+                'base_url': 'https://www.shopclues.com',
+                'search_url': 'https://www.shopclues.com/search?q={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'paytmmall': {
+                'name': 'Paytm Mall',
+                'base_url': 'https://www.paytmmall.com',
+                'search_url': 'https://www.paytmmall.com/shop/search?q={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'tatacliq': {
+                'name': 'Tata CLiQ',
+                'base_url': 'https://www.tatacliq.com',
+                'search_url': 'https://www.tatacliq.com/search/?searchText={query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'jiomart': {
+                'name': 'JioMart',
+                'base_url': 'https://www.jiomart.com',
+                'search_url': 'https://www.jiomart.com/search/{query}',
+                'rate_limit': 2.0,
+                'timeout': 15
+            },
+            'generic': {
+                'name': 'Generic',
+                'base_url': '',
+                'search_url': '',
+                'rate_limit': 2.0,
+                'timeout': 15
             }
         }
 
