@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 playwright install-deps chromium
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
     startCommand: streamlit run web/Home.py --server.port=$PORT --server.address=0.0.0.0
     envVars:
       - key: PORT
