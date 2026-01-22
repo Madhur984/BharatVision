@@ -6,8 +6,8 @@ streamlit-aggrid>=0.3.0
 # =============== CORE ARRAY / IMAGE ===============
 numpy>=1.24.0,<2.0.0
 Pillow==10.4.0
-pandas==2.2.2
-scikit-image==0.21.0
+pandas>=2.0.0,<2.3.0
+scikit-image>=0.21.0,<0.22.0
 
 # =============== OCR (NO OpenCV) ===============
 # Primary OCR: Surya (needs torch/torchvision)
