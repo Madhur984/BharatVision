@@ -2,10 +2,11 @@ services:
   - type: web
     name: bharatvision
     env: python
+    runtime: python-3.11.11
     region: oregon
     plan: free
     branch: main
-    buildCommand: pip install -r requirements.txt && playwright install chromium --with-deps
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt && playwright install chromium --with-deps
     startCommand: streamlit run web/Home.py --server.port=$PORT --server.address=0.0.0.0
     envVars:
       - key: PORT
